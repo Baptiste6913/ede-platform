@@ -4,8 +4,8 @@
 
 | # | Phase | Status | Branch | PR | Validated |
 |---|---|---|---|---|---|
-| 0 | Bootstrap repo & Oracle setup | 🟡 in_progress | `phase-00-bootstrap` | — | — |
-| 1 | Schema DB & migrations | ⚪ pending | — | — | — |
+| 0 | Bootstrap repo & Oracle setup | 🟢 done | `phase-00-bootstrap` | merged ff-only into main | 2026-05-12 |
+| 1 | Schema DB & migrations | 🟡 in_progress | `phase-01-schema` | — | — |
 | 2 | Poller AMF | ⚪ pending | — | — | — |
 | 3 | Poller Consob | ⚪ pending | — | — | — |
 | 4 | Poller BaFin | ⚪ pending | — | — | — |
@@ -56,4 +56,38 @@ Legend: 🟢 done · 🟡 in_progress · 🔴 blocked · ⚪ pending
 
 ### Validation
 
-Awaiting `VALIDATE PHASE 0`.
+✅ `VALIDATE PHASE 0` received 2026-05-12. Merged ff-only into `main` at SHA `8353216`.
+
+---
+
+## Phase 1 — Schema DB & migrations
+
+### Deliverables checklist
+
+- [x] `alembic.ini` + `alembic/env.py` (async, reads `DATABASE_URL` from settings, `compare_type=True`)
+- [x] `src/core/enums.py` — 11 Literal aliases + value tuples (single source of truth)
+- [x] `src/core/models.py` — 6 ORM models (`Deal`, `Event`, `Score`, `Analysis`, `PaperPosition`, `Price`) with `Mapped`/`mapped_column`
+- [x] Migration `0001` — Postgres ENUM types (jurisdiction, deal_type, deal_status, event_type, decision, analyst_verdict, analyst_source, position_side, position_status, currency, price_source)
+- [x] Migration `0002` — `deals` + `events` + `scores` + `analyses` + `paper_positions` with FK `deal_id` ON DELETE CASCADE, composite indexes, check constraints
+- [x] Migration `0003` — `prices` table, `create_hypertable` via TimescaleDB raw SQL, 1h and 1d continuous aggregates with refresh policies
+- [x] `tests/fixtures/seed_deals.py` — 10 deals: 3 FR (OPA, OPAS, OPE) + 3 IT (OPV, OPVS, OPA_IT) + 4 DE incl. cross-border (Uebernahmeangebot, Pflichtangebot, Erwerbsangebot, dual-listed)
+- [x] `tests/core/test_models.py` — 20 CRUD/constraint tests (≥3 per table), incl. 4× cascade-delete and 1× unique-constraint and 1× check-constraint and 1× hypertable-presence and 1× continuous-aggregates-presence
+- [x] CI updated — `timescale/timescaledb-ha:pg16` service, `TEST_DATABASE_URL`, reversibility step (`alembic upgrade head` → `downgrade base` → `upgrade head`)
+
+### Validation outputs
+
+- `ruff check . && ruff format --check .` → clean
+- `mypy --strict src` → 12 source files, no issues
+- `alembic upgrade head → downgrade base → upgrade head` → reversible, 6 migration operations OK
+- `pytest --cov=src` → **42 passed**, coverage **100%** (322 statements / 16 branches)
+- `docker compose exec postgres psql -c "\dt"` → 7 tables (6 + alembic_version) — see `artifacts/phase-01/psql-dt.txt`
+- TimescaleDB info — see `artifacts/phase-01/psql-hypertables.txt` (1 hypertable: prices) + `psql-continuous-aggregates.txt` (prices_1h, prices_1d)
+- 11 Postgres ENUM types — see `artifacts/phase-01/psql-enums.txt`
+
+### Known limitations / open questions
+
+- Recorded in `artifacts/phase-01/pr-body.md` under "Limitations connues / questions ouvertes".
+
+### Validation
+
+Awaiting `VALIDATE PHASE 1`.

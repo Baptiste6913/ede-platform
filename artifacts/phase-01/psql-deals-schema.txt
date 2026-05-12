@@ -1,0 +1,35 @@
+                                                                         Table "public.deals"
+          Column          |           Type           | Collation | Nullable |              Default              | Storage  | Compression | Stats target | Description 
+--------------------------+--------------------------+-----------+----------+-----------------------------------+----------+-------------+--------------+-------------
+ id                       | integer                  |           | not null | nextval('deals_id_seq'::regclass) | plain    |             |              | 
+ juridiction              | jurisdiction_enum        |           | not null |                                   | plain    |             |              | 
+ regulator_ref            | character varying(128)   |           | not null |                                   | extended |             |              | 
+ ticker_target            | character varying(32)    |           |          |                                   | extended |             |              | 
+ ticker_acquirer          | character varying(32)    |           |          |                                   | extended |             |              | 
+ target_name              | character varying(255)   |           | not null |                                   | extended |             |              | 
+ acquirer_name            | character varying(255)   |           | not null |                                   | extended |             |              | 
+ announcement_date        | date                     |           | not null |                                   | plain    |             |              | 
+ deal_type                | deal_type_enum           |           | not null |                                   | plain    |             |              | 
+ status                   | deal_status_enum         |           | not null |                                   | plain    |             |              | 
+ offer_price              | numeric(18,6)            |           |          |                                   | main     |             |              | 
+ currency                 | currency_enum            |           |          |                                   | plain    |             |              | 
+ payment_cash_share       | numeric(5,4)             |           |          |                                   | main     |             |              | 
+ premium_pct              | numeric(7,4)             |           |          |                                   | main     |             |              | 
+ min_acceptance_threshold | numeric(5,4)             |           |          |                                   | main     |             |              | 
+ expected_close_date      | date                     |           |          |                                   | plain    |             |              | 
+ source_url               | text                     |           |          |                                   | extended |             |              | 
+ pdf_path                 | text                     |           |          |                                   | extended |             |              | 
+ created_at               | timestamp with time zone |           | not null | now()                             | plain    |             |              | 
+ updated_at               | timestamp with time zone |           | not null | now()                             | plain    |             |              | 
+Indexes:
+    "deals_pkey" PRIMARY KEY, btree (id)
+    "ix_deals_juridiction_status" btree (juridiction, status)
+    "ix_deals_ticker_target" btree (ticker_target)
+    "uq_deals_juridiction_regulator_ref" UNIQUE CONSTRAINT, btree (juridiction, regulator_ref)
+Referenced by:
+    TABLE "analyses" CONSTRAINT "analyses_deal_id_fkey" FOREIGN KEY (deal_id) REFERENCES deals(id) ON DELETE CASCADE
+    TABLE "events" CONSTRAINT "events_deal_id_fkey" FOREIGN KEY (deal_id) REFERENCES deals(id) ON DELETE CASCADE
+    TABLE "paper_positions" CONSTRAINT "paper_positions_deal_id_fkey" FOREIGN KEY (deal_id) REFERENCES deals(id) ON DELETE CASCADE
+    TABLE "scores" CONSTRAINT "scores_deal_id_fkey" FOREIGN KEY (deal_id) REFERENCES deals(id) ON DELETE CASCADE
+Access method: heap
+

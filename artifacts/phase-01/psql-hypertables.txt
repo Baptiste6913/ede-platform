@@ -1,0 +1,5 @@
+ hypertable_name | num_dimensions | num_chunks 
+-----------------+----------------+------------
+ prices          |              1 |          0
+(1 row)
+

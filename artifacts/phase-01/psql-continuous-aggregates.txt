@@ -1,0 +1,6 @@
+ view_name | materialization_hypertable_name 
+-----------+---------------------------------
+ prices_1d | _materialized_hypertable_12
+ prices_1h | _materialized_hypertable_11
+(2 rows)
+
