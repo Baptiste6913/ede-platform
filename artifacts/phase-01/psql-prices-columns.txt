@@ -1,0 +1,12 @@
+ column_name |        data_type         | is_nullable 
+-------------+--------------------------+-------------
+ ticker      | character varying        | NO
+ ts          | timestamp with time zone | NO
+ open        | numeric                  | NO
+ high        | numeric                  | NO
+ low         | numeric                  | NO
+ close       | numeric                  | NO
+ volume      | bigint                   | YES
+ source      | USER-DEFINED             | NO
+(8 rows)
+

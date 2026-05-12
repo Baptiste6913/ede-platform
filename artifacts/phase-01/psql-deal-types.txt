@@ -1,0 +1,20 @@
+           deal_type            
+--------------------------------
+ opa
+ opa_simplifiee
+ opa_obligatoire
+ opa_volontaire_totalitaria
+ opa_volontaire_parziale
+ opa_consolidamento
+ ope
+ opas
+ opra
+ opr
+ opr_ro
+ garantie_de_cours
+ pflichtangebot
+ freiwilliges_uebernahmeangebot
+ delisting_erwerbsangebot
+ erwerbsangebot
+(16 rows)
+
