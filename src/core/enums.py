@@ -16,34 +16,53 @@ Jurisdiction = Literal["FR", "IT", "DE"]
 JURISDICTIONS: Final[tuple[Jurisdiction, ...]] = ("FR", "IT", "DE")
 
 # ---- Deal type (offer mechanism per jurisdiction) ------------------------
+#
+# Canonical lowercase legal terminology — replaces the v1 placeholder codes.
+# FR (AMF):      opa, opa_simplifiee, opa_obligatoire, ope, opas, opra, opr,
+#                opr_ro, garantie_de_cours
+# IT (Consob):   opa_volontaire_totalitaria, opa_volontaire_parziale,
+#                opa_consolidamento
+# DE (BaFin):    pflichtangebot, freiwilliges_uebernahmeangebot,
+#                erwerbsangebot, delisting_erwerbsangebot
 
 DealType = Literal[
-    "OPA",  # Offre Publique d'Achat (FR cash)
-    "OPE",  # Offre Publique d'Échange (FR exchange)
-    "OPAS",  # OPA Simplifiée (FR)
-    "OPR",  # Offre Publique de Retrait (FR squeeze-out)
-    "OPRO",  # OPA Obligatoire (FR mandatory)
-    "OPV",  # Offerta Pubblica Volontaria (IT)
-    "OPVS",  # Offerta Pubblica Volontaria di Scambio (IT exchange)
-    "OPA_IT",  # Offerta Pubblica di Acquisto obbligatoria (IT mandatory)
-    "Uebernahmeangebot",  # Übernahmeangebot (DE control)
-    "Pflichtangebot",  # Mandatory offer (DE)
-    "Erwerbsangebot",  # Acquisition offer (DE non-control)
-    "Delistingangebot",  # Delisting offer (DE)
+    # FR
+    "opa",
+    "opa_simplifiee",
+    "opa_obligatoire",
+    "ope",
+    "opas",
+    "opra",
+    "opr",
+    "opr_ro",
+    "garantie_de_cours",
+    # IT
+    "opa_volontaire_totalitaria",
+    "opa_volontaire_parziale",
+    "opa_consolidamento",
+    # DE
+    "pflichtangebot",
+    "freiwilliges_uebernahmeangebot",
+    "erwerbsangebot",
+    "delisting_erwerbsangebot",
 ]
 DEAL_TYPES: Final[tuple[DealType, ...]] = (
-    "OPA",
-    "OPE",
-    "OPAS",
-    "OPR",
-    "OPRO",
-    "OPV",
-    "OPVS",
-    "OPA_IT",
-    "Uebernahmeangebot",
-    "Pflichtangebot",
-    "Erwerbsangebot",
-    "Delistingangebot",
+    "opa",
+    "opa_simplifiee",
+    "opa_obligatoire",
+    "opa_volontaire_totalitaria",
+    "opa_volontaire_parziale",
+    "opa_consolidamento",
+    "ope",
+    "opas",
+    "opra",
+    "opr",
+    "opr_ro",
+    "garantie_de_cours",
+    "pflichtangebot",
+    "freiwilliges_uebernahmeangebot",
+    "delisting_erwerbsangebot",
+    "erwerbsangebot",
 )
 
 # ---- Deal status ---------------------------------------------------------
