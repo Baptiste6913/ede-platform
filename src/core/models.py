@@ -29,7 +29,7 @@ from sqlalchemy import (
     UniqueConstraint,
     func,
 )
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.core import enums
@@ -86,6 +86,13 @@ class Deal(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
 
     juridiction: Mapped[str] = mapped_column(JurisdictionEnum, nullable=False)
+    # Cross-border deals: when the primary filing is in one regulator but the
+    # target is also listed elsewhere (e.g. DE filing for a FR/DE dual-listed
+    # target → juridiction='DE', secondary_jurisdictions=['FR']).
+    secondary_jurisdictions: Mapped[list[str] | None] = mapped_column(
+        ARRAY(JurisdictionEnum),
+        nullable=True,
+    )
     regulator_ref: Mapped[str] = mapped_column(String(128), nullable=False)
 
     ticker_target: Mapped[str | None] = mapped_column(String(32), nullable=True, index=True)
