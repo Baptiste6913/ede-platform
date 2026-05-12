@@ -99,6 +99,30 @@ async def test_seed_distribution_matches_brief(db_session: AsyncSession) -> None
     assert len(rows) == 10
 
 
+async def test_deals_secondary_jurisdictions_array_roundtrip(
+    db_session: AsyncSession,
+) -> None:
+    """Cross-border deals carry a jurisdiction[] array — Rho Technologies SE."""
+    cross_border = next(d for d in SEED_DEALS if d["regulator_ref"] == "BAFIN-WPUEG-2024-040")
+    deal = await _persist(db_session, Deal(**cross_border))
+    assert deal.juridiction == "DE"
+    assert deal.secondary_jurisdictions == ["FR"]
+
+    # Pan-European target: add IT to the list.
+    deal.secondary_jurisdictions = ["FR", "IT"]
+    await db_session.commit()
+    fetched = (await db_session.execute(select(Deal).where(Deal.id == deal.id))).scalar_one()
+    assert fetched.secondary_jurisdictions == ["FR", "IT"]
+
+
+async def test_deals_secondary_jurisdictions_null_by_default(
+    db_session: AsyncSession,
+) -> None:
+    """Domestic deals have NULL secondary_jurisdictions."""
+    deal = await _seed_one_deal(db_session)  # first seed = FR domestic
+    assert deal.secondary_jurisdictions is None
+
+
 # =========================================================================
 # events — 3 tests
 # =========================================================================
