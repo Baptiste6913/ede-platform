@@ -1,0 +1,33 @@
+﻿WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+
+[notice] A new release of pip is available: 25.0.1 -> 26.1.1
+[notice] To update, run: pip install --upgrade pip
+### ruff check ###
+All checks passed!
+
+### ruff format --check ###
+19 files already formatted
+
+### mypy --strict ###
+Success: no issues found in 10 source files
+
+### pytest --cov ###
+......................                                                   [100%]
+
+---------- coverage: platform linux, python 3.12.13-final-0 ----------
+Name                       Stmts   Miss Branch BrPart  Cover   Missing
+----------------------------------------------------------------------
+src/__init__.py                0      0      0      0   100%
+src/api/__init__.py            0      0      0      0   100%
+src/api/middleware.py         22      0      0      0   100%
+src/api/routes_health.py      22      0      0      0   100%
+src/core/__init__.py           4      0      0      0   100%
+src/core/db.py                53      0      8      0   100%
+src/core/exceptions.py        11      0      0      0   100%
+src/core/logging.py           39      0      8      0   100%
+src/core/settings.py          34      0      0      0   100%
+----------------------------------------------------------------------
+TOTAL                        185      0     16      0   100%
+Coverage XML written to file coverage.xml
+
+22 passed in 5.23s

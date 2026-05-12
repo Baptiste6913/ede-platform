@@ -1,0 +1,4 @@
+﻿NAME           IMAGE                           COMMAND                  SERVICE    CREATED         STATUS                        PORTS
+ede-app        ede-platform-app                "/usr/bin/tini -- uv…"   app        2 minutes ago   Up About a minute (healthy)   127.0.0.1:8000->8000/tcp
+ede-postgres   timescale/timescaledb-ha:pg16   "/docker-entrypoint.…"   postgres   2 minutes ago   Up About a minute (healthy)   127.0.0.1:5432->5432/tcp
+ede-redis      redis:7-alpine                  "docker-entrypoint.s…"   redis      2 minutes ago   Up About a minute (healthy)   127.0.0.1:6379->6379/tcp

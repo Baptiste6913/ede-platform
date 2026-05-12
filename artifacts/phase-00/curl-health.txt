@@ -1,0 +1,8 @@
+﻿HTTP/1.1 200 OK
+date: Tue, 12 May 2026 13:07:22 GMT
+server: uvicorn
+content-length: 105
+content-type: application/json
+x-correlation-id: phase-00-validate
+
+{"status":"ok","version":"0.1.0","uptime_seconds":105.84,"db":{"ok":true,"latency_ms":4.06,"error":null}}
