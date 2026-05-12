@@ -44,6 +44,26 @@ jobs:
   test:
     name: Tests (pytest + coverage)
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: timescale/timescaledb-ha:pg16
+        env:
+          POSTGRES_USER: ede
+          POSTGRES_PASSWORD: ede
+          POSTGRES_DB: ede_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ede -d ede_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      TEST_DATABASE_URL: postgresql+asyncpg://ede:ede@localhost:5432/ede_test
+      DATABASE_URL: postgresql+asyncpg://ede:ede@localhost:5432/ede_test
+
     steps:
       - uses: actions/checkout@v4
 
@@ -54,10 +74,33 @@ jobs:
           cache: pip
           cache-dependency-path: pyproject.toml
 
-      - name: Install dev dependencies
+      - name: Install dev dependencies + psql client
         run: |
           python -m pip install --upgrade pip
           pip install ".[dev]"
+          sudo apt-get update -y
+          sudo apt-get install -y --no-install-recommends postgresql-client
+
+      - name: Wait for PostgreSQL + TimescaleDB
+        run: |
+          for i in {1..30}; do
+            if pg_isready -h localhost -p 5432 -U ede; then echo "pg ready"; exit 0; fi
+            sleep 2
+          done
+          echo "Postgres did not become ready" >&2
+          exit 1
+
+      - name: Verify TimescaleDB extension is available
+        env:
+          PGPASSWORD: ede
+        run: |
+          psql -h localhost -U ede -d ede_test -c "CREATE EXTENSION IF NOT EXISTS timescaledb; SELECT extversion FROM pg_extension WHERE extname='timescaledb';"
+
+      - name: Alembic upgrade head → downgrade base → upgrade head (reversibility)
+        run: |
+          alembic upgrade head
+          alembic downgrade base
+          alembic upgrade head
 
       - name: pytest with coverage
         run: pytest --cov=src --cov-report=xml --cov-report=term-missing

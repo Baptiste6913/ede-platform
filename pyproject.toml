@@ -95,6 +95,8 @@ disallow_untyped_defs = false
 minversion = "8.0"
 testpaths = ["tests"]
 asyncio_mode = "auto"
+# Per-test event loops keep asyncpg connections bound to the right loop.
+# Migrations are run once via subprocess (sync) in tests/conftest._migrate_once.
 asyncio_default_fixture_loop_scope = "function"
 addopts = [
   "-ra",
