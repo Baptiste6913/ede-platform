@@ -1,0 +1,44 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.Python
+.venv/
+venv/
+*.egg
+.python-version
+
+# --- Type checkers / linters / coverage ---
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+
+# --- Build / packaging ---
+build/
+dist/
+
+# --- IDE / OS ---
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# --- Env / secrets ---
+.env
+.env.*
+!.env.example
+
+# --- Data (CLAUDE.md section 5) ---
+data/pdfs/
+data/snapshots/
+data/models/
+data/*.duckdb
+data/*.sqlite
+
+# --- Notebooks / artifacts intermediates ---
+*.ipynb_checkpoints/
+artifacts/**/*.log
