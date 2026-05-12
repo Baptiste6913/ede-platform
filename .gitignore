@@ -1,11 +1,12 @@
 # --- Python ---
 __pycache__/
 *.py[cod]
+*.pyc
 *.egg-info/
+*.egg
 .Python
 .venv/
 venv/
-*.egg
 .python-version
 
 # --- Type checkers / linters / coverage ---
@@ -30,15 +31,21 @@ Thumbs.db
 # --- Env / secrets ---
 .env
 .env.*
+.env.prod
 !.env.example
 
-# --- Data (CLAUDE.md section 5) ---
+# --- Data (CLAUDE.md section 5) — gitignored entirely ---
+data/
 data/pdfs/
 data/snapshots/
 data/models/
 data/*.duckdb
 data/*.sqlite
 
-# --- Notebooks / artifacts intermediates ---
+# --- Artifacts (ad-hoc scratch) — but keep per-phase audit folders ---
+artifacts/
+!artifacts/phase-*/
+!artifacts/phase-*/**
+
+# --- Notebooks intermediates ---
 *.ipynb_checkpoints/
-artifacts/**/*.log
