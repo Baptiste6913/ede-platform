@@ -1,0 +1,12 @@
+            List of relations
+ Schema |      Name       | Type  | Owner 
+--------+-----------------+-------+-------
+ public | alembic_version | table | ede
+ public | analyses        | table | ede
+ public | deals           | table | ede
+ public | events          | table | ede
+ public | paper_positions | table | ede
+ public | prices          | table | ede
+ public | scores          | table | ede
+(7 rows)
+

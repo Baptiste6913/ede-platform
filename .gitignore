@@ -43,9 +43,10 @@ data/*.duckdb
 data/*.sqlite
 
 # --- Artifacts (ad-hoc scratch) — but keep per-phase audit folders ---
-artifacts/
+# `artifacts/*` (not `artifacts/`) is required so git recurses into the
+# directory and the negations below can re-include the per-phase folders.
+artifacts/*
 !artifacts/phase-*/
-!artifacts/phase-*/**
 
 # --- Notebooks intermediates ---
 *.ipynb_checkpoints/
