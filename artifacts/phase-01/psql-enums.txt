@@ -1,0 +1,15 @@
+       typname        
+----------------------
+ analyst_source_enum
+ analyst_verdict_enum
+ currency_enum
+ deal_status_enum
+ deal_type_enum
+ decision_enum
+ event_type_enum
+ jurisdiction_enum
+ position_side_enum
+ position_status_enum
+ price_source_enum
+(11 rows)
+
