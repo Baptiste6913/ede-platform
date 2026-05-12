@@ -5,7 +5,7 @@
 | # | Phase | Status | Branch | PR | Validated |
 |---|---|---|---|---|---|
 | 0 | Bootstrap repo & Oracle setup | 🟢 done | `phase-00-bootstrap` | merged ff-only into main | 2026-05-12 |
-| 1 | Schema DB & migrations | 🟡 in_progress | `phase-01-schema` | — | — |
+| 1 | Schema DB & migrations | 🟢 done | `phase-01-schema` | [#1 merged](https://github.com/Baptiste6913/ede-platform/pull/1) | 2026-05-12 |
 | 2 | Poller AMF | ⚪ pending | — | — | — |
 | 3 | Poller Consob | ⚪ pending | — | — | — |
 | 4 | Poller BaFin | ⚪ pending | — | — | — |
@@ -90,4 +90,8 @@ Legend: 🟢 done · 🟡 in_progress · 🔴 blocked · ⚪ pending
 
 ### Validation
 
-Awaiting `VALIDATE PHASE 1`.
+✅ `VALIDATE PHASE 1` received 2026-05-12. Three post-validation actions completed:
+
+1. Migration `0004_secondary_jurisdictions_and_deal_type_canonical` adds `deals.secondary_jurisdictions jurisdiction_enum[]` and replaces the placeholder `deal_type_enum` (12 v1 values) with the canonical 16-value lowercase legal-terminology list; `prices.volume` re-confirmed nullable. Reversible against TimescaleDB pg16.
+2. Test self-review (AST-based): **44 tests, 0 cosmetic** — every test has at least one behavioural assertion. Audit in `artifacts/phase-01/tests-audit-output.txt`.
+3. PR [#1](https://github.com/Baptiste6913/ede-platform/pull/1) opened via `gh pr create`, CI green (lint + tests), merged via `gh pr merge --merge --delete-branch` at SHA `0ad7902` on `main`.
