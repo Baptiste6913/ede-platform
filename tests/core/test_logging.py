@@ -52,7 +52,22 @@ def test_correlation_id_injected_in_event(
     assert get_correlation_id() == "cid-123"
 
 
-def test_configure_is_idempotent() -> None:
+def test_configure_is_idempotent(capsys: pytest.CaptureFixture[str]) -> None:
+    """Calling configure_logging() multiple times must not re-register handlers
+    or break subsequent log emission."""
+    import src.core.logging as logmod
+
     configure_logging()
     configure_logging()
     configure_logging(level="DEBUG")
+
+    assert logmod._configured is True
+
+    # After 3 configures, a single log call still produces exactly one JSON line
+    # (no duplicated handlers).
+    capsys.readouterr()  # drain prior output
+    log = get_logger("idempotent")
+    log.info("once")
+    out = capsys.readouterr().out.strip().splitlines()
+    json_lines = [line for line in out if line.startswith("{")]
+    assert len(json_lines) == 1
