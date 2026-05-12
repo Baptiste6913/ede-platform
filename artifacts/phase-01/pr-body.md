@@ -1,7 +1,9 @@
 # Phase 1 — Schema DB & migrations
 
-Branch: `phase-01-schema` → `main` (fast-forward only, per CLAUDE.md §4).
-Coverage gate: ≥85% on `src/core` (CLAUDE.md §9). **Actual: 100% on 322 statements.**
+Branch: `phase-01-schema` → `main`.
+Coverage gate: ≥85% on `src/core` (CLAUDE.md §9). **Actual: 100% on 323 statements.**
+
+> **Update (post-validation)**: migration `0004` adds `deals.secondary_jurisdictions jurisdiction_enum[]` and replaces the placeholder `deal_type_enum` (12 v1 values) with the canonical 16-value lowercase legal-terminology list. Seed fixture and tests updated accordingly. Total 44 tests, 0 cosmetic.
 
 ---
 
@@ -20,9 +22,10 @@ Coverage gate: ≥85% on `src/core` (CLAUDE.md §9). **Actual: 100% on 322 state
 - [x] Migration `0001_create_enums` — 11 `CREATE TYPE … AS ENUM (…)` statements (jurisdiction, deal_type, deal_status, event_type, decision, analyst_verdict, analyst_source, position_side, position_status, currency, price_source); downgrade `DROP TYPE` in reverse order
 - [x] Migration `0002_create_main_tables` — `deals`, `events`, `scores`, `analyses`, `paper_positions`; all FKs `ON DELETE CASCADE`; all indexes + check constraints; reuses the ENUM types from `0001` via `create_type=False`
 - [x] Migration `0003_prices_hypertable` — `CREATE EXTENSION IF NOT EXISTS timescaledb`, `CREATE TABLE prices`, `create_hypertable(..., chunk_time_interval=>'7 days')`, `CREATE MATERIALIZED VIEW prices_1h WITH (timescaledb.continuous) …`, same for `prices_1d`, `add_continuous_aggregate_policy(...)` for both; downgrade drops aggregates first then the hypertable
+- [x] Migration `0004_secondary_jurisdictions_and_deal_type_canonical` — three operations: (a) `ADD COLUMN deals.secondary_jurisdictions jurisdiction_enum[] NULL` for cross-border deals, (b) replace `deal_type_enum` with the canonical 16-value list (CREATE new type → ALTER COLUMN with `USING (CASE…)` v1→v2 mapping → DROP old → RENAME), (c) idempotent `ALTER COLUMN volume DROP NOT NULL` on `prices` (no-op confirmation). Downgrade reverses all three with a best-effort v2→v1 mapping.
 - [x] `tests/fixtures/seed_deals.py` — 10 deals: **3 FR** (OPA, OPAS, OPE) + **3 IT** (OPV, OPVS, OPA_IT) + **4 DE** incl. 1 cross-border FR/DE dual-listed (Uebernahmeangebot, Pflichtangebot, Erwerbsangebot, cross-border); mixed statuses: announced, cleared, open, closed, lapsed, withdrawn
-- [x] `tests/core/test_models.py` — **20 integration tests** (real PostgreSQL + TimescaleDB):
-  - deals: insert/read, update, delete, **unique-constraint violation**, full 10-deals seed distribution
+- [x] `tests/core/test_models.py` — **22 integration tests** (real PostgreSQL + TimescaleDB):
+  - deals: insert/read, update, delete, **unique-constraint violation**, full 10-deals seed distribution, **`secondary_jurisdictions` array roundtrip**, **`secondary_jurisdictions` NULL by default**
   - events: insert/read, JSONB partial update, **cascade-delete with parent deal**
   - scores: insert with features dict, **check-constraint violation** (`p_completion > 1`), history ordered by ts
   - analyses: insert with JSONB lists, update verdict, **cascade-delete**
@@ -59,28 +62,31 @@ Success: no issues found in 12 source files
 Running upgrade  -> 0001, create postgres enum types
 Running upgrade 0001 -> 0002, create main tables (deals, events, scores, analyses, paper_positions)
 Running upgrade 0002 -> 0003, create prices table as TimescaleDB hypertable + 1h/1d continuous aggregates
+Running upgrade 0003 -> 0004, schema finalisation: secondary_jurisdictions array + canonical deal_type enum
 
+Running downgrade 0004 -> 0003, …
 Running downgrade 0003 -> 0002, …
 Running downgrade 0002 -> 0001, …
-Running downgrade 0001 -> , create postgres enum types
+Running downgrade 0001 -> , …
 
 Running upgrade  -> 0001, …
 Running upgrade 0001 -> 0002, …
 Running upgrade 0002 -> 0003, …
+Running upgrade 0003 -> 0004, …
 ```
 
-3 up + 3 down + 3 up — all idempotent.
+4 up + 4 down + 4 up — all idempotent.
 
 ### `pytest --cov=src --cov-report=term-missing`
 
 ```
-collected 42 items
+collected 44 items
 
 tests/api/test_health.py ....                                            [  9%]
 tests/core/test_db.py .........                                          [ 30%]
 tests/core/test_exceptions.py ...                                        [ 38%]
 tests/core/test_logging.py ...                                           [ 45%]
-tests/core/test_models.py ....................                           [ 92%]
+tests/core/test_models.py ......................                         [ 95%]
 tests/core/test_settings.py ...                                          [100%]
 
 ------- coverage: platform linux, python 3.12.13 ---------
@@ -95,15 +101,15 @@ src/core/db.py                53      0      8      0   100%
 src/core/enums.py             24      0      0      0   100%
 src/core/exceptions.py        11      0      0      0   100%
 src/core/logging.py           39      0      8      0   100%
-src/core/models.py           113      0      0      0   100%
+src/core/models.py           114      0      0      0   100%
 src/core/settings.py          34      0      0      0   100%
 ------------------------------------------------------------
-TOTAL                        322      0     16      0   100%
+TOTAL                        323      0     16      0   100%
 
-42 passed in 17.14s
+44 passed in 21.45s
 ```
 
-20 new DB tests join the 22 from phase 0 → **42 passing**.
+22 new DB tests join the 22 from phase 0 → **44 passing**, 0 cosmetic (all tests have ≥1 behavioral assertion — audit in `artifacts/phase-01/tests-audit-output.txt`).
 
 ### `docker compose exec postgres psql -d ede_test -c "\dt"`
 
@@ -185,12 +191,19 @@ SELECT typname FROM pg_type WHERE typcategory='E' ORDER BY typname;
 
 ---
 
-## Questions ouvertes pour l'utilisateur
+## Architectural Q&A (resolved post-review)
 
-1. **Cross-border deal modelling.** The seed includes one DE filing with a target dual-listed FR+DE. Should this trigger a separate AMF-side deal row (paired) when the BaFin poller fires in phase 4? Or only one canonical deal? Current schema supports either (unique constraint is per-juridiction).
-2. **`deal_type_enum` size.** I bundled FR/IT/DE deal types in one ENUM (12 values). Alternative: 3 separate enums (e.g. `deal_type_fr_enum`). Single enum is simpler but allows accidentally tagging a FR filing with `Uebernahmeangebot`. Worth a future cross-table check constraint?
-3. **`prices.volume` is BIGINT NULL.** Some sources report no volume (e.g. fund tickers). OK to keep nullable, or do you want NOT NULL with `0` default?
-4. **Refresh policy intervals** (30min for 1h aggregate, 1h for 1d aggregate). Reasonable for paper-trading frequency; revisit in phase 12 if backtest needs tighter freshness.
+1. **Cross-border deal modelling** → 1 canonical deal + `deals.secondary_jurisdictions jurisdiction_enum[]`. Implemented in migration `0004`. Tested via the Rho Technologies SE seed row.
+2. **`deal_type_enum`** → kept as a single unified enum, with the v1 12-value placeholder list replaced by the **canonical 16-value lowercase legal-terminology list** in migration `0004`. Cross-jurisdiction tag mismatch (e.g. tagging a FR filing with `pflichtangebot`) remains a soft constraint — could be hardened with a future check constraint coupling `juridiction` and `deal_type` ranges. Deferred until real ingestion shows it's needed.
+3. **`prices.volume`** → NULLABLE (`BIGINT NULL`) confirmed. Migration `0004` re-asserts this with an idempotent `ALTER COLUMN … DROP NOT NULL` (no-op against the current state, but documents the choice in the migration trail).
+4. **Refresh policy** (30min on 1h aggregate, 1h on 1d aggregate) → accepted, will revisit in phase 12 only if backtests demand tighter freshness.
+
+## Post-0004 schema state (artifacts/phase-01/)
+
+- `alembic-current.txt` → `version_num = 0004`
+- `psql-deal-types.txt` → 16 canonical values (FR opa/opa_simplifiee/opa_obligatoire/ope/opas/opra/opr/opr_ro/garantie_de_cours, IT opa_volontaire_totalitaria/opa_volontaire_parziale/opa_consolidamento, DE pflichtangebot/freiwilliges_uebernahmeangebot/delisting_erwerbsangebot/erwerbsangebot)
+- `psql-prices-columns.txt` → `volume bigint YES (nullable)`
+- `deals.secondary_jurisdictions` → `ARRAY of _jurisdiction_enum, nullable=YES`
 
 ---
 
@@ -205,4 +218,8 @@ test(fixtures): add 10-deals seed (FR/IT/DE + cross-border) and integration test
 test(models): add 20 CRUD + cascade + unique + check + hypertable tests
 chore(ci): add timescaledb service + reversibility step to test job
 docs(phases): mark phase 0 done, phase 1 in_progress with checklist
+feat(core): canonical deal_type enum (16 values) + secondary_jurisdictions
+feat(migrations): add 0004 (deal_type canonical + secondary_jurisdictions)
+test: update seed_deals to canonical deal_type + 2 new array tests
+docs(phase-01): refresh artifacts after migration 0004
 ```
