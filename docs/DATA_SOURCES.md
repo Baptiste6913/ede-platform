@@ -119,14 +119,31 @@ The two items recorded in phase 2 are resolved by the `BdifPoller`:
 
 Full live-backfill log: `artifacts/phase-03/bdif-backfill.txt`. API reverse-engineering notes: `docs/research/bdif-api-reverse-engineering.md`.
 
+### New tech debt opened at phase 3
+
+These items are explicitly **accepted** and scheduled — not blockers for paper trading on the current set of M&A notes.
+
+| # | Item | Severity | Owner | Notes |
+|---|---|---|---|---|
+| 1 | **Cleanup of leftover `AMF-SYN-*` rows in prod `ede` DB** (13 rows from phase-2 live backfill before BDIF replaced the path) | low | **Phase 4 or 4bis (before Consob)** | Single `DELETE FROM deals WHERE regulator_ref LIKE 'AMF-SYN-%';` + cascade. Document the migration in `artifacts/phase-04*/cleanup-amf-syn.log`. No archive needed. |
+| 2 | **AMF document type expansion** — current BDIF ingestion only fetches `typesDocument=NotesEtAutresInformations` (1786 docs all-time). Targets to add: `DepotOffre` (997), `Decisions` (589), `CalendrierOffre` (885), `PreOffre` (328). Each enriches the timeline with follow-up events on existing deals (filing of supplementary documents, clearance decisions, opening/closing calendars, pre-offer rumours). | medium | **Phase 6 or 7 (under label "AMF document type expansion")** | Same `BdifPoller` infra, only the `typesDocument` filter changes. Each type maps to a distinct `event_type` (already in `event_type_enum`). `PreOffre` bundled in this expansion — not split out as separate phase. |
+
+### `Decimal` of accepted PR-questions from phase 3
+
+> "Re-process the 13 phase-2 synthetic-ref rows in prod `ede` DB?" → **YES, in phase 4 or 4bis** (item #1 above).
+>
+> "Tighten or loosen the `OPA + NotesEtAutresInformations` filter?" → **Expand in phase 6-7** (item #2 above).
+>
+> "What about `PreOffre`?" → **Bundle with phase 6-7 expansion** (item #2 above).
+
 ---
 
-## Consob (IT) — phase 3 (pending)
+## Consob (IT) — phase 4 (pending)
 
-## BaFin (DE) — phase 4 (pending)
+## BaFin (DE) — phase 5 (pending)
 
-## News & GDELT — phase 5 (pending)
+## News & GDELT — phase 6 (pending)
 
-## IBKR + Stooq prices — phase 5 (pending)
+## IBKR + Stooq prices — phase 6 (pending)
 
-## DG COMP decisions — phase 5 (pending)
+## DG COMP decisions — phase 6 (pending)
