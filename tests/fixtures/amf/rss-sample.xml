@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>AMF - Décisions et informations financières</title>
+    <link>https://www.amf-france.org/fr</link>
+    <description>Flux RSS des décisions de l'AMF.</description>
+    <language>fr-FR</language>
+    <pubDate>Mon, 12 May 2025 09:00:00 +0200</pubDate>
+
+    <item>
+      <title>Dépôt d'un projet d'offre publique d'achat visant les actions de la société Algol SA - AMF-2025-D-0421</title>
+      <link>https://www.amf-france.org/fr/actualites-publications/decisions-et-informations-financieres/AMF-2025-D-0421</link>
+      <description><![CDATA[OPA initiée par Bidder Holding France, déposée le 12 mai 2025. Note d'information.]]></description>
+      <pubDate>Mon, 12 May 2025 09:00:00 +0200</pubDate>
+      <guid isPermaLink="false">amf-2025-D-0421</guid>
+    </item>
+
+    <item>
+      <title>Garantie de cours visant les actions de Beta France SA - AMF-2025-S-0033</title>
+      <link>https://www.amf-france.org/fr/actualites-publications/decisions-et-informations-financieres/AMF-2025-S-0033</link>
+      <description><![CDATA[Garantie de cours simplifiée initiée par ParentCo Group SAS.]]></description>
+      <pubDate>Tue, 06 May 2025 14:30:00 +0200</pubDate>
+      <guid isPermaLink="false">amf-2025-S-0033</guid>
+    </item>
+
+    <item>
+      <title>Note d'information OPE visant les titres Gamma Industries - AMF-2025-E-0019</title>
+      <link>https://www.amf-france.org/fr/actualites-publications/decisions-et-informations-financieres/AMF-2025-E-0019</link>
+      <description><![CDATA[Offre publique d'échange initiée par Delta Group.]]></description>
+      <pubDate>Wed, 30 Apr 2025 11:15:00 +0200</pubDate>
+      <guid isPermaLink="false">amf-2025-E-0019</guid>
+    </item>
+
+    <item>
+      <title>Décision de retrait obligatoire prononcée à l'encontre de Omega SA - AMF-2025-D-0099</title>
+      <link>https://www.amf-france.org/fr/actualites-publications/decisions-et-informations-financieres/AMF-2025-D-0099</link>
+      <description><![CDATA[OPR-RO sur Omega SA, suite à la clôture de l'OPA AMF-2024-D-0820.]]></description>
+      <pubDate>Mon, 28 Apr 2025 16:00:00 +0200</pubDate>
+      <guid isPermaLink="false">amf-2025-D-0099</guid>
+    </item>
+
+    <item>
+      <title>Communiqué de presse AMF sur les frais de gestion des OPCVM</title>
+      <link>https://www.amf-france.org/fr/actualites-publications/communiques/2025-04-21-frais-opcvm</link>
+      <description><![CDATA[Étude annuelle sur les frais des fonds. Sans rapport avec les opérations de marché.]]></description>
+      <pubDate>Mon, 21 Apr 2025 10:00:00 +0200</pubDate>
+      <guid isPermaLink="false">amf-2025-comm-frais-opcvm</guid>
+    </item>
+  </channel>
+</rss>

@@ -123,14 +123,10 @@ async def db_engine(_migrate_once: None, integration_db_url: str) -> AsyncIterat
     await engine.dispose()
 
 
-@pytest.fixture
-async def db_session(db_engine: Any) -> AsyncIterator[Any]:
-    """Function-scoped session. Truncates all tables after each test."""
+async def _truncate_all(db_engine: Any) -> None:
+    """TRUNCATE every domain table. Shared by db_session teardown and the
+    autouse cleanup for integration tests that build their own sessions."""
     from sqlalchemy import text as sa_text
-    from sqlalchemy.ext.asyncio import AsyncSession
-
-    async with AsyncSession(db_engine, expire_on_commit=False) as session:
-        yield session
 
     async with db_engine.begin() as conn:
         await conn.execute(
@@ -139,3 +135,22 @@ async def db_session(db_engine: Any) -> AsyncIterator[Any]:
                 "prices RESTART IDENTITY CASCADE"
             )
         )
+
+
+@pytest.fixture
+async def db_clean(db_engine: Any) -> AsyncIterator[None]:
+    """Yield, then truncate. Pull this fixture into any integration test that
+    doesn't already depend on `db_session` (which truncates by itself)."""
+    yield
+    await _truncate_all(db_engine)
+
+
+@pytest.fixture
+async def db_session(db_engine: Any) -> AsyncIterator[Any]:
+    """Function-scoped session. Truncates all tables after each test."""
+    from sqlalchemy.ext.asyncio import AsyncSession
+
+    async with AsyncSession(db_engine, expire_on_commit=False) as session:
+        yield session
+
+    await _truncate_all(db_engine)
