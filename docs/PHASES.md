@@ -123,7 +123,8 @@ Legend: 🟢 done · 🟡 in_progress · 🔴 blocked · ⚪ pending
 ### Known limitations / open questions
 
 - Recorded in `artifacts/phase-02/pr-body.md` under "Limitations connues / questions ouvertes".
+- **Live backfill 2026-05-13** confirmed the pipeline end-to-end (RSS 200 OK, regex filter, dedup, DB insert, event emission) but flagged a configuration gap: `display/23` is the AMF "Communiqués" feed, not the BDIF filings feed → 0 PDFs downloaded. Tracked as **medium-severity technical debt** in `docs/DATA_SOURCES.md` under "Known gaps", **owner phase 3 ingestion enhancement**. Does not block paper trading on manually-tracked deals.
 
 ### Validation
 
-Awaiting `VALIDATE PHASE 2`.
+✅ `VALIDATE PHASE 2` received 2026-05-13. Live backfill ran on real AMF feed (200 items → 13 matches → 13 deals + 13 `filing_amf` events inserted) with **zero Akamai 403** (`Accept-Language: fr-FR,fr;q=0.9` header validated). The BDIF document discovery gap (display/23 ≠ BDIF feed) is recorded as deferred tech debt and accepted as not-blocking.

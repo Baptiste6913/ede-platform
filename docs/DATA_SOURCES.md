@@ -73,11 +73,24 @@ Re-downloading a previously-cached file is a no-op (early return on `path.exists
 
 ```bash
 # Trigger an ad-hoc poll (local dev, against the real RSS)
-python -m src.cli amf poll --once
+python scripts/amf_run_once.py
+# Phase-8 CLI will expose:
+#   python -m src.cli amf poll --once
 
 # Inspect storage
-ls data/pdfs/fr/2025/
+ls data/pdfs/fr/2026/
 ```
+
+### Known gaps / technical debt — to address phase 3+
+
+1. **RSS `display/23` is the wrong feed for BDIF filings.** It captures "Communiqués AMF" (general announcements, sanctions, regulatory positions). Live backfill 2026-05-13: 200 items → 13 regex matches → **0 BDIF PDFs downloaded** because none of the 13 had a BDIF link attached. Real M&A document discovery requires either:
+   - Finding the correct RSS feed ID (`display/XX`) for BDIF filings, OR
+   - Scraping `https://bdif.amf-france.org/Recherche-avancee` directly (paginated list of all deposited notes).
+2. **All FR deals currently get a synthetic `regulator_ref` (`AMF-SYN-*`).** Real BDIF references in the canonical `AMF-YYYY-X-NNNN` format are exposed on the BDIF page, not in the `display/23` RSS items.
+
+**Owner**: phase 3 ingestion enhancement (treat AMF and Consob/BaFin under a unified scraper that targets each regulator's BDIF/document list directly).
+**Severity**: medium — doesn't block paper trading on manually-tracked deals. The poller still produces structured `filing_amf` events for every communiqué that mentions an M&A keyword, which is useful signal even when no document is attached.
+**Tracking**: see `artifacts/phase-02/live-backfill.txt` for the full 2026-05-13 run log.
 
 ---
 

@@ -1,0 +1,163 @@
+﻿WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+
+[notice] A new release of pip is available: 25.0.1 -> 26.1.1
+[notice] To update, run: pip install --upgrade pip
+HTTP Request: GET https://www.amf-france.org/fr/flux-rss/display/23 "HTTP/1.1 200 OK"
+{"total": 200, "matched": 13, "event": "amf.rss.fetched", "logger": "src.ingestion.amf.rss_watcher", "level": "info", "timestamp": "2026-05-13T18:22:45.878436Z"}
+HTTP Request: GET https://www.amf-france.org/fr/actualites-publications/communiques/communiques-de-lamf/lamf-quebec-la-cvmo-et-lamf-france-concluent-un-accord-pour-la-cotation-croisee-de-valeurs#xts=607212&xtor=RSS-7&type=RSS "HTTP/1.1 200 OK"
+{"page": "https://www.amf-france.org/fr/actualites-publications/communiques/communiques-de-lamf/lamf-quebec-la-cvmo-et-lamf-france-concluent-un-accord-pour-la-cotation-croisee-de-valeurs#xts=607212&xtor=RSS-7&type=RSS", "event": "amf.bdif.no_link", "logger": "src.ingestion.amf.bdif_fetcher", "level": "info", "timestamp": "2026-05-13T18:22:46.755401Z"}
+{"ref": "AMF-SYN-6713a8474f147291cf560b41", "deal_id": 1, "title": "L'AMF Qu\u00e9bec, la CVMO et l'AMF France concluent un accord pour la cotation crois\u00e9e de valeurs mobili\u00e8res au Canada et en", "event": "amf.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T18:22:46.964609Z"}
+HTTP Request: GET https://www.amf-france.org/fr/actualites-publications/communiques/communiques-de-lamf/les-autorites-de-marche-francaise-autrichienne-et-italienne-appellent-un-cadre-europeen-renforce-des#xts=607212&xtor=RSS-7&type=RSS "HTTP/1.1 200 OK"
+{"page": "https://www.amf-france.org/fr/actualites-publications/communiques/communiques-de-lamf/les-autorites-de-marche-francaise-autrichienne-et-italienne-appellent-un-cadre-europeen-renforce-des#xts=607212&xtor=RSS-7&type=RSS", "event": "amf.bdif.no_link", "logger": "src.ingestion.amf.bdif_fetcher", "level": "info", "timestamp": "2026-05-13T18:22:47.852711Z"}
+{"ref": "AMF-SYN-e9dcab8089876c499f8797eb", "deal_id": 2, "title": "Les autorit\u00e9s de march\u00e9 fran\u00e7aise, autrichienne et italienne appellent \u00e0 un cadre europ\u00e9en renforc\u00e9 des march\u00e9s de crypt", "event": "amf.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T18:22:47.863617Z"}
+HTTP Request: GET https://www.amf-france.org/fr/actualites-publications/communiques/communiques-de-lamf/lamf-enjoint-danae-group-de-deposer-un-projet-doffre-publique-dachat-visant-les-actions-de-la#xts=607212&xtor=RSS-7&type=RSS "HTTP/1.1 200 OK"
+{"page": "https://www.amf-france.org/fr/actualites-publications/communiques/communiques-de-lamf/lamf-enjoint-danae-group-de-deposer-un-projet-doffre-publique-dachat-visant-les-actions-de-la#xts=607212&xtor=RSS-7&type=RSS", "event": "amf.bdif.no_link", "logger": "src.ingestion.amf.bdif_fetcher", "level": "info", "timestamp": "2026-05-13T18:22:48.890965Z"}
+{"ref": "AMF-SYN-b2dfa12c64370dedc9c28816", "deal_id": 3, "title": "L'AMF enjoint \u00e0 DANAE GROUP de d\u00e9poser un projet d'offre publique d'achat visant les actions de la soci\u00e9t\u00e9 ENTREPRENDRE", "event": "amf.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T18:22:48.900946Z"}
+HTTP Request: GET https://www.amf-france.org/fr/actualites-publications/communiques/communiques-de-lamf/les-autorites-francaises-et-italiennes-font-des-propositions-pour-un-regime-pilote-plus-competitif#xts=607212&xtor=RSS-7&type=RSS "HTTP/1.1 200 OK"
+{"page": "https://www.amf-france.org/fr/actualites-publications/communiques/communiques-de-lamf/les-autorites-francaises-et-italiennes-font-des-propositions-pour-un-regime-pilote-plus-competitif#xts=607212&xtor=RSS-7&type=RSS", "event": "amf.bdif.no_link", "logger": "src.ingestion.amf.bdif_fetcher", "level": "info", "timestamp": "2026-05-13T18:22:49.970641Z"}
+{"ref": "AMF-SYN-99ea35b278f0075d9ae98ed6", "deal_id": 4, "title": "Les autorit\u00e9s fran\u00e7aises et italiennes font des propositions pour un R\u00e9gime Pilote plus comp\u00e9titif en Europe", "event": "amf.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T18:22:49.980921Z"}
+HTTP Request: GET https://www.amf-france.org/fr/actualites-publications/communiques/communiques-de-lamf/lamf-appelle-la-commission-europeenne-une-strategie-ambitieuse-sur-le-projet-dunion-pour-lepargne-et#xts=607212&xtor=RSS-7&type=RSS "HTTP/1.1 200 OK"
+{"page": "https://www.amf-france.org/fr/actualites-publications/communiques/communiques-de-lamf/lamf-appelle-la-commission-europeenne-une-strategie-ambitieuse-sur-le-projet-dunion-pour-lepargne-et#xts=607212&xtor=RSS-7&type=RSS", "event": "amf.bdif.no_link", "logger": "src.ingestion.amf.bdif_fetcher", "level": "info", "timestamp": "2026-05-13T18:22:51.040716Z"}
+{"ref": "AMF-SYN-093c74060e2e5c707e43b985", "deal_id": 5, "title": "L'AMF appelle la Commission europ\u00e9enne \u00e0 une strat\u00e9gie ambitieuse sur le projet d'Union pour l\u2019\u00e9pargne et l'investisseme", "event": "amf.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T18:22:51.051041Z"}
+HTTP Request: GET https://www.amf-france.org/fr/actualites-publications/communiques/communiques-de-lamf/mixite-des-instances-dirigeantes-independance-des-administrateurs-presidents-dhonneur-et-dialogue#xts=607212&xtor=RSS-7&type=RSS "HTTP/1.1 200 OK"
+{"page": "https://www.amf-france.org/fr/actualites-publications/communiques/communiques-de-lamf/mixite-des-instances-dirigeantes-independance-des-administrateurs-presidents-dhonneur-et-dialogue#xts=607212&xtor=RSS-7&type=RSS", "event": "amf.bdif.no_link", "logger": "src.ingestion.amf.bdif_fetcher", "level": "info", "timestamp": "2026-05-13T18:22:52.166026Z"}
+{"ref": "AMF-SYN-237c25477b010e8ec5c50a6c", "deal_id": 6, "title": "Mixit\u00e9 des instances dirigeantes, ind\u00e9pendance des administrateurs, pr\u00e9sidents d\u2019honneur et dialogue actionnarial au som", "event": "amf.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T18:22:52.175112Z"}
+HTTP Request: GET https://www.amf-france.org/fr/actualites-publications/communiques/communiques-de-lamf/les-autorites-des-marches-financiers-autrichienne-italienne-espagnole-et-francaise-publient-leurs#xts=607212&xtor=RSS-7&type=RSS "HTTP/1.1 200 OK"
+{"page": "https://www.amf-france.org/fr/actualites-publications/communiques/communiques-de-lamf/les-autorites-des-marches-financiers-autrichienne-italienne-espagnole-et-francaise-publient-leurs#xts=607212&xtor=RSS-7&type=RSS", "event": "amf.bdif.no_link", "logger": "src.ingestion.amf.bdif_fetcher", "level": "info", "timestamp": "2026-05-13T18:22:53.168025Z"}
+{"ref": "AMF-SYN-c2369dc06ec346dcccb1a670", "deal_id": 7, "title": "Les autorit\u00e9s des march\u00e9s financiers autrichienne, italienne, espagnole et fran\u00e7aise publient leurs priorit\u00e9s pour une a", "event": "amf.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T18:22:53.177548Z"}
+HTTP Request: GET https://www.amf-france.org/fr/actualites-publications/communiques/communiques-de-lamf/lamf-invite-les-prestataires-de-services-dinvestissement-prendre-en-compte-la-specificite-du#xts=607212&xtor=RSS-7&type=RSS "HTTP/1.1 200 OK"
+{"page": "https://www.amf-france.org/fr/actualites-publications/communiques/communiques-de-lamf/lamf-invite-les-prestataires-de-services-dinvestissement-prendre-en-compte-la-specificite-du#xts=607212&xtor=RSS-7&type=RSS", "event": "amf.bdif.no_link", "logger": "src.ingestion.amf.bdif_fetcher", "level": "info", "timestamp": "2026-05-13T18:22:54.304136Z"}
+{"ref": "AMF-SYN-85eb720f71a358321e53a375", "deal_id": 8, "title": "L\u2019AMF invite les prestataires de services d\u2019investissement \u00e0 prendre en compte la sp\u00e9cificit\u00e9 du d\u00e9membrement temporaire", "event": "amf.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T18:22:54.311771Z"}
+HTTP Request: GET https://www.amf-france.org/fr/actualites-publications/communiques/communiques-de-lamf/lamf-publie-sa-cartographie-2023-des-marches-et-des-risques#xts=607212&xtor=RSS-7&type=RSS "HTTP/1.1 200 OK"
+{"page": "https://www.amf-france.org/fr/actualites-publications/communiques/communiques-de-lamf/lamf-publie-sa-cartographie-2023-des-marches-et-des-risques#xts=607212&xtor=RSS-7&type=RSS", "event": "amf.bdif.no_link", "logger": "src.ingestion.amf.bdif_fetcher", "level": "info", "timestamp": "2026-05-13T18:22:55.370323Z"}
+{"ref": "AMF-SYN-65260442893d77ef83b65750", "deal_id": 9, "title": "L'AMF publie sa cartographie 2023 des march\u00e9s et des risques", "event": "amf.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T18:22:55.381077Z"}
+HTTP Request: GET https://www.amf-france.org/fr/actualites-publications/communiques/communiques-de-lamf/lamf-decerne-son-prix-2022-du-jeune-chercheur-en-economie#xts=607212&xtor=RSS-7&type=RSS "HTTP/1.1 200 OK"
+{"page": "https://www.amf-france.org/fr/actualites-publications/communiques/communiques-de-lamf/lamf-decerne-son-prix-2022-du-jeune-chercheur-en-economie#xts=607212&xtor=RSS-7&type=RSS", "event": "amf.bdif.no_link", "logger": "src.ingestion.amf.bdif_fetcher", "level": "info", "timestamp": "2026-05-13T18:22:56.440131Z"}
+{"ref": "AMF-SYN-b827133ffea687408e49aef7", "deal_id": 10, "title": "L'AMF d\u00e9cerne son prix 2022 du jeune chercheur en \u00e9conomie", "event": "amf.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T18:22:56.452218Z"}
+HTTP Request: GET https://www.amf-france.org/fr/actualites-publications/communiques/communiques-de-lamf/lamf-informe-le-public-de-la-suspension-partielle-par-lautorite-chypriote-de-lautorisation-de-vpr#xts=607212&xtor=RSS-7&type=RSS "HTTP/1.1 200 OK"
+{"page": "https://www.amf-france.org/fr/actualites-publications/communiques/communiques-de-lamf/lamf-informe-le-public-de-la-suspension-partielle-par-lautorite-chypriote-de-lautorisation-de-vpr#xts=607212&xtor=RSS-7&type=RSS", "event": "amf.bdif.no_link", "logger": "src.ingestion.amf.bdif_fetcher", "level": "info", "timestamp": "2026-05-13T18:23:06.325246Z"}
+{"ref": "AMF-SYN-33e3aa2f89086c873fcdf9b1", "deal_id": 11, "title": "L'AMF informe le public de la suspension partielle par l'autorit\u00e9 chypriote de l\u2019autorisation de VPR Safe Financial Grou", "event": "amf.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T18:23:06.335348Z"}
+HTTP Request: GET https://www.amf-france.org/fr/actualites-publications/communiques/communiques-de-la-commission-des-sanctions/la-commission-des-sanctions-de-lamf-sanctionne-une-personne-physique-et-cinq-personnes-morales-dont#xts=607212&xtor=RSS-7&type=RSS "HTTP/1.1 200 OK"
+{"page": "https://www.amf-france.org/fr/actualites-publications/communiques/communiques-de-la-commission-des-sanctions/la-commission-des-sanctions-de-lamf-sanctionne-une-personne-physique-et-cinq-personnes-morales-dont#xts=607212&xtor=RSS-7&type=RSS", "event": "amf.bdif.no_link", "logger": "src.ingestion.amf.bdif_fetcher", "level": "info", "timestamp": "2026-05-13T18:23:06.451988Z"}
+{"ref": "AMF-SYN-1ed95e7b837f6a6490338a04", "deal_id": 12, "title": "La Commission des sanctions de l\u2019AMF sanctionne une personne physique et cinq personnes morales, dont une soci\u00e9t\u00e9 de ges", "event": "amf.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T18:23:06.460911Z"}
+HTTP Request: GET https://www.amf-france.org/fr/actualites-publications/communiques/communiques-de-lamf/lamf-publie-sa-cartographie-2022-des-marches-et-des-risques#xts=607212&xtor=RSS-7&type=RSS "HTTP/1.1 200 OK"
+{"page": "https://www.amf-france.org/fr/actualites-publications/communiques/communiques-de-lamf/lamf-publie-sa-cartographie-2022-des-marches-et-des-risques#xts=607212&xtor=RSS-7&type=RSS", "event": "amf.bdif.no_link", "logger": "src.ingestion.amf.bdif_fetcher", "level": "info", "timestamp": "2026-05-13T18:23:07.601398Z"}
+{"ref": "AMF-SYN-c10c1877429fb185f22edf63", "deal_id": 13, "title": "L'AMF publie sa cartographie 2022 des march\u00e9s et des risques", "event": "amf.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T18:23:07.609741Z"}
+{"matched": 13, "created": 13, "skipped": 0, "pdf_downloaded": 0, "pdf_failed": 0, "event": "amf.poll.run_once", "logger": "src.ingestion.amf.poller", "level": "info", "timestamp": "2026-05-13T18:23:07.610260Z"}
+{
+  "phase": "amf_run_once",
+  "status": "ok",
+  "result": {
+    "matched": 13,
+    "created": 13,
+    "skipped": 0,
+    "pdf_downloaded": 0,
+    "pdf_failed": 0
+  },
+  "http_log": [
+    {
+      "method": "GET",
+      "url": "https://www.amf-france.org/fr/flux-rss/display/23",
+      "status_code": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "content_length": 22918
+    },
+    {
+      "method": "GET",
+      "url": "https://www.amf-france.org/fr/actualites-publications/communiques/communiques-de-lamf/lamf-quebec-la-cvmo-et-lamf-france-concluent-un-accord-pour-la-cotation-croisee-de-valeurs#xts=607212&xtor=RSS-7&type=RSS",
+      "status_code": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "content_length": 15552
+    },
+    {
+      "method": "GET",
+      "url": "https://www.amf-france.org/fr/actualites-publications/communiques/communiques-de-lamf/les-autorites-de-marche-francaise-autrichienne-et-italienne-appellent-un-cadre-europeen-renforce-des#xts=607212&xtor=RSS-7&type=RSS",
+      "status_code": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "content_length": 16126
+    },
+    {
+      "method": "GET",
+      "url": "https://www.amf-france.org/fr/actualites-publications/communiques/communiques-de-lamf/lamf-enjoint-danae-group-de-deposer-un-projet-doffre-publique-dachat-visant-les-actions-de-la#xts=607212&xtor=RSS-7&type=RSS",
+      "status_code": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "content_length": 14035
+    },
+    {
+      "method": "GET",
+      "url": "https://www.amf-france.org/fr/actualites-publications/communiques/communiques-de-lamf/les-autorites-francaises-et-italiennes-font-des-propositions-pour-un-regime-pilote-plus-competitif#xts=607212&xtor=RSS-7&type=RSS",
+      "status_code": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "content_length": 16025
+    },
+    {
+      "method": "GET",
+      "url": "https://www.amf-france.org/fr/actualites-publications/communiques/communiques-de-lamf/lamf-appelle-la-commission-europeenne-une-strategie-ambitieuse-sur-le-projet-dunion-pour-lepargne-et#xts=607212&xtor=RSS-7&type=RSS",
+      "status_code": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "content_length": 15731
+    },
+    {
+      "method": "GET",
+      "url": "https://www.amf-france.org/fr/actualites-publications/communiques/communiques-de-lamf/mixite-des-instances-dirigeantes-independance-des-administrateurs-presidents-dhonneur-et-dialogue#xts=607212&xtor=RSS-7&type=RSS",
+      "status_code": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "content_length": 16651
+    },
+    {
+      "method": "GET",
+      "url": "https://www.amf-france.org/fr/actualites-publications/communiques/communiques-de-lamf/les-autorites-des-marches-financiers-autrichienne-italienne-espagnole-et-francaise-publient-leurs#xts=607212&xtor=RSS-7&type=RSS",
+      "status_code": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "content_length": 15637
+    },
+    {
+      "method": "GET",
+      "url": "https://www.amf-france.org/fr/actualites-publications/communiques/communiques-de-lamf/lamf-invite-les-prestataires-de-services-dinvestissement-prendre-en-compte-la-specificite-du#xts=607212&xtor=RSS-7&type=RSS",
+      "status_code": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "content_length": 14960
+    },
+    {
+      "method": "GET",
+      "url": "https://www.amf-france.org/fr/actualites-publications/communiques/communiques-de-lamf/lamf-publie-sa-cartographie-2023-des-marches-et-des-risques#xts=607212&xtor=RSS-7&type=RSS",
+      "status_code": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "content_length": 15658
+    },
+    {
+      "method": "GET",
+      "url": "https://www.amf-france.org/fr/actualites-publications/communiques/communiques-de-lamf/lamf-decerne-son-prix-2022-du-jeune-chercheur-en-economie#xts=607212&xtor=RSS-7&type=RSS",
+      "status_code": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "content_length": 14451
+    },
+    {
+      "method": "GET",
+      "url": "https://www.amf-france.org/fr/actualites-publications/communiques/communiques-de-lamf/lamf-informe-le-public-de-la-suspension-partielle-par-lautorite-chypriote-de-lautorisation-de-vpr#xts=607212&xtor=RSS-7&type=RSS",
+      "status_code": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "content_length": 14448
+    },
+    {
+      "method": "GET",
+      "url": "https://www.amf-france.org/fr/actualites-publications/communiques/communiques-de-la-commission-des-sanctions/la-commission-des-sanctions-de-lamf-sanctionne-une-personne-physique-et-cinq-personnes-morales-dont#xts=607212&xtor=RSS-7&type=RSS",
+      "status_code": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "content_length": 15533
+    },
+    {
+      "method": "GET",
+      "url": "https://www.amf-france.org/fr/actualites-publications/communiques/communiques-de-lamf/lamf-publie-sa-cartographie-2022-des-marches-et-des-risques#xts=607212&xtor=RSS-7&type=RSS",
+      "status_code": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "content_length": 15597
+    }
+  ],
+  "settings": {
+    "amf_rss_url": "https://www.amf-france.org/fr/flux-rss/display/23",
+    "data_dir": "/repo/data",
+    "user_agent": "EDE-Bot/0.1 (research; contact@example.com)",
+    "accept_language": "fr-FR,fr;q=0.9"
+  }
+}
