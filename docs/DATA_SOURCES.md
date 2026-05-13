@@ -10,7 +10,25 @@ Each ingestion module documents here:
 
 ---
 
-## AMF — Autorité des Marchés Financiers (FR) — phase 2 ✅
+## AMF — Autorité des Marchés Financiers (FR) — phase 2 (RSS) + phase 3 (BDIF) ✅
+
+### BDIF API (phase 3 — authoritative)
+
+| Item | Value |
+|---|---|
+| Search endpoint | `GET https://bdif.amf-france.org/back/api/v1/informations` |
+| Document endpoint | `GET https://bdif.amf-france.org/back/api/v1/documents/{path}` |
+| Auth | none (public API, but client must look like a desktop browser) |
+| Pagination | `From` (offset) + `Size` (page size, tested up to 100) |
+| M&A filter | `typesInformation=OPA` + `typesDocument=NotesEtAutresInformations` |
+| Rate limit observed | comfortably ≥ 1 req/s; we apply 1 req/s + jitter to be polite |
+| Reverse-engineering notes | `docs/research/bdif-api-reverse-engineering.md` |
+
+Mapping from `typesOperation` to canonical `deal_type` enum lives in
+`src/ingestion/amf/bdif_api.py::OPERATION_TO_DEAL_TYPE`.
+
+### RSS Communiqués (phase 2 — signal-only)
+
 
 ### Endpoints
 
@@ -81,25 +99,51 @@ python scripts/amf_run_once.py
 ls data/pdfs/fr/2026/
 ```
 
-### Known gaps / technical debt — to address phase 3+
+### Phase 3 routing — BDIF authoritative, RSS signal-only
 
-1. **RSS `display/23` is the wrong feed for BDIF filings.** It captures "Communiqués AMF" (general announcements, sanctions, regulatory positions). Live backfill 2026-05-13: 200 items → 13 regex matches → **0 BDIF PDFs downloaded** because none of the 13 had a BDIF link attached. Real M&A document discovery requires either:
-   - Finding the correct RSS feed ID (`display/XX`) for BDIF filings, OR
-   - Scraping `https://bdif.amf-france.org/Recherche-avancee` directly (paginated list of all deposited notes).
-2. **All FR deals currently get a synthetic `regulator_ref` (`AMF-SYN-*`).** Real BDIF references in the canonical `AMF-YYYY-X-NNNN` format are exposed on the BDIF page, not in the `display/23` RSS items.
+After the phase-2 live backfill showed `display/23` is the wrong feed for M&A documents, phase 3 introduces a **second** ingestion path targeting BDIF directly. The two paths now have distinct responsibilities:
 
-**Owner**: phase 3 ingestion enhancement (treat AMF and Consob/BaFin under a unified scraper that targets each regulator's BDIF/document list directly).
-**Severity**: medium — doesn't block paper trading on manually-tracked deals. The poller still produces structured `filing_amf` events for every communiqué that mentions an M&A keyword, which is useful signal even when no document is attached.
-**Tracking**: see `artifacts/phase-02/live-backfill.txt` for the full 2026-05-13 run log.
+| Source | Endpoint | Creates `Deal`? | Downloads PDF? | Emits `filing_amf` event? |
+|---|---|---|---|---|
+| **BDIF** (authoritative) | `GET /back/api/v1/informations` + `/back/api/v1/documents/...` | ✅ yes (real `numero`, no synthetic) | ✅ yes (atomic write) | ✅ yes (`source=bdif`, `has_document=true`) |
+| **RSS `display/23`** (signal-only) | `https://www.amf-france.org/fr/flux-rss/display/23` | ❌ never | ❌ never | ✅ yes ONLY when the RSS item's canonical ref matches an existing BDIF deal (`source=rss_display_23`, `has_document=false`) |
+
+This eliminates the phase-2 false-positive noise: communiqués that don't link to any BDIF document no longer create deal rows. They're silently logged as `amf.rss.skipped.unmatched` and dropped.
+
+### Phase 2 tech debt — CLOSED 2026-05-13
+
+The two items recorded in phase 2 are resolved by the `BdifPoller`:
+
+1. **Synthetic `regulator_ref` (`AMF-SYN-*`)** — replaced by the real BDIF `numero` (e.g. `226C0644` for Fnac Darty). Live backfill on 60 items returned 0 synthetic refs.
+2. **0 PDFs downloaded** — the BDIF API exposes a `documents[].path` field that constructs the canonical PDF URL deterministically. Live backfill downloaded 60/60 PDFs (37 in 2025, 23 in 2026) with zero failures.
+
+Full live-backfill log: `artifacts/phase-03/bdif-backfill.txt`. API reverse-engineering notes: `docs/research/bdif-api-reverse-engineering.md`.
+
+### New tech debt opened at phase 3
+
+These items are explicitly **accepted** and scheduled — not blockers for paper trading on the current set of M&A notes.
+
+| # | Item | Severity | Owner | Notes |
+|---|---|---|---|---|
+| 1 | **Cleanup of leftover `AMF-SYN-*` rows in prod `ede` DB** (13 rows from phase-2 live backfill before BDIF replaced the path) | low | **Phase 4 or 4bis (before Consob)** | Single `DELETE FROM deals WHERE regulator_ref LIKE 'AMF-SYN-%';` + cascade. Document the migration in `artifacts/phase-04*/cleanup-amf-syn.log`. No archive needed. |
+| 2 | **AMF document type expansion** — current BDIF ingestion only fetches `typesDocument=NotesEtAutresInformations` (1786 docs all-time). Targets to add: `DepotOffre` (997), `Decisions` (589), `CalendrierOffre` (885), `PreOffre` (328). Each enriches the timeline with follow-up events on existing deals (filing of supplementary documents, clearance decisions, opening/closing calendars, pre-offer rumours). | medium | **Phase 6 or 7 (under label "AMF document type expansion")** | Same `BdifPoller` infra, only the `typesDocument` filter changes. Each type maps to a distinct `event_type` (already in `event_type_enum`). `PreOffre` bundled in this expansion — not split out as separate phase. |
+
+### `Decimal` of accepted PR-questions from phase 3
+
+> "Re-process the 13 phase-2 synthetic-ref rows in prod `ede` DB?" → **YES, in phase 4 or 4bis** (item #1 above).
+>
+> "Tighten or loosen the `OPA + NotesEtAutresInformations` filter?" → **Expand in phase 6-7** (item #2 above).
+>
+> "What about `PreOffre`?" → **Bundle with phase 6-7 expansion** (item #2 above).
 
 ---
 
-## Consob (IT) — phase 3 (pending)
+## Consob (IT) — phase 4 (pending)
 
-## BaFin (DE) — phase 4 (pending)
+## BaFin (DE) — phase 5 (pending)
 
-## News & GDELT — phase 5 (pending)
+## News & GDELT — phase 6 (pending)
 
-## IBKR + Stooq prices — phase 5 (pending)
+## IBKR + Stooq prices — phase 6 (pending)
 
-## DG COMP decisions — phase 5 (pending)
+## DG COMP decisions — phase 6 (pending)
