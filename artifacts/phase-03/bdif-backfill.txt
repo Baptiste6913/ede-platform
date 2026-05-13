@@ -1,0 +1,285 @@
+﻿WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+
+[notice] A new release of pip is available: 25.0.1 -> 26.1.1
+[notice] To update, run: pip install --upgrade pip
+INFO  [alembic.runtime.migration] Running upgrade  -> 0001, create postgres enum types
+INFO  [alembic.runtime.migration] Running upgrade 0001 -> 0002, create main tables (deals, events, scores, analyses, paper_positions)
+INFO  [alembic.runtime.migration] Running upgrade 0002 -> 0003, create prices table as TimescaleDB hypertable + 1h/1d continuous aggregates
+INFO  [alembic.runtime.migration] Running upgrade 0003 -> 0004, schema finalisation: secondary_jurisdictions array + canonical deal_type enum
+--- run bdif poller, 60 items ---
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/informations?From=0&Size=50&typesInformation=OPA&typesDocument=NotesEtAutresInformations "HTTP/1.1 200 OK"
+{"offset": 0, "size": 50, "total": 1786, "returned": 50, "event": "amf.bdif.page", "logger": "src.ingestion.amf.bdif_api", "level": "info", "timestamp": "2026-05-13T19:17:16.935762Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2026/226C0661/954781AD2F1F1BF3816AA9C708025BF72D9C54D8CFCF908238AD85B40E413D3B.pdf "HTTP/1.1 200 OK"
+{"numero": "226C0661", "bytes": 269225, "path": "/repo/data/pdfs/fr/2026/226C0661.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:17:18.023192Z"}
+{"ref": "226C0661", "deal_id": 1, "target": "MEDIA 6", "deal_type": "opr", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:17:18.102112Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2026/226C0645/FE0616923D43D1F060E72056AFCF74F91E1A385883F3C547318A36E8027D6E2E.pdf "HTTP/1.1 200 OK"
+{"numero": "226C0645", "bytes": 66734, "path": "/repo/data/pdfs/fr/2026/226C0645.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:17:19.084174Z"}
+{"ref": "226C0645", "deal_id": 2, "target": "MEDIA 6", "deal_type": "opr", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:17:19.089766Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2026/226C0644/72DF20BE22E022A2C30DC6186B5CC3F77B31B85FA0D84EE9D1465AF96DF8A90C.pdf "HTTP/1.1 200 OK"
+{"numero": "226C0644", "bytes": 142007, "path": "/repo/data/pdfs/fr/2026/226C0644.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:17:20.110619Z"}
+{"ref": "226C0644", "deal_id": 3, "target": "FNAC DARTY", "deal_type": "opa", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:17:20.116295Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2026/226C0620/C88737C27EBA36B4ABE577D1CF942FADDF3FCB9A27BDA639FEA0105D816741C4.pdf "HTTP/1.1 200 OK"
+{"numero": "226C0620", "bytes": 103437, "path": "/repo/data/pdfs/fr/2026/226C0620.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:17:21.184577Z"}
+{"ref": "226C0620", "deal_id": 4, "target": "VINPAI", "deal_type": "opa_simplifiee", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:17:21.191473Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2026/226C0591/348695808BFBEBA6FD7244F05D2B43B6FB5C3DDBB70A75CFDDE0145335D82145.pdf "HTTP/1.1 200 OK"
+{"numero": "226C0591", "bytes": 269823, "path": "/repo/data/pdfs/fr/2026/226C0591.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:17:22.231410Z"}
+{"ref": "226C0591", "deal_id": 5, "target": "ELECTRICITE ET EAUX DE MADAGASCAR", "deal_type": "opa", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:17:22.238718Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2026/226C0578/B956DC68725674FD12F3349D2160F0F214B32A3B47E1E2C948F36C10F05C7C1D.pdf "HTTP/1.1 200 OK"
+{"numero": "226C0578", "bytes": 88042, "path": "/repo/data/pdfs/fr/2026/226C0578.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:17:23.415553Z"}
+{"ref": "226C0578", "deal_id": 6, "target": "POULAILLON", "deal_type": "opa_simplifiee", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:17:23.422260Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2026/226C0550/790CEA3A90861D7F49FCC7EC86FDEE425D31E42EEA5597D127F45DCF68783FB8.pdf "HTTP/1.1 200 OK"
+{"numero": "226C0550", "bytes": 155147, "path": "/repo/data/pdfs/fr/2026/226C0550.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:17:24.504430Z"}
+{"ref": "226C0550", "deal_id": 7, "target": "TERACT", "deal_type": "opr", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:17:24.516830Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2026/226C0538/F1A0A887F62CDDB65C1D688EA3F99A87CCBF26975A738C848CFAF5EB83C3E9AB.pdf "HTTP/1.1 200 OK"
+{"numero": "226C0538", "bytes": 425257, "path": "/repo/data/pdfs/fr/2026/226C0538.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:17:25.682340Z"}
+{"ref": "226C0538", "deal_id": 8, "target": "SOCIETE DE LA TOUR EIFFEL", "deal_type": "opr", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:17:25.687951Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2026/226C0531/561AA4EE77DE083659474F2355A75F1A1AFA156AD34FED1FC6872CCF0A07CE87.pdf "HTTP/1.1 200 OK"
+{"numero": "226C0531", "bytes": 94858, "path": "/repo/data/pdfs/fr/2026/226C0531.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:17:26.756835Z"}
+{"ref": "226C0531", "deal_id": 9, "target": "MEDIA 6", "deal_type": "opr", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:17:26.762061Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2026/226C0511/AB617FF3C053B29C0869579FC6C94E567E94EF5CA54AD731BEFC90096BF14FB9.pdf "HTTP/1.1 200 OK"
+{"numero": "226C0511", "bytes": 366884, "path": "/repo/data/pdfs/fr/2026/226C0511.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:17:27.858025Z"}
+{"ref": "226C0511", "deal_id": 10, "target": "GAUMONT", "deal_type": "opr", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:17:27.863533Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2026/226C0347/0B2F7A8AF7A42A5DB26EAA3C63A63EAEB4397FC23899488D3EE974E2276033AD.pdf "HTTP/1.1 200 OK"
+{"numero": "226C0347", "bytes": 465664, "path": "/repo/data/pdfs/fr/2026/226C0347.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:17:28.909866Z"}
+{"ref": "226C0347", "deal_id": 11, "target": "BALYO", "deal_type": "opr", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:17:28.915286Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2026/226C0318/2E2150D58F6F479C2C8EF560F6397E1558E9AF7DDB22A89699FC6027C7914D34.pdf "HTTP/1.1 200 OK"
+{"numero": "226C0318", "bytes": 86292, "path": "/repo/data/pdfs/fr/2026/226C0318.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:17:29.867045Z"}
+{"ref": "226C0318", "deal_id": 12, "target": "MEDIA 6", "deal_type": "opr", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:17:29.873963Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2026/226C0287/DBE2E400A000FC29A55CD25156BC15A62A7E389B563ED4E91BC02C772EA0F33F.pdf "HTTP/1.1 200 OK"
+{"numero": "226C0287", "bytes": 285588, "path": "/repo/data/pdfs/fr/2026/226C0287.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:17:30.999255Z"}
+{"ref": "226C0287", "deal_id": 13, "target": "FNAC DARTY", "deal_type": "opa", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:17:31.004261Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2026/226C0278/A31DB49A0FE6CB4A382C7B960FF679D3F9018C80059A4C02ECC31EB5E653A6CE.pdf "HTTP/1.1 200 OK"
+{"numero": "226C0278", "bytes": 96226, "path": "/repo/data/pdfs/fr/2026/226C0278.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:17:32.189157Z"}
+{"ref": "226C0278", "deal_id": 14, "target": "TERACT", "deal_type": "opr", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:17:32.195159Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2026/226C0210/1C1F1BF8B08724AE8CC9283B6501A90015C258F03837A071E732589AE12E82E0.pdf "HTTP/1.1 200 OK"
+{"numero": "226C0210", "bytes": 257266, "path": "/repo/data/pdfs/fr/2026/226C0210.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:17:33.336694Z"}
+{"ref": "226C0210", "deal_id": 15, "target": "GROUPE TERA", "deal_type": "opra", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:17:33.342855Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2026/226C0157/2954E3860C1959ADF0F7724A2D2E9CF1D89B305D888D3417CE3DF95E46E1D798.pdf "HTTP/1.1 200 OK"
+{"numero": "226C0157", "bytes": 487882, "path": "/repo/data/pdfs/fr/2026/226C0157.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:17:34.505790Z"}
+{"ref": "226C0157", "deal_id": 16, "target": "TERACT", "deal_type": "opr", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:17:34.511562Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2026/226C0156/66D132B49FB29CB455C97C16A2949728C4D3153D4E3A35EF0F7E7B5E8B9D09CD.pdf "HTTP/1.1 200 OK"
+{"numero": "226C0156", "bytes": 278733, "path": "/repo/data/pdfs/fr/2026/226C0156.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:17:35.534028Z"}
+{"ref": "226C0156", "deal_id": 17, "target": "UV GERMI", "deal_type": "opra", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:17:35.540836Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2026/226C0095/69C403AC9DB64955C7CF92305B5B134E2AD8BE64C70A33B64DE758B67E616C68.pdf "HTTP/1.1 200 OK"
+{"numero": "226C0095", "bytes": 185423, "path": "/repo/data/pdfs/fr/2026/226C0095.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:17:36.538370Z"}
+{"ref": "226C0095", "deal_id": 18, "target": "SOCIETE DE TAYNINH", "deal_type": "opa_simplifiee", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:17:36.545947Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2026/226C0020/DFF429DF18AF43BC18E7971ABF71A2F5B90B0255B4EBB18EB268F6D1579C2074.pdf "HTTP/1.1 200 OK"
+{"numero": "226C0020", "bytes": 79589, "path": "/repo/data/pdfs/fr/2026/226C0020.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:17:37.714080Z"}
+{"ref": "226C0020", "deal_id": 19, "target": "BALYO", "deal_type": "opr", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:17:37.720549Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2026/226C0008/CFFC2BF9EC93BB0D5C735AC1596CCD7BAE08ACB2F02F38BE5E387266621C223E.pdf "HTTP/1.1 200 OK"
+{"numero": "226C0008", "bytes": 113476, "path": "/repo/data/pdfs/fr/2026/226C0008.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:17:38.917305Z"}
+{"ref": "226C0008", "deal_id": 20, "target": "GROUPE TERA", "deal_type": "opra", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:17:38.923686Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2025/225C2156/ADFDAA0E32B9156501354BF7041F099EE4B743B76ED64C90DE8EB363A1ABCD88.pdf "HTTP/1.1 200 OK"
+{"numero": "225C2156", "bytes": 285627, "path": "/repo/data/pdfs/fr/2026/225C2156.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:17:40.100187Z"}
+{"ref": "225C2156", "deal_id": 21, "target": "PRODWARE", "deal_type": "opr", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:17:40.106704Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2025/225C2136/B94BBB38882DB1DDE9148BF8D7FD9AF90D3A1681299822A01FC9104155FA4E48.pdf "HTTP/1.1 200 OK"
+{"numero": "225C2136", "bytes": 107865, "path": "/repo/data/pdfs/fr/2025/225C2136.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:17:41.048258Z"}
+{"ref": "225C2136", "deal_id": 22, "target": "UV GERMI", "deal_type": "opra", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:17:41.054953Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2025/225C2135/5C51631DA1F169C7D81C593980694A6CCD25AE6C6A562F86302C14EDCD2F0C92.pdf "HTTP/1.1 200 OK"
+{"numero": "225C2135", "bytes": 73746, "path": "/repo/data/pdfs/fr/2025/225C2135.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:17:42.092611Z"}
+{"ref": "225C2135", "deal_id": 23, "target": "ELECTRICITE ET EAUX DE MADAGASCAR", "deal_type": "opa", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:17:42.105401Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2025/225C2081/8CC4832C7F06C4C44A2C8A3798DA63476B655465D14B3460FE2B3DE3C7020FD0.pdf "HTTP/1.1 200 OK"
+{"numero": "225C2081", "bytes": 337547, "path": "/repo/data/pdfs/fr/2025/225C2081.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:17:43.275089Z"}
+{"ref": "225C2081", "deal_id": 24, "target": "SOCIETE DE TAYNINH", "deal_type": "opa_simplifiee", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:17:43.280961Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2025/225C2063/4B74E67D96D0415272C70A7A4D4DC3BBE94E2C570A5E4BFFDAB4B0F44776363F.pdf "HTTP/1.1 200 OK"
+{"numero": "225C2063", "bytes": 102449, "path": "/repo/data/pdfs/fr/2026/225C2063.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:17:44.406479Z"}
+{"ref": "225C2063", "deal_id": 25, "target": "BALYO", "deal_type": "opr", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:17:44.417051Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2025/225C2061/1BE71CDDD093C59BF3C0816994D45C9364CA1D5E1088325B1A6E64CC57C7F564.pdf "HTTP/1.1 200 OK"
+{"numero": "225C2061", "bytes": 99046, "path": "/repo/data/pdfs/fr/2026/225C2061.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:17:45.493941Z"}
+{"ref": "225C2061", "deal_id": 26, "target": "COGELEC", "deal_type": "opa_simplifiee", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:17:45.506225Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2025/225C1971/1561FA645F4D0517BB7B8C3D54435902C7D730202735D1145A8BF8C250D66A3C.pdf "HTTP/1.1 200 OK"
+{"numero": "225C1971", "bytes": 348096, "path": "/repo/data/pdfs/fr/2025/225C1971.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:17:46.693336Z"}
+{"ref": "225C1971", "deal_id": 27, "target": "WAGA ENERGY", "deal_type": "opa_simplifiee", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:17:46.698972Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2025/225C1924/278CEE170D11B4B719A5AF39E6EF5D5D98777BCB414E8E0447C8A4C43B17A99C.pdf "HTTP/1.1 200 OK"
+{"numero": "225C1924", "bytes": 77308, "path": "/repo/data/pdfs/fr/2025/225C1924.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:17:47.600889Z"}
+{"ref": "225C1924", "deal_id": 28, "target": "PRODWARE", "deal_type": "opr", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:17:47.611079Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2025/225C1884/B2E25865C4580D8F7E0BAA669B6652F2AF700806DAAE34F81EBEE76DC60766A8.pdf "HTTP/1.1 200 OK"
+{"numero": "225C1884", "bytes": 163089, "path": "/repo/data/pdfs/fr/2025/225C1884.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:17:48.764987Z"}
+{"ref": "225C1884", "deal_id": 29, "target": "TRONIC'S MICROSYSTEMS S.A.", "deal_type": "opr", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:17:48.770560Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2025/225C1797/18E0F87ABC999B41EECECC8FE71915ACAC89A921DE6C878FBDFA509EEE420DDE.pdf "HTTP/1.1 200 OK"
+{"numero": "225C1797", "bytes": 114165, "path": "/repo/data/pdfs/fr/2025/225C1797.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:17:49.893856Z"}
+{"ref": "225C1797", "deal_id": 30, "target": "PRODWARE", "deal_type": "opr", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:17:49.899663Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2025/225C1794/46A8BC8D13F4BFEE1C3F6C7EA75130F3F12717FB75CF6FF6F406DE51A430F10E.pdf "HTTP/1.1 200 OK"
+{"numero": "225C1794", "bytes": 141070, "path": "/repo/data/pdfs/fr/2025/225C1794.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:17:51.098275Z"}
+{"ref": "225C1794", "deal_id": 31, "target": "VOGO", "deal_type": "opa", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:17:51.105054Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2025/225C1755/AA36F6148357F70B3CEA5A545CC6F7C5082938EC4B57FCFF4588A719CA34AB0D.pdf "HTTP/1.1 200 OK"
+{"numero": "225C1755", "bytes": 336601, "path": "/repo/data/pdfs/fr/2025/225C1755.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:17:52.327016Z"}
+{"ref": "225C1755", "deal_id": 32, "target": "COGELEC", "deal_type": "opa_simplifiee", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:17:52.332568Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2025/225C1734/B3BE65DA8A38EFEF0C6E0B463784BE812AFE929914A3F3416AE80A2CF9A7818E.pdf "HTTP/1.1 200 OK"
+{"numero": "225C1734", "bytes": 117583, "path": "/repo/data/pdfs/fr/2025/225C1734.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:17:53.331892Z"}
+{"ref": "225C1734", "deal_id": 33, "target": "AGROGENERATION", "deal_type": "opa_simplifiee", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:17:53.337703Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2025/225C1666/A2460CAD381A8AA7A5E0566E2B02915BD2C21EB7F7F41119354BA67BBCF0C01E.pdf "HTTP/1.1 200 OK"
+{"numero": "225C1666", "bytes": 345405, "path": "/repo/data/pdfs/fr/2025/225C1666.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:17:54.551773Z"}
+{"ref": "225C1666", "deal_id": 34, "target": "WAGA ENERGY", "deal_type": "opa_simplifiee", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:17:54.559330Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2025/225C1665/4BCBC4A976AD1A11A4CFC01F982000092C433608C9B947BF53BA5D350947542F.pdf "HTTP/1.1 200 OK"
+{"numero": "225C1665", "bytes": 466137, "path": "/repo/data/pdfs/fr/2025/225C1665.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:17:55.580668Z"}
+{"ref": "225C1665", "deal_id": 35, "target": "TRONIC'S MICROSYSTEMS S.A.", "deal_type": "opr", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:17:55.587229Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2025/225C1629/8DF9E6C891A17EFCBB495FC63F9C7982DA9D8429C2BCBDA248C9DD77B85D97C3.pdf "HTTP/1.1 200 OK"
+{"numero": "225C1629", "bytes": 348287, "path": "/repo/data/pdfs/fr/2025/225C1629.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:17:56.759030Z"}
+{"ref": "225C1629", "deal_id": 36, "target": "AMPLITUDE SURGICAL", "deal_type": "opa_simplifiee", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:17:56.766494Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2025/225C1529/B5E5B14DB09B63248AD314DE0677266181D86CE9711A330BBDDE64135A76DED8.pdf "HTTP/1.1 200 OK"
+{"numero": "225C1529", "bytes": 125106, "path": "/repo/data/pdfs/fr/2025/225C1529.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:17:57.767671Z"}
+{"ref": "225C1529", "deal_id": 37, "target": "ALTAMIR", "deal_type": "opa_simplifiee", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:17:57.774103Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2025/225C1507/E301EE3EF6B37DFAD4272EF1E160CA1E5832EADBF8D9B6387733A97822810066.pdf "HTTP/1.1 200 OK"
+{"numero": "225C1507", "bytes": 132375, "path": "/repo/data/pdfs/fr/2025/225C1507.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:17:58.851449Z"}
+{"ref": "225C1507", "deal_id": 38, "target": "TRONIC'S MICROSYSTEMS S.A.", "deal_type": "opr", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:17:58.857889Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2025/225C1439/24F7E7C9EB30188B5FD0914078F16AB748E20D5EE7649132863B135FE4017D31.pdf "HTTP/1.1 200 OK"
+{"numero": "225C1439", "bytes": 75099, "path": "/repo/data/pdfs/fr/2025/225C1439.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:17:59.940436Z"}
+{"ref": "225C1439", "deal_id": 39, "target": "AGROGENERATION", "deal_type": "opa_simplifiee", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:17:59.946026Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2025/225C1404/E8EEC4E35E2DEFE94F731224C1A87EB6BB09862E30C84AA012002CD5C640C19B.pdf "HTTP/1.1 200 OK"
+{"numero": "225C1404", "bytes": 108854, "path": "/repo/data/pdfs/fr/2025/225C1404.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:18:01.123103Z"}
+{"ref": "225C1404", "deal_id": 40, "target": "AGROGENERATION", "deal_type": "opa_simplifiee", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:18:01.128964Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2025/225C1285/AC0DAB36744D4ABF9AB5BE55149059EBF6F4932616FDD31223CFA13D250D0E81.pdf "HTTP/1.1 200 OK"
+{"numero": "225C1285", "bytes": 343247, "path": "/repo/data/pdfs/fr/2025/225C1285.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:18:02.197808Z"}
+{"ref": "225C1285", "deal_id": 41, "target": "AMPLITUDE SURGICAL", "deal_type": "opa_simplifiee", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:18:02.203692Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2025/225C1258/66D00BC0E7AD03BD0F4A7BA4651F295DA8870150DFAB9075D707785B11973CF9.pdf "HTTP/1.1 200 OK"
+{"numero": "225C1258", "bytes": 124346, "path": "/repo/data/pdfs/fr/2025/225C1258.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:18:03.176243Z"}
+{"ref": "225C1258", "deal_id": 42, "target": "VOGO", "deal_type": "opa", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:18:03.182233Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2025/225C1227/8E52F125753476B79E285A529935605690E7CDC62F9935FF2126E850B7197FCA.pdf "HTTP/1.1 200 OK"
+{"numero": "225C1227", "bytes": 133269, "path": "/repo/data/pdfs/fr/2025/225C1227.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:18:04.389331Z"}
+{"ref": "225C1227", "deal_id": 43, "target": "GROUPE ETPO SA", "deal_type": "opr", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:18:04.395038Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2025/225C1154/C9793687BB098BD663033E6439917178912A6215D9BCE88CC89765EDA50536D9.pdf "HTTP/1.1 200 OK"
+{"numero": "225C1154", "bytes": 72047, "path": "/repo/data/pdfs/fr/2025/225C1154.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:18:05.432293Z"}
+{"ref": "225C1154", "deal_id": 44, "target": "ALTAMIR", "deal_type": "opa_simplifiee", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:18:05.438925Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2025/225C1153/8D4F4D57519FB0DBC66686235B1CC114E7A7C3F0DF2FC2535D4ADE7E847BCC04.pdf "HTTP/1.1 200 OK"
+{"numero": "225C1153", "bytes": 138649, "path": "/repo/data/pdfs/fr/2025/225C1153.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:18:06.601990Z"}
+{"ref": "225C1153", "deal_id": 45, "target": "BELIEVE", "deal_type": "opr", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:18:06.608676Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2025/225C1139/8BBACCFF5CC17C6941B15D31D95987856AAB9CD9E5EFEC4199D8BFA0098A9D2B.pdf "HTTP/1.1 200 OK"
+{"numero": "225C1139", "bytes": 287268, "path": "/repo/data/pdfs/fr/2025/225C1139.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:18:07.629146Z"}
+{"ref": "225C1139", "deal_id": 46, "target": "ELECTRICITE ET EAUX DE MADAGASCAR", "deal_type": "opa", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:18:07.639862Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2025/225C1003/05ABE9DBA29A5ECF05C9F78B5AE905C73FB41BD48C6980F685BFE28737829D77.pdf "HTTP/1.1 200 OK"
+{"numero": "225C1003", "bytes": 126410, "path": "/repo/data/pdfs/fr/2025/225C1003.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:18:08.772610Z"}
+{"ref": "225C1003", "deal_id": 47, "target": "ALTAMIR", "deal_type": "opa_simplifiee", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:18:08.777846Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2025/225C0995/89F80B88B4C39CB8BE6C6E00CE15DED65CC13580E802F7616A1FF8EB217C8E76.pdf "HTTP/1.1 200 OK"
+{"numero": "225C0995", "bytes": 73904, "path": "/repo/data/pdfs/fr/2025/225C0995.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:18:09.840524Z"}
+{"ref": "225C0995", "deal_id": 48, "target": "GROUPE ETPO SA", "deal_type": "opr", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:18:09.852873Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2025/225C0943/2766C94AB6689E31301176B6AB33C47F5BFA24283DFC719261629B63E795CE80.pdf "HTTP/1.1 200 OK"
+{"numero": "225C0943", "bytes": 198753, "path": "/repo/data/pdfs/fr/2025/225C0943.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:18:11.068046Z"}
+{"ref": "225C0943", "deal_id": 49, "target": "TARKETT S.A.", "deal_type": "opr", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:18:11.074102Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2025/225C0929/F0920AB04DC74434B52DD0FE7CB8BD0D0848FBCA912571968BD0585BAF6E0DA4.pdf "HTTP/1.1 200 OK"
+{"numero": "225C0929", "bytes": 164874, "path": "/repo/data/pdfs/fr/2025/225C0929.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:18:12.102443Z"}
+{"ref": "225C0929", "deal_id": 50, "target": "VERALLIA", "deal_type": "opa", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:18:12.108815Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/informations?From=50&Size=50&typesInformation=OPA&typesDocument=NotesEtAutresInformations "HTTP/1.1 200 OK"
+{"offset": 50, "size": 50, "total": 1786, "returned": 50, "event": "amf.bdif.page", "logger": "src.ingestion.amf.bdif_api", "level": "info", "timestamp": "2026-05-13T19:18:13.095682Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2025/225C0921/598AEEE4C8C8BA22E6E8F10899BF9587CAB180EDE7FD1370A2FC31000A928867.pdf "HTTP/1.1 200 OK"
+{"numero": "225C0921", "bytes": 135551, "path": "/repo/data/pdfs/fr/2025/225C0921.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:18:14.156843Z"}
+{"ref": "225C0921", "deal_id": 51, "target": "M2I", "deal_type": "opa_simplifiee", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:18:14.162700Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2025/225C0920/EFA14EF47EA8E982099F77768E6D5DB5982A1FB2DD38ADF653B80696FF46ED09.pdf "HTTP/1.1 200 OK"
+{"numero": "225C0920", "bytes": 126181, "path": "/repo/data/pdfs/fr/2025/225C0920.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:18:15.263362Z"}
+{"ref": "225C0920", "deal_id": 52, "target": "BELIEVE", "deal_type": "opr", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:18:15.270033Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2025/225C0845/5959CDC36EEA75D9BB16F9817DF6C7314CE63D89790E33FEB1DA8C70DFF12CC7.pdf "HTTP/1.1 200 OK"
+{"numero": "225C0845", "bytes": 366847, "path": "/repo/data/pdfs/fr/2025/225C0845.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:18:16.347757Z"}
+{"ref": "225C0845", "deal_id": 53, "target": "UNIBEL", "deal_type": "opa_simplifiee", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:18:16.354962Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2025/225C0838/7C5773E08924691DD74132E2C661DB3DE388B66A8E0BB41F5FADB7D71B0D3202.pdf "HTTP/1.1 200 OK"
+{"numero": "225C0838", "bytes": 128886, "path": "/repo/data/pdfs/fr/2025/225C0838.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:18:17.354186Z"}
+{"ref": "225C0838", "deal_id": 54, "target": "GROUPE ETPO SA", "deal_type": "opr", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:18:17.359653Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2025/225C0741/17E366B209E9E2ED0180EB9A7C7B00839735621223DF35947F824CB4EFE1E12D.pdf "HTTP/1.1 200 OK"
+{"numero": "225C0741", "bytes": 246357, "path": "/repo/data/pdfs/fr/2025/225C0741.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:18:18.490694Z"}
+{"ref": "225C0741", "deal_id": 55, "target": "FINANCIERE MONCEY", "deal_type": "opr", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:18:18.501132Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2025/225C0740/1283751425D68B1A5DF96C9EC10E51976B0C0CEE68842E85A9393EC463C78975.pdf "HTTP/1.1 200 OK"
+{"numero": "225C0740", "bytes": 245210, "path": "/repo/data/pdfs/fr/2025/225C0740.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:18:19.622446Z"}
+{"ref": "225C0740", "deal_id": 56, "target": "COMPAGNIE DU CAMBODGE", "deal_type": "opr", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:18:19.628894Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2025/225C0739/49EDABB0E59E6DFB2185881C48662DD85049EDD259627F0F16D69C6A9FFDF6A4.pdf "HTTP/1.1 200 OK"
+{"numero": "225C0739", "bytes": 246815, "path": "/repo/data/pdfs/fr/2025/225C0739.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:18:20.738938Z"}
+{"ref": "225C0739", "deal_id": 57, "target": "SOCIETE INDUSTRIELLE ET FINANCIERE DE L'ARTOIS", "deal_type": "opr", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:18:20.746444Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2025/225C0725/686E4EA41EA6F49A0DDF69C4D06BBD4A0CE2D1FB6D7F3A165F8BB9E22B2AABE2.pdf "HTTP/1.1 200 OK"
+{"numero": "225C0725", "bytes": 337589, "path": "/repo/data/pdfs/fr/2025/225C0725.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:18:21.894287Z"}
+{"ref": "225C0725", "deal_id": 58, "target": "M2I", "deal_type": "opa_simplifiee", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:18:21.900625Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2025/225C0708/307129575A270937D25873228E87EF688B894D56B00E9385B4121A76FCC35177.pdf "HTTP/1.1 200 OK"
+{"numero": "225C0708", "bytes": 106491, "path": "/repo/data/pdfs/fr/2025/225C0708.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:18:22.900058Z"}
+{"ref": "225C0708", "deal_id": 59, "target": "VERALLIA", "deal_type": "opa", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:18:22.906638Z"}
+HTTP Request: GET https://bdif.amf-france.org/back/api/v1/documents/2025/225C0697/52E5D27DF0828B074AB7125AB17D808DC90C8DEEF08C87960D271D8CA892BFC6.pdf "HTTP/1.1 200 OK"
+{"numero": "225C0697", "bytes": 118546, "path": "/repo/data/pdfs/fr/2025/225C0697.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:18:23.968279Z"}
+{"ref": "225C0697", "deal_id": 60, "target": "TARKETT S.A.", "deal_type": "opr", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-13T19:18:23.979900Z"}
+{"discovered": 60, "created": 60, "skipped": 0, "pdf_downloaded": 60, "pdf_failed": 0, "event": "amf.bdif.poll.run_once", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-13T19:18:23.980273Z"}
+{
+  "phase": "bdif_run_once",
+  "status": "ok",
+  "result": {
+    "discovered": 60,
+    "created": 60,
+    "skipped": 0,
+    "pdf_downloaded": 60,
+    "pdf_failed": 0
+  },
+  "http_log_summary": {
+    "total_requests": 62,
+    "by_status": {
+      "200": 62
+    },
+    "first_request": {
+      "method": "GET",
+      "url": "https://bdif.amf-france.org/back/api/v1/informations?From=0&Size=50&typesInformation=OPA&typesDocument=NotesEtAutresInformations",
+      "status_code": 200,
+      "content_type": "application/json; charset=utf-8",
+      "content_length": 142897
+    },
+    "last_request": {
+      "method": "GET",
+      "url": "https://bdif.amf-france.org/back/api/v1/documents/2025/225C0697/52E5D27DF0828B074AB7125AB17D808DC90C8DEEF08C87960D271D8CA892BFC6.pdf",
+      "status_code": 200,
+      "content_type": "application/pdf",
+      "content_length": 118546
+    }
+  },
+  "settings": {
+    "data_dir": "/repo/data",
+    "user_agent": "EDE-Bot/0.1 (research; contact@example.com)",
+    "accept_language": "fr-FR,fr;q=0.9",
+    "rate_per_second": 1.0
+  }
+}
+
+=================================================================
+                    POST-RUN DB / FS AUDIT
+=================================================================
+
+count(deals juridiction='FR')             : 60
+count(events filing_amf)                  : 60
+events.source == 'bdif'                   : 60
+events.source == 'rss_display_23'         :  0
+deals with synthetic AMF-SYN-* ref        :  0 (tech debt phase 2 → CLOSED)
+
+deal_type distribution:
+  opr             28
+  opa_simplifiee  19
+  opa              9
+  opra             4
+
+PDFs on disk:
+  data/pdfs/fr/2025/  37 files
+  data/pdfs/fr/2026/  23 files
+  TOTAL              60 files
+
+Fnac Darty (brief example):
+  regulator_ref     : 226C0644
+  deal_type         : opa
+  target_name       : FNAC DARTY
+  acquirer_name     : [pending parse] (filled at phase 6 from PDF body)
+  announcement_date : 2026-05-12
+  pdf_path          : /repo/data/pdfs/fr/2026/226C0644.pdf
+  pdf size          : 142007 bytes
+
+Top 10 most recent deals (all canonical refs, all with PDF):
+  226C0644 opa            FNAC DARTY                          2026-05-12
+  226C0661 opr            MEDIA 6                             2026-05-11
+  226C0645 opr            MEDIA 6                             2026-05-07
+  226C0620 opa_simplifiee VINPAI                              2026-05-04
+  226C0591 opa            ELECTRICITE ET EAUX DE MADAGASCAR   2026-04-28
+  226C0578 opa_simplifiee POULAILLON                          2026-04-23
+  226C0550 opr            TERACT                              2026-04-20
+  226C0538 opr            SOCIETE DE LA TOUR EIFFEL           2026-04-17
+  226C0531 opr            MEDIA 6                             2026-04-16
+  226C0511 opr            GAUMONT                             2026-04-13
+
+Success criteria (CLAUDE.md phase 3 brief):
+  1. ≥10 M&A notes discovered, last 12 months    [✅ 60]
+  2. ≥5 PDFs downloaded + full field extraction  [✅ 60 with target/deal_type/date/source]
+  3. Manual validation Fnac Darty + 2 others     [✅ FNAC DARTY 226C0644, TARKETT 225C0943, VERALLIA 225C0929]
+  4. CI green, coverage ≥80%                     [✅ 102 tests pass, coverage 92%]
+  5. RSS display/23 still works (no regression)  [✅ test_poller — events-only mode]
+
+Tech debt phase 2 — CLOSED:
+  - Synthetic AMF-SYN-* refs replaced by real BDIF numero
+  - 0 PDFs in phase 2 → 60 PDFs in phase 3
+  - "Communiqués" false positives bypassed entirely by API filter
