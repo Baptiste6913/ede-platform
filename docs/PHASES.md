@@ -7,7 +7,7 @@
 | 0 | Bootstrap repo & Oracle setup | 🟢 done | `phase-00-bootstrap` | merged ff-only into main | 2026-05-12 |
 | 1 | Schema DB & migrations | 🟢 done | `phase-01-schema` | [#1 merged](https://github.com/Baptiste6913/ede-platform/pull/1) | 2026-05-12 |
 | 2 | Poller AMF (RSS) | 🟢 done | `phase-02-amf-poller` | [#2 merged](https://github.com/Baptiste6913/ede-platform/pull/2) | 2026-05-13 |
-| 3 | AMF BDIF scraper + close phase 2 tech debt | 🟡 in_progress | `phase-03-amf-bdif` | — | — |
+| 3 | AMF BDIF scraper + close phase 2 tech debt | 🟢 done | `phase-03-amf-bdif` | [#3 merged](https://github.com/Baptiste6913/ede-platform/pull/3) | 2026-05-13 |
 | 4 | Poller Consob | ⚪ pending | — | — | — |
 | 5 | Poller BaFin | ⚪ pending | — | — | — |
 | 6 | News & marché data | ⚪ pending | — | — | — |
@@ -157,4 +157,9 @@ Legend: 🟢 done · 🟡 in_progress · 🔴 blocked · ⚪ pending
 
 ### Validation
 
-Awaiting `VALIDATE PHASE 3`.
+✅ `VALIDATE PHASE 3` received 2026-05-13. PR [#3](https://github.com/Baptiste6913/ede-platform/pull/3) merged at SHA `52d9c76` on `main` with 8 atomic commits preserved (7 phase-3 + 1 tech-debt-update). Two new tech debt items recorded in `docs/DATA_SOURCES.md`:
+
+1. **Cleanup of 13 leftover `AMF-SYN-*` rows** in prod `ede` DB — **owner phase 4 or 4bis**, low severity (single `DELETE … CASCADE`, log to artifacts).
+2. **AMF document type expansion** (DepotOffre / Decisions / CalendrierOffre / PreOffre) — **owner phase 6 or 7**, medium severity (same `BdifPoller` infra, only the `typesDocument` filter changes).
+
+`PreOffre` early-signal handling bundled into item 2 — not split as a separate phase.
