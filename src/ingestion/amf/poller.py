@@ -1,21 +1,20 @@
-"""AMF poller — top-level orchestration.
+"""AMF RSS poller — signal-only since phase 3.
 
-`AmfPoller.run_once()` is the unit of work:
-    1. fetch RSS
-    2. for each matched item:
-       a. discover BDIF URL from AMF detail page (best-effort)
-       b. download PDF (atomic) — best-effort
-       c. parse title + first 5 PDF pages
-       d. dedup-aware upsert in `deals` + emit `filing_amf` event
+`AmfPoller.run_once()` polls the AMF "Communiqués" RSS feed (display/23) and
+emits `filing_amf` events on any deal whose canonical `regulator_ref` is
+mentioned in the RSS title/summary. Unmatched items are dropped — the RSS
+feed contains too much non-M&A noise to safely create deals from it (see
+phase-2 live backfill in `artifacts/phase-02/live-backfill.txt`).
 
-`start_scheduled_poller()` wires the poller into APScheduler with the
+Authoritative document ingestion happens in `BdifPoller` (`bdif_poller.py`).
+
+`start_scheduled_poller()` wires this RSS watcher into APScheduler with the
 configured interval (default 15 min).
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 import httpx
@@ -24,11 +23,9 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from src.core.db import get_sessionmaker
 from src.core.settings import get_settings
-from src.ingestion.amf import parser as amf_parser
-from src.ingestion.amf.bdif_fetcher import BdifFetcher, BdifLink
 from src.ingestion.amf.rate_limiter import RateLimiter
-from src.ingestion.amf.rss_watcher import RssItem, RssWatcher
-from src.ingestion.amf.service import upsert_deal
+from src.ingestion.amf.rss_watcher import RssWatcher
+from src.ingestion.amf.service import record_rss_event
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
@@ -38,17 +35,17 @@ _log = structlog.get_logger(__name__)
 
 @dataclass(frozen=True, slots=True)
 class PollResult:
-    """Aggregate outcome of one `run_once()` invocation."""
+    """Aggregate outcome of one RSS `run_once()` invocation."""
 
-    matched: int
-    created: int
-    skipped: int
-    pdf_downloaded: int
-    pdf_failed: int
+    matched: int  # items matching the M&A regex
+    events_emitted: int  # new filing_amf events
+    duplicates: int  # repeat hits on the same RSS link
+    unmatched: int  # canonical ref had no matching deal
+    no_ref: int  # RSS item had no canonical AMF-YYYY-X-NNNN reference
 
 
 class AmfPoller:
-    """End-to-end orchestrator. Construct once, call `run_once()` per tick."""
+    """RSS-driven event emitter. Construct once, call `run_once()` per tick."""
 
     def __init__(
         self,
@@ -56,7 +53,6 @@ class AmfPoller:
         client: httpx.AsyncClient | None = None,
         rate_limiter: RateLimiter | None = None,
         rss_watcher: RssWatcher | None = None,
-        bdif_fetcher: BdifFetcher | None = None,
         session_factory: async_sessionmaker[AsyncSession] | None = None,
     ) -> None:
         settings = get_settings()
@@ -74,7 +70,6 @@ class AmfPoller:
             jitter_seconds=settings.poller_amf_jitter_seconds,
         )
         self._rss_watcher = rss_watcher or RssWatcher(self._client, self._rate_limiter)
-        self._bdif_fetcher = bdif_fetcher or BdifFetcher(self._client, self._rate_limiter)
         self._session_factory = session_factory or get_sessionmaker()
 
     async def aclose(self) -> None:
@@ -84,81 +79,38 @@ class AmfPoller:
     async def run_once(self) -> PollResult:
         items = await self._rss_watcher.fetch()
         matched = len(items)
-        created = 0
-        skipped = 0
-        pdf_dl = 0
-        pdf_fail = 0
+        emitted = 0
+        duplicates = 0
+        unmatched = 0
+        no_ref = 0
 
         async with self._session_factory() as session:
             for item in items:
-                pdf_path, link = await self._fetch_pdf_safe(item)
-                if pdf_path is not None:
-                    pdf_dl += 1
-                elif link is not None:
-                    pdf_fail += 1
-
-                metadata = self._build_metadata(item, pdf_path)
-                result = await upsert_deal(session, item, metadata, pdf_path=pdf_path)
-                if result.created:
-                    created += 1
+                result = await record_rss_event(session, item)
+                if result.emitted:
+                    emitted += 1
+                elif result.reason == "duplicate":
+                    duplicates += 1
+                elif result.reason == "no_ref":
+                    no_ref += 1
                 else:
-                    skipped += 1
+                    unmatched += 1
 
         _log.info(
-            "amf.poll.run_once",
+            "amf.rss.poll.run_once",
             matched=matched,
-            created=created,
-            skipped=skipped,
-            pdf_downloaded=pdf_dl,
-            pdf_failed=pdf_fail,
+            events_emitted=emitted,
+            duplicates=duplicates,
+            unmatched=unmatched,
+            no_ref=no_ref,
         )
         return PollResult(
             matched=matched,
-            created=created,
-            skipped=skipped,
-            pdf_downloaded=pdf_dl,
-            pdf_failed=pdf_fail,
+            events_emitted=emitted,
+            duplicates=duplicates,
+            unmatched=unmatched,
+            no_ref=no_ref,
         )
-
-    async def _fetch_pdf_safe(
-        self,
-        item: RssItem,
-    ) -> tuple[Path | None, BdifLink | None]:
-        """Discover + download the BDIF PDF, swallowing per-item failures.
-
-        Returns `(path, link)` where either or both may be None.
-        """
-        if not item.link:
-            return (None, None)
-        try:
-            link = await self._bdif_fetcher.discover_bdif_url(item.link)
-        except Exception as exc:
-            _log.warning("amf.bdif.discover_failed", link=item.link, error=str(exc))
-            return (None, None)
-        if link is None:
-            return (None, None)
-        try:
-            year = item.published_date.year if item.published_date else link.year
-            path = await self._bdif_fetcher.download(link, year=year)
-            return (path, link)
-        except Exception as exc:
-            _log.warning(
-                "amf.bdif.download_failed",
-                ref=link.regulator_ref,
-                error=str(exc),
-            )
-            return (None, link)
-
-    @staticmethod
-    def _build_metadata(
-        item: RssItem,
-        pdf_path: Path | None,
-    ) -> amf_parser.ParsedMetadata:
-        title_md = amf_parser.parse_title(item.title)
-        if pdf_path is None:
-            return title_md
-        pdf_md = amf_parser.extract_pdf_metadata(pdf_path)
-        return amf_parser.merge(title_md, pdf_md)
 
 
 def start_scheduled_poller(
@@ -166,11 +118,7 @@ def start_scheduled_poller(
     *,
     interval_minutes: int | None = None,
 ) -> AmfPoller:
-    """Register an AMF poller job on the given APScheduler instance.
-
-    The caller is responsible for `scheduler.start()` and the lifecycle of
-    the returned `AmfPoller` (call `await poller.aclose()` on shutdown).
-    """
+    """Register the RSS event-only poller on the given APScheduler instance."""
     settings = get_settings()
     interval = (
         interval_minutes if interval_minutes is not None else settings.poller_amf_interval_minutes
@@ -181,13 +129,13 @@ def start_scheduled_poller(
         try:
             await poller.run_once()
         except Exception:
-            _log.exception("amf.poll.job_crashed")
+            _log.exception("amf.rss.poll.job_crashed")
 
     scheduler.add_job(
         _job,
         trigger="interval",
         minutes=interval,
-        id="amf_poller",
+        id="amf_rss_poller",
         replace_existing=True,
         max_instances=1,
         coalesce=True,

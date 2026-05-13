@@ -18,6 +18,12 @@ Submodule responsibilities:
 - `service` — dedup on (`juridiction='FR'`, `regulator_ref`) and persist.
 """
 
+from src.ingestion.amf.bdif_poller import BdifPoller, start_scheduled_bdif_poller
 from src.ingestion.amf.poller import AmfPoller, start_scheduled_poller
 
-__all__ = ["AmfPoller", "start_scheduled_poller"]
+__all__ = [
+    "AmfPoller",
+    "BdifPoller",
+    "start_scheduled_bdif_poller",
+    "start_scheduled_poller",
+]
