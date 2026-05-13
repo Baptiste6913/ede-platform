@@ -1,0 +1,39 @@
+﻿WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+
+[notice] A new release of pip is available: 25.0.1 -> 26.1.1
+[notice] To update, run: pip install --upgrade pip
+### ruff check ###
+All checks passed!
+### ruff format ###
+47 files already formatted
+### mypy ###
+Success: no issues found in 20 source files
+### pytest --cov ###
+
+---------- coverage: platform linux, python 3.12.13-final-0 ----------
+Name                                Stmts   Miss Branch BrPart  Cover   Missing
+-------------------------------------------------------------------------------
+src/__init__.py                         0      0      0      0   100%
+src/api/__init__.py                     0      0      0      0   100%
+src/api/middleware.py                  22      0      0      0   100%
+src/api/routes_health.py               22      0      0      0   100%
+src/core/__init__.py                    4      0      0      0   100%
+src/core/db.py                         53      0      8      0   100%
+src/core/enums.py                      24      0      0      0   100%
+src/core/exceptions.py                 11      0      0      0   100%
+src/core/logging.py                    39      0      8      0   100%
+src/core/models.py                    114      0      0      0   100%
+src/core/settings.py                   42      0      0      0   100%
+src/ingestion/__init__.py               0      0      0      0   100%
+src/ingestion/amf/__init__.py           2      0      0      0   100%
+src/ingestion/amf/bdif_fetcher.py      77      5      8      0    94%   146-150, 179
+src/ingestion/amf/parser.py           114     23     26      6    76%   194, 235, 247, 256-270, 277, 281-282, 285-286
+src/ingestion/amf/poller.py            90     19     16      3    79%   82, 98, 132, 135-137, 144-150, 174-195
+src/ingestion/amf/rate_limiter.py      54      1     16      1    97%   104
+src/ingestion/amf/rss_watcher.py       67      3     12      4    91%   123, 141, 143->139, 145
+src/ingestion/amf/service.py           36      0      4      0   100%
+-------------------------------------------------------------------------------
+TOTAL                                 771     51     98     14    92%
+Coverage XML written to file coverage.xml
+
+86 passed in 19.82s
