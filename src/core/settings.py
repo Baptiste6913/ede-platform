@@ -64,7 +64,22 @@ class Settings(BaseSettings):
     obsidian_vault_path: str = "/mnt/obsidian/EDE"
 
     # ---- Scraping ----
-    user_agent: str = "EDE-Bot/0.1 (research; contact@example.com)"
+    user_agent: str = "EDE-Bot/0.1 (research; contact via repo)"
+
+    # ---- Storage paths ----
+    # PDFs land under ${data_dir}/pdfs/{juridiction}/{year}/{regulator_ref}.pdf.
+    # Default ./data on local Windows dev; override to /app/data inside Docker
+    # (set by docker-compose) or /data on the Oracle VM.
+    data_dir: str = "./data"
+
+    # ---- AMF poller (phase 2) ----
+    amf_rss_url: str = "https://www.amf-france.org/fr/flux-rss/display/23"
+    poller_amf_interval_minutes: int = 15
+    poller_amf_rate_per_second: float = 1.0
+    poller_amf_jitter_seconds: float = 0.2
+    poller_amf_max_retries: int = 3
+    poller_amf_timeout_seconds: float = 30.0
+    poller_amf_accept_language: str = "fr-FR,fr;q=0.9"
 
     @property
     def is_prod(self) -> bool:
