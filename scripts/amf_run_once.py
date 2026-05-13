@@ -11,6 +11,7 @@ details captured via an httpx event hook.
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import json
 import sys
 import traceback
@@ -36,10 +37,10 @@ async def main() -> int:
     http_log: list[dict[str, Any]] = []
 
     async def _on_response(resp: httpx.Response) -> None:
-        try:
+        # aread may fail on streamed responses already consumed elsewhere —
+        # safe to ignore for the audit log.
+        with contextlib.suppress(httpx.HTTPError, RuntimeError):
             await resp.aread()
-        except Exception:  # noqa: BLE001
-            pass
         http_log.append(
             {
                 "method": resp.request.method,
@@ -66,7 +67,7 @@ async def main() -> int:
     poller = AmfPoller(client=client, rate_limiter=rl)
     try:
         result = await poller.run_once()
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         print(
             json.dumps(
                 {
