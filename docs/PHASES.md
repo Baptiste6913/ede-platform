@@ -6,7 +6,7 @@
 |---|---|---|---|---|---|
 | 0 | Bootstrap repo & Oracle setup | 🟢 done | `phase-00-bootstrap` | merged ff-only into main | 2026-05-12 |
 | 1 | Schema DB & migrations | 🟢 done | `phase-01-schema` | [#1 merged](https://github.com/Baptiste6913/ede-platform/pull/1) | 2026-05-12 |
-| 2 | Poller AMF | 🟡 in_progress | `phase-02-amf-poller` | — | — |
+| 2 | Poller AMF | 🟢 done | `phase-02-amf-poller` | [#2 merged](https://github.com/Baptiste6913/ede-platform/pull/2) | 2026-05-13 |
 | 3 | Poller Consob | ⚪ pending | — | — | — |
 | 4 | Poller BaFin | ⚪ pending | — | — | — |
 | 5 | News & marché data | ⚪ pending | — | — | — |
