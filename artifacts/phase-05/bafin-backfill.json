@@ -1,0 +1,23 @@
+{
+  "phase": "bafin_run_once",
+  "status": "ok",
+  "result": {
+    "discovered": 16,
+    "created": 16,
+    "skipped": 0,
+    "pdf_downloaded": 16,
+    "pdf_failed": 0,
+    "stopped_on_known": false
+  },
+  "timing": {
+    "started_at_utc": "2026-05-19T16:22:28.732849+00:00",
+    "finished_at_utc": "2026-05-19T16:22:47.339452+00:00",
+    "duration_seconds": 18.61
+  },
+  "settings": {
+    "data_dir": "/repo/data",
+    "since": "2025-05-19",
+    "days_back": 365,
+    "rate_per_second": 1.0
+  }
+}
