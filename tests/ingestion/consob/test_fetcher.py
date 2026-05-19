@@ -19,8 +19,10 @@ if TYPE_CHECKING:
 
 _MINIMAL_PDF = b"%PDF-1.4\n%\xe2\xe3\xcf\xd3\n" + b"X" * 200 + b"\n%%EOF\n"
 _RADWARE_HTML = (
-    b"<!DOCTYPE html>\n<html lang=\"en\">\n<head><title>Radware Captcha</title></head>"
-    + b"<body>" + b"X" * 14000 + b"</body></html>"
+    b'<!DOCTYPE html>\n<html lang="en">\n<head><title>Radware Captcha</title></head>'
+    + b"<body>"
+    + b"X" * 14000
+    + b"</body></html>"
 )
 
 
