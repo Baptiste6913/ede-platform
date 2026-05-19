@@ -81,9 +81,24 @@ class Settings(BaseSettings):
     poller_amf_timeout_seconds: float = 30.0
     poller_amf_accept_language: str = "fr-FR,fr;q=0.9"
 
+    # ---- ScrapingBee (phase 4: Consob — Radware bypass) ----
+    # Free Tier = 1000 calls/month. Hard budget enforced at 900 to leave
+    # headroom for the next month's first incremental polls.
+    scrapingbee_api_key: SecretStr = SecretStr("")
+    scrapingbee_base_url: str = "https://app.scrapingbee.com/api/v1/"
+    scrapingbee_monthly_budget: int = 900
+    # Comma-separated % thresholds at which a Discord alert fires (phase 11).
+    scrapingbee_alert_thresholds: str = "50,75,90"
+    scrapingbee_timeout_seconds: float = 60.0
+
     @property
     def is_prod(self) -> bool:
         return self.env == "prod"
+
+    @property
+    def scrapingbee_alert_threshold_pcts(self) -> tuple[int, ...]:
+        parts = (x.strip() for x in self.scrapingbee_alert_thresholds.split(","))
+        return tuple(sorted(int(p) for p in parts if p))
 
 
 @lru_cache(maxsize=1)
