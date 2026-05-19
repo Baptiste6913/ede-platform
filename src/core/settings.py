@@ -81,9 +81,33 @@ class Settings(BaseSettings):
     poller_amf_timeout_seconds: float = 30.0
     poller_amf_accept_language: str = "fr-FR,fr;q=0.9"
 
+    # ---- ScrapingBee (phase 4: Consob — Radware bypass) ----
+    # Free Tier = 1000 credits/month. Hard budget enforced at 900 to leave
+    # headroom for the next month's first incremental polls.
+    #
+    # Empirically (2026-05-19): Consob's documenti-opa listing returns
+    # the full HTML (152 KB, 50 rows) even with render_js=false and
+    # premium_proxy=false → 1 credit/call. PDFs at /documents/ are NOT
+    # Radware-protected and download via plain httpx (0 credits).
+    scrapingbee_api_key: SecretStr = SecretStr("")
+    scrapingbee_base_url: str = "https://app.scrapingbee.com/api/v1/"
+    scrapingbee_monthly_budget: int = 900
+    # Comma-separated % thresholds at which a Discord alert fires (phase 11).
+    scrapingbee_alert_thresholds: str = "50,75,90"
+    scrapingbee_timeout_seconds: float = 60.0
+    # Cost-optimisation defaults — escalate only if Radware tightens.
+    scrapingbee_render_js: bool = False
+    scrapingbee_premium_proxy: bool = False
+    scrapingbee_country_code: str = "it"
+
     @property
     def is_prod(self) -> bool:
         return self.env == "prod"
+
+    @property
+    def scrapingbee_alert_threshold_pcts(self) -> tuple[int, ...]:
+        parts = (x.strip() for x in self.scrapingbee_alert_thresholds.split(","))
+        return tuple(sorted(int(p) for p in parts if p))
 
 
 @lru_cache(maxsize=1)

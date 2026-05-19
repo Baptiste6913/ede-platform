@@ -313,6 +313,35 @@ class PaperPosition(Base):
     deal: Mapped[Deal] = relationship(back_populates="positions")
 
 
+class VendorApiUsage(Base):
+    """Per-call ledger for paid external APIs (ScrapingBee, GDELT, etc.).
+
+    Used to enforce monthly budgets in `src/ingestion/consob/scrapingbee_client.py`
+    and to feed the Discord usage-threshold alerts (phase 11).
+    """
+
+    __tablename__ = "vendor_api_usage"
+    __table_args__ = (
+        Index("ix_vendor_api_usage_vendor_month", "vendor", "year_month"),
+        Index("ix_vendor_api_usage_ts", "ts"),
+        CheckConstraint("credits_cost >= 0", name="ck_vendor_api_usage_cost_nonneg"),
+    )
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    vendor: Mapped[str] = mapped_column(String(32), nullable=False)
+    year_month: Mapped[str] = mapped_column(String(7), nullable=False)  # 'YYYY-MM'
+    ts: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+    )
+    request_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+    target_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+    credits_cost: Mapped[int] = mapped_column(Integer, nullable=False)
+    http_status: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    extra: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
+
+
 __all__ = [
     "Analysis",
     "Deal",
@@ -320,4 +349,5 @@ __all__ = [
     "PaperPosition",
     "Price",
     "Score",
+    "VendorApiUsage",
 ]

@@ -30,9 +30,7 @@ async def _count_amf_syn(session: AsyncSession) -> int:
 async def _count_orphan_events(session: AsyncSession) -> int:
     result = await session.execute(
         text(
-            "SELECT count(*) FROM events e "
-            "LEFT JOIN deals d ON d.id = e.deal_id "
-            "WHERE d.id IS NULL"
+            "SELECT count(*) FROM events e LEFT JOIN deals d ON d.id = e.deal_id WHERE d.id IS NULL"
         )
     )
     return int(result.scalar_one())

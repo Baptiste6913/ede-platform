@@ -1,0 +1,31 @@
+{
+  "phase": "consob_run_once",
+  "status": "ok",
+  "result": {
+    "discovered": 22,
+    "created": 22,
+    "skipped": 0,
+    "pdf_downloaded": 22,
+    "pdf_failed": 0,
+    "credits_consumed_run": 2,
+    "stopped_on_known": false,
+    "budget_exhausted": false
+  },
+  "scrapingbee": {
+    "month_used_before": 0,
+    "month_used_after": 2,
+    "monthly_budget": 900,
+    "remaining_this_month": 898
+  },
+  "timing": {
+    "started_at_utc": "2026-05-19T14:41:46.008467+00:00",
+    "finished_at_utc": "2026-05-19T14:42:26.817624+00:00",
+    "duration_seconds": 40.81
+  },
+  "settings": {
+    "data_dir": "/repo/data",
+    "scrapingbee_render_js": false,
+    "scrapingbee_premium_proxy": false,
+    "rate_per_second": 1.0
+  }
+}
