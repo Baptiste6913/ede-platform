@@ -14,7 +14,7 @@ Strategy now:
 4. If both fail OR no fallback was wired, raise.
 
 PDFs in the 12-month backfill window stay well within the monthly
-budget (~12 PDFs/year × 1 credit ≈ 12 credits).
+budget (~12 PDFs/year x 1 credit ~= 12 credits).
 """
 
 from __future__ import annotations
