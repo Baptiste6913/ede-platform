@@ -123,10 +123,10 @@ Full live-backfill log: `artifacts/phase-03/bdif-backfill.txt`. API reverse-engi
 
 These items are explicitly **accepted** and scheduled — not blockers for paper trading on the current set of M&A notes.
 
-| # | Item | Severity | Owner | Notes |
+| # | Item | Severity | Owner | Status |
 |---|---|---|---|---|
-| 1 | **Cleanup of leftover `AMF-SYN-*` rows in prod `ede` DB** (13 rows from phase-2 live backfill before BDIF replaced the path) | low | **Phase 4 or 4bis (before Consob)** | Single `DELETE FROM deals WHERE regulator_ref LIKE 'AMF-SYN-%';` + cascade. Document the migration in `artifacts/phase-04*/cleanup-amf-syn.log`. No archive needed. |
-| 2 | **AMF document type expansion** — current BDIF ingestion only fetches `typesDocument=NotesEtAutresInformations` (1786 docs all-time). Targets to add: `DepotOffre` (997), `Decisions` (589), `CalendrierOffre` (885), `PreOffre` (328). Each enriches the timeline with follow-up events on existing deals (filing of supplementary documents, clearance decisions, opening/closing calendars, pre-offer rumours). | medium | **Phase 6 or 7 (under label "AMF document type expansion")** | Same `BdifPoller` infra, only the `typesDocument` filter changes. Each type maps to a distinct `event_type` (already in `event_type_enum`). `PreOffre` bundled in this expansion — not split out as separate phase. |
+| 1 | **Cleanup of leftover `AMF-SYN-*` rows in prod `ede` DB** (originally 13 rows from phase-2 live backfill before BDIF replaced the path) | low | Phase 4bis | **🟢 CLOSED 2026-05-14** (PR #4) — migration `0005_cleanup_amf_syn_legacy` shipped + run against live `ede`. Audit log in `artifacts/phase-04bis/cleanup-log.txt`. **Live finding**: the rows had already been removed by the `DROP DATABASE ede` reset before phase-3 backfill; the migration runs as a defensive no-op now and remains a safety net for any other env that still carries phase-2 data. Backup pre-cleanup: `artifacts/phase-04bis/backup-pre-cleanup-20260513T223650Z.sql` (120 KB). |
+| 2 | **AMF document type expansion** — current BDIF ingestion only fetches `typesDocument=NotesEtAutresInformations` (1786 docs all-time). Targets to add: `DepotOffre` (997), `Decisions` (589), `CalendrierOffre` (885), `PreOffre` (328). Each enriches the timeline with follow-up events on existing deals (filing of supplementary documents, clearance decisions, opening/closing calendars, pre-offer rumours). | medium | **Phase 6 or 7 (under label "AMF document type expansion")** | 🟡 open — Same `BdifPoller` infra, only the `typesDocument` filter changes. Each type maps to a distinct `event_type` (already in `event_type_enum`). `PreOffre` bundled in this expansion — not split out as separate phase. |
 
 ### `Decimal` of accepted PR-questions from phase 3
 

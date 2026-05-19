@@ -1,0 +1,11 @@
+# AMF-SYN-* cleanup audit log
+# Captured before DELETE: 2026-05-13T22:39:25.066388+00:00
+# Total matching rows:    0
+# Database URL:           postgresql+asyncpg://ede:ede@postgres:5432/ede
+#
+{
+  "captured_at_utc": "2026-05-13T22:39:25.066388+00:00",
+  "database_url": "postgresql+asyncpg://ede:ede@postgres:5432/ede",
+  "total_matching_rows": 0,
+  "rows": []
+}

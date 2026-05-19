@@ -8,6 +8,7 @@
 | 1 | Schema DB & migrations | 🟢 done | `phase-01-schema` | [#1 merged](https://github.com/Baptiste6913/ede-platform/pull/1) | 2026-05-12 |
 | 2 | Poller AMF (RSS) | 🟢 done | `phase-02-amf-poller` | [#2 merged](https://github.com/Baptiste6913/ede-platform/pull/2) | 2026-05-13 |
 | 3 | AMF BDIF scraper + close phase 2 tech debt | 🟢 done | `phase-03-amf-bdif` | [#3 merged](https://github.com/Baptiste6913/ede-platform/pull/3) | 2026-05-13 |
+| 4bis | Cleanup `AMF-SYN-*` legacy rows | 🟡 in_progress | `phase-04bis-cleanup-amf-syn` | — | — |
 | 4 | Poller Consob | ⚪ pending | — | — | — |
 | 5 | Poller BaFin | ⚪ pending | — | — | — |
 | 6 | News & marché data | ⚪ pending | — | — | — |
@@ -163,3 +164,37 @@ Legend: 🟢 done · 🟡 in_progress · 🔴 blocked · ⚪ pending
 2. **AMF document type expansion** (DepotOffre / Decisions / CalendrierOffre / PreOffre) — **owner phase 6 or 7**, medium severity (same `BdifPoller` infra, only the `typesDocument` filter changes).
 
 `PreOffre` early-signal handling bundled into item 2 — not split as a separate phase.
+
+---
+
+## Phase 4bis — Cleanup `AMF-SYN-*` legacy rows (closes phase-3 tech debt #1)
+
+### Deliverables checklist
+
+- [x] **`alembic/versions/20260514_0900_0005_cleanup_amf_syn_legacy.py`** — data-only migration: count → `DELETE FROM deals WHERE regulator_ref LIKE 'AMF-SYN-%'`. FK CASCADE drops related events/scores/analyses/paper_positions automatically. No-op when no matching rows exist. Downgrade is a documented manual restore from the pre-cleanup pg_dump.
+- [x] **`scripts/backup_db.py`** — reusable pg_dump wrapper writing to `artifacts/{phase}/backup-pre-{reason}-{UTC-timestamp}.sql`.
+- [x] **`scripts/cleanup_amf_syn.py`** — three-step runner: (1) SELECT all `AMF-SYN-*` rows + write structured JSON audit to `artifacts/phase-04bis/cleanup-log.txt` BEFORE delete; (2) `alembic upgrade head` to apply migration 0005; (3) verify post-state `count(AMF-SYN-*) == 0` AND `count(orphan events) == 0`.
+- [x] **`tests/core/test_migration_0005_cleanup_amf_syn.py`** — 3 integration tests: no-op on clean DB, deletes synthetic rows + cascades events while preserving legit BDIF deals, idempotent on second run.
+- [x] **Reversibility verified** — `alembic upgrade head → downgrade base → upgrade head` runs 0001→0005 in both directions against live TimescaleDB pg16.
+- [x] **Live run on `ede`** — captured in `artifacts/phase-04bis/run-output.txt`.
+
+### Brief success criteria
+
+| # | Criterion | Status |
+|---|---|---|
+| 1 | `count(deals AMF-SYN-*)` returns 0 | ✅ 0 |
+| 2 | `count(events source='rss_display_23' AND deal_id IN deleted set)` returns 0 | ✅ 0 (no `rss_display_23` events existed; all 60 events are `bdif`) |
+| 3 | No orphan events (FK CASCADE) | ✅ verified post-delete via `LEFT JOIN deals` count |
+| 4 | Backup snapshot before delete | ✅ `artifacts/phase-04bis/backup-pre-cleanup-20260513T223650Z.sql` (120 KB) |
+| 5 | Audit log of deleted rows | ✅ `artifacts/phase-04bis/cleanup-log.txt` (`total_matching_rows: 0` — defensive run, see "Live finding" below) |
+| 6 | Tech debt #1 marked CLOSED in `docs/DATA_SOURCES.md` | ✅ updated |
+
+### Live finding
+
+The 13 `AMF-SYN-*` rows from phase-2 live backfill had **already been wiped** by the `DROP DATABASE ede` reset performed at the start of the phase-3 live backfill. The migration runs as a clean no-op on the current `ede` DB (60 BDIF deals, 60 `filing_amf` events with `source='bdif'`, 0 `AMF-SYN-*` rows).
+
+The migration + scripts ship anyway as a **defense-in-depth measure**: any other environment that still carries phase-2 data (e.g. a staging clone preserved before phase 3 backfill) will be cleaned automatically on the next `alembic upgrade head`. The pre-cleanup backup is preserved so the no-op is auditable.
+
+### Validation
+
+Awaiting `VALIDATE PHASE 4bis`.
