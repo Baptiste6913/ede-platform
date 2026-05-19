@@ -30,7 +30,7 @@ from src.ingestion.amf.rate_limiter import RateLimiter
 from src.ingestion.consob import parser as consob_parser
 from src.ingestion.consob.discovery import ConsobDiscoveryClient, OpaRecord
 from src.ingestion.consob.fetcher import ConsobPdfFetcher
-from src.ingestion.consob.scrapingbee_client import (
+from src.core.scrapingbee_client import (
     ScrapingBeeBudgetExceeded,
     ScrapingBeeClient,
 )

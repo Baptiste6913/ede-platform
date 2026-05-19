@@ -23,7 +23,7 @@ from src.core.models import Deal, Event, VendorApiUsage
 from src.ingestion.amf.rate_limiter import RateLimiter
 from src.ingestion.consob.fetcher import ConsobPdfFetcher
 from src.ingestion.consob.poller import ConsobPoller
-from src.ingestion.consob.scrapingbee_client import ScrapingBeeClient
+from src.core.scrapingbee_client import ScrapingBeeClient
 
 if TYPE_CHECKING:
     pass

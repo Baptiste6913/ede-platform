@@ -1,0 +1,96 @@
+{
+  "rows_total": 243,
+  "offer_type_distribution": {
+    "Übernahmeangebot": 111,
+    "Pflichtangebot": 29,
+    "Teilerwerbsangebot": 11,
+    "Delisting-Erwerbsangebot": 50,
+    "Delisting-Rückerwerbsangebot": 3,
+    "Delisting-Übernahmeangebot": 16,
+    "Erwerbsangebot Änderung": 1,
+    "Delisting-Pflichtangebot": 7,
+    "Erwerbsangebot": 3,
+    "Untersagung": 9,
+    "Pflichtangebot / Erwerbsangebot": 1
+  },
+  "year_distribution": {
+    "2026": 2,
+    "2025": 20,
+    "2024": 32,
+    "2023": 21,
+    "2022": 19,
+    "2021": 34,
+    "2020": 26,
+    "2019": 29,
+    "2018": 15,
+    "2017": 23,
+    "2016": 22
+  },
+  "earliest_date": [
+    2016,
+    2,
+    1
+  ],
+  "latest_date": [
+    2026,
+    5,
+    5
+  ],
+  "wrapper_probes": [
+    {
+      "bieter": "UniCredit S.p.A. , Italien",
+      "target": "COMMERZBANK Aktiengesellschaft, Frankfurt am Main",
+      "type": "Übernahmeangebot",
+      "wrapper_url": "https://www.bafin.de/SharedDocs/Downloads/DE/Angebotsunterlage/commerzbank.html?nn=151388",
+      "wrapper_status": 200,
+      "wrapper_html_bytes": 99168,
+      "pdf_candidates": [
+        "https://www.bafin.de/SharedDocs/Downloads/DE/Angebotsunterlage/commerzbank.pdf?__blob=publicationFile&v=1"
+      ],
+      "pdf_url_tested": "https://www.bafin.de/SharedDocs/Downloads/DE/Angebotsunterlage/commerzbank.pdf?__blob=publicationFile&v=1",
+      "pdf_status": 200,
+      "pdf_bytes": 3255699,
+      "pdf_content_type": "application/pdf",
+      "pdf_magic_ok": true,
+      "fixture_saved": "tests/fixtures/bafin/sample_commerzbank_aktiengesellschaft_frankfurt.pdf"
+    },
+    {
+      "bieter": "Worthington Steel GmbH , Nagold",
+      "target": "Klöckner & Co SE , Düsseldorf",
+      "type": "Übernahmeangebot",
+      "wrapper_url": "https://www.bafin.de/SharedDocs/Downloads/DE/Angebotsunterlage/kloeckner-co-se-2.html?nn=151388",
+      "wrapper_status": 200,
+      "wrapper_html_bytes": 99189,
+      "pdf_candidates": [
+        "https://www.bafin.de/SharedDocs/Downloads/DE/Angebotsunterlage/kloeckner-co-se-2.pdf?__blob=publicationFile&v=1"
+      ],
+      "pdf_url_tested": "https://www.bafin.de/SharedDocs/Downloads/DE/Angebotsunterlage/kloeckner-co-se-2.pdf?__blob=publicationFile&v=1",
+      "pdf_status": 200,
+      "pdf_bytes": 1485198,
+      "pdf_content_type": "application/pdf",
+      "pdf_magic_ok": true,
+      "fixture_saved": "tests/fixtures/bafin/sample_kl_ckner_co_se_d_sseldorf.pdf"
+    },
+    {
+      "bieter": "Zest Bidco GmbH , Saarlouis",
+      "target": "PSI Software SE , Berlin",
+      "type": "Übernahmeangebot",
+      "wrapper_url": "https://www.bafin.de/SharedDocs/Downloads/DE/Angebotsunterlage/PSI_Software.html?nn=151388",
+      "wrapper_status": 200,
+      "wrapper_html_bytes": 99339,
+      "pdf_candidates": [
+        "https://www.bafin.de/SharedDocs/Downloads/DE/Angebotsunterlage/PSI_Software.pdf?__blob=publicationFile&v=1"
+      ],
+      "pdf_url_tested": "https://www.bafin.de/SharedDocs/Downloads/DE/Angebotsunterlage/PSI_Software.pdf?__blob=publicationFile&v=1",
+      "pdf_status": 200,
+      "pdf_bytes": 1539037,
+      "pdf_content_type": "application/pdf",
+      "pdf_magic_ok": true,
+      "fixture_saved": "tests/fixtures/bafin/sample_psi_software_se_berlin.pdf"
+    }
+  ],
+  "pagination": {
+    "gtp_links_found": 0,
+    "nav_class_elements": 46
+  }
+}

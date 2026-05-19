@@ -1,0 +1,39 @@
+{
+  "listing": {
+    "status": 200,
+    "final_url": "https://www.bafin.de/DE/die-bafin/publikationen-daten/datenbanken-uebersichten/WPUeG/angebotsunterlagen/angebotsunterlagen_node.html",
+    "content_type": "text/html;charset=utf-8",
+    "html_bytes": 222448,
+    "anti_bot_indicators": {
+      "akamai": false,
+      "cloudflare": false,
+      "validate_perfdrive": false,
+      "captcha_in_title": false
+    },
+    "german_markers_count": {
+      "Angebotsunterlage": 285,
+      "Bieter": 1,
+      "Zielgesellschaft": 1,
+      "Veröffentlich": 7,
+      "WpÜG": 7
+    },
+    "title_tag": "Veröffentlichte Angebotsunterlagen \n\n\n\n\n  -  Bafin",
+    "tables_count": 1,
+    "first_table_rows": 244,
+    "first_table_first_row_html_preview": "<tr><th>Bieter</th><th>Zielgesellschaft</th><th><abbr title=\"International Security Identification Number\">ISIN</abbr></th><th>Angebotsunterlage</th><th>Veröffent-<br/>\nlichung am</th></tr>",
+    "first_table_second_row_html_preview": "<tr><td>UniCredit <abbr title=\"Società per azioni\">S.p.A.</abbr>, Italien</td><td>COMMERZBANK Aktiengesellschaft, Frankfurt am Main</td><td>DE000 CBK1001</td><td><a class=\"RichTextIntLink Publication FTpdf\" href=\"https://www.bafin.de/SharedDocs/Downloads/DE/Angebotsunterlage/commerzbank.html?nn=151388\" title=\"UniCredit S.p.A, Italien\">Übernahmeangebot</a></td><td>05.05.2026</td></tr>",
+    "first_table_classes": [
+      "data"
+    ],
+    "pagination_hints": {
+      "?docId": 0,
+      "gtp": 0,
+      "Seite": 5,
+      "Weiter": 1,
+      "page=": 0
+    },
+    "pdf_link_count": 0,
+    "pdf_link_samples": []
+  },
+  "pdf_samples_count": 0
+}

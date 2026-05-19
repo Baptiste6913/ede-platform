@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import async_sessionmaker
 
 from src.core.exceptions import ExternalServiceError
 from src.core.models import VendorApiUsage
-from src.ingestion.consob.scrapingbee_client import (
+from src.core.scrapingbee_client import (
     ScrapingBeeBudgetExceeded,
     ScrapingBeeClient,
 )
