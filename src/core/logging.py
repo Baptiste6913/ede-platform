@@ -64,6 +64,13 @@ def configure_logging(level: str = "INFO") -> None:
         force=True,
     )
 
+    # httpx INFO-level emits the full request URL (including query string with
+    # api_key for ScrapingBee — confirmed leak in Phase-4 Step-9 live run).
+    # Mute it at WARNING; our service-layer structlog calls already capture
+    # the relevant fields (target_url, status, cost) without secrets.
+    logging.getLogger("httpx").setLevel(logging.WARNING)
+    logging.getLogger("httpcore").setLevel(logging.WARNING)
+
     structlog.configure(
         processors=[
             *shared_processors,
