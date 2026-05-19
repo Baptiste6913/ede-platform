@@ -8,7 +8,7 @@
 | 1 | Schema DB & migrations | 🟢 done | `phase-01-schema` | [#1 merged](https://github.com/Baptiste6913/ede-platform/pull/1) | 2026-05-12 |
 | 2 | Poller AMF (RSS) | 🟢 done | `phase-02-amf-poller` | [#2 merged](https://github.com/Baptiste6913/ede-platform/pull/2) | 2026-05-13 |
 | 3 | AMF BDIF scraper + close phase 2 tech debt | 🟢 done | `phase-03-amf-bdif` | [#3 merged](https://github.com/Baptiste6913/ede-platform/pull/3) | 2026-05-13 |
-| 4bis | Cleanup `AMF-SYN-*` legacy rows | 🟡 in_progress | `phase-04bis-cleanup-amf-syn` | — | — |
+| 4bis | Cleanup `AMF-SYN-*` legacy rows | 🟢 done | `phase-04bis-cleanup-amf-syn` | [#4 merged](https://github.com/Baptiste6913/ede-platform/pull/4) | 2026-05-19 |
 | 4 | Poller Consob | ⚪ pending | — | — | — |
 | 5 | Poller BaFin | ⚪ pending | — | — | — |
 | 6 | News & marché data | ⚪ pending | — | — | — |
@@ -197,4 +197,4 @@ The migration + scripts ship anyway as a **defense-in-depth measure**: any other
 
 ### Validation
 
-Awaiting `VALIDATE PHASE 4bis`.
+✅ `VALIDATE PHASE 4bis` received 2026-05-19. PR [#4](https://github.com/Baptiste6913/ede-platform/pull/4) merged at SHA `8e50a23` on `main` with 4 atomic commits preserved. Live finding accepted: the migration runs as a defense-in-depth no-op on the current `ede` DB (the rows were already wiped by the phase-3 DB reset). Permanent value: reproducible safety net + reusable `scripts/backup_db.py` wrapper for future destructive migrations + 3 integration tests + reversibility 0001→0005 verified. Tech debt #1 officially CLOSED in `docs/DATA_SOURCES.md`.
