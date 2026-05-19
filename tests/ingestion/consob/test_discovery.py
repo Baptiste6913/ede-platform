@@ -144,3 +144,82 @@ def test_derive_ref_returns_none_when_nothing_to_hash() -> None:
         _derive_consob_ref(None, fallback_target=None, fallback_offerente=None, fallback_start=None)
         is None
     )
+
+
+# -------------------------- name trimming (narrative-leak defense) --------------------------
+
+
+def test_trim_company_name_cuts_on_first_comma_marker() -> None:
+    """Narrative-leak case found in Step-9 live run: target_name was
+    receiving the full sentence past the company name."""
+    from src.ingestion.consob.discovery import _trim_company_name
+
+    raw = "Tinexta Spa , ad un corrispettivo unitario pari a 15,00 euro cum dividendo"
+    assert _trim_company_name(raw) == "Tinexta Spa"
+
+
+def test_trim_company_name_cuts_on_rappresentative_marker() -> None:
+    from src.ingestion.consob.discovery import _trim_company_name
+
+    raw = (
+        "Almawave Spa , rappresentative del 21,05% del capitale sociale "
+        "dell'Emittente, corrispondenti alla totalità"
+    )
+    assert _trim_company_name(raw) == "Almawave Spa"
+
+
+def test_trim_company_name_caps_at_120_chars() -> None:
+    from src.ingestion.consob.discovery import _COMPANY_NAME_MAX_LEN, _trim_company_name
+
+    raw = "Z" * 500
+    assert len(_trim_company_name(raw)) == _COMPANY_NAME_MAX_LEN
+
+
+# -------------------------- since cutoff (12-month window) --------------------------
+
+
+async def test_iter_all_stops_when_all_rows_older_than_since(page1_html: str) -> None:
+    """When `since` is set to a future date, every fixture row is filtered
+    out and the iterator must stop on the first page."""
+    from collections.abc import AsyncIterator
+    from datetime import date as _date
+
+    import httpx
+
+    from src.ingestion.consob.discovery import ConsobDiscoveryClient
+    from src.ingestion.consob.scrapingbee_client import ScrapingBeeClient
+
+    pages: dict[str, int] = {"n": 0}
+
+    def handler(_req: httpx.Request) -> httpx.Response:
+        pages["n"] += 1
+        return httpx.Response(
+            200, text=page1_html, headers={"Spb-Cost": "1", "Spb-Initial-Status-Code": "200"}
+        )
+
+    # No DB needed — patch out the budget check.
+    class _NullSB:
+        async def get(self, target_url: str, **_: object) -> object:  # type: ignore[no-untyped-def]
+            resp = handler(httpx.Request("GET", target_url))
+            from src.ingestion.consob.scrapingbee_client import ScrapingBeeResponse
+
+            return ScrapingBeeResponse(
+                status_code=200,
+                text=resp.text,
+                content=resp.content,
+                credits_cost=1,
+                target_url=target_url,
+            )
+
+    client = ConsobDiscoveryClient(_NullSB())  # type: ignore[arg-type]
+    out: list[object] = []
+
+    async def _drain(it: AsyncIterator[object]) -> None:
+        async for r in it:
+            out.append(r)
+
+    # since = far future → every row filtered out
+    await _drain(client.iter_all(max_pages=3, since=_date(2099, 1, 1)))
+    assert out == []
+    assert pages["n"] == 1  # stopped after first page
+    _ = ScrapingBeeClient  # keep import used

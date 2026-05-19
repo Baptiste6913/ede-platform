@@ -9,7 +9,7 @@
 | 2 | Poller AMF (RSS) | 🟢 done | `phase-02-amf-poller` | [#2 merged](https://github.com/Baptiste6913/ede-platform/pull/2) | 2026-05-13 |
 | 3 | AMF BDIF scraper + close phase 2 tech debt | 🟢 done | `phase-03-amf-bdif` | [#3 merged](https://github.com/Baptiste6913/ede-platform/pull/3) | 2026-05-13 |
 | 4bis | Cleanup `AMF-SYN-*` legacy rows | 🟢 done | `phase-04bis-cleanup-amf-syn` | [#4 merged](https://github.com/Baptiste6913/ede-platform/pull/4) | 2026-05-19 |
-| 4 | Poller Consob | ⚪ pending | — | — | — |
+| 4 | Poller Consob | 🟢 done | `phase-04-consob-poller` | (this PR) | 2026-05-19 |
 | 5 | Poller BaFin | ⚪ pending | — | — | — |
 | 6 | News & marché data | ⚪ pending | — | — | — |
 | 7 | Enrichment / PDF parsing & NLP | ⚪ pending | — | — | — |
@@ -198,3 +198,47 @@ The migration + scripts ship anyway as a **defense-in-depth measure**: any other
 ### Validation
 
 ✅ `VALIDATE PHASE 4bis` received 2026-05-19. PR [#4](https://github.com/Baptiste6913/ede-platform/pull/4) merged at SHA `8e50a23` on `main` with 4 atomic commits preserved. Live finding accepted: the migration runs as a defense-in-depth no-op on the current `ede` DB (the rows were already wiped by the phase-3 DB reset). Permanent value: reproducible safety net + reusable `scripts/backup_db.py` wrapper for future destructive migrations + 3 integration tests + reversibility 0001→0005 verified. Tech debt #1 officially CLOSED in `docs/DATA_SOURCES.md`.
+
+---
+
+## Phase 4 — Poller Consob (IT)
+
+### Deliverables checklist
+
+- [x] **`alembic/versions/20260519_1000_0006_vendor_api_usage.py`** — generic `vendor_api_usage` ledger (vendor, year_month, credits_cost, http_status, JSONB extra) + `(vendor, year_month)` index. Drives the ScrapingBee monthly-budget gate and Discord 50/75/90 % alerts.
+- [x] **`src/ingestion/consob/scrapingbee_client.py`** — async, budget-aware ScrapingBee wrapper. Refuses calls past `SCRAPINGBEE_MONTHLY_BUDGET` (default 900 of 1000 Free Tier). Cheap config validated empirically: `render_js=false, premium_proxy=false → 1 credit / listing call`. Inserts a `VendorApiUsage` row per call.
+- [x] **`src/ingestion/consob/discovery.py`** — HTML parser for `<ul class="consobResult">`. `ITALIAN_TYPE_RULES` maps Italian narrative to canonical `DEAL_TYPES`. `iter_all(since=)` stops pagination when every row is older than the date floor.
+- [x] **`src/ingestion/consob/fetcher.py`** — atomic PDF download (`tempfile.mkstemp` + `os.replace`). Direct httpx first (free); validates `%PDF-` magic; falls back to ScrapingBee (~1 credit/PDF) for Radware-protected legacy PDFs.
+- [x] **`src/ingestion/consob/parser.py`** — PyMuPDF (`fitz`) Italian regex extractor for `comunicazione`, `periodo`, `prezzo (Euro X,YY)`, `offerente`, `target`.
+- [x] **`src/ingestion/consob/service.py`** — dedup-aware upsert on `(juridiction='IT', regulator_ref)`. Emits `filing_consob` event with full `OpaRecord` + parsed PDF metadata. Defensive 255-char name truncation (`_safe_name`).
+- [x] **`src/ingestion/consob/poller.py`** — `run_backfill(since=today-365d)` + `run_incremental(since=today-90d, stop_after_known=True)`. Wires ScrapingBee into the PDF fetcher for fallback.
+- [x] **`src/core/logging.py`** — hardened: `httpx` + `httpcore` loggers forced to `WARNING` so vendor URLs (with `api_key` query strings) never leak to stdout again.
+- [x] **`scripts/consob_run_once.py`** + **`scripts/scrapingbee_test.py`** — operational runners.
+- [x] **46 consob tests** (discovery + scrapingbee + parser + service + poller + fetcher) — 25 pure unit + 21 integration. Full suite **151 passed, 91 % coverage**.
+
+### Brief success criteria (re-run after 1st-run fixes)
+
+| # | Criterion | Target | Actual | Status |
+|---|---|---|---|---|
+| 1 | OPAs IT discovered (12-month window) | ≥10 | 22 | ✅ |
+| 2 | PDFs downloaded + validated | ≥5 | 22 (0 failed) | ✅ |
+| 3 | Known-deal validation | ≥1 of 3 | 1/3 (MPS→Mediobanca id 342) | ✅ |
+| 4 | ScrapingBee credits consumed | ≤30 | 2 (898/900 remaining) | ✅ |
+| 5 | AMF regression (FR=60, filing_amf=60) | unchanged | FR=60, 60 events | ✅ |
+| 6 | CI + coverage | green ≥80 % | 151 passed, 91 % | ✅ |
+
+### Step-9 live finding — first run crashed
+
+A first 12-page backfill crashed on `StringDataRightTruncationError` after 252 rows and revealed three Step-0 false-positives:
+
+1. **PDFs `/documents/11973/543xxxx/` (legacy archive) ARE Radware-protected.** Direct httpx returned 15 KB Radware captcha HTML disguised at the `.pdf` URL; the content-length check (`len < 1024`) was bypassed. → **Fix:** `%PDF-` magic-byte check + ScrapingBee fallback wired into `fetcher.py`.
+2. **Discovery extractor leaked the full offer narrative** into `target_name` / `acquirer_name` on rows without `<strong>` markers, overflowing the 255-char column. → **Fix:** `_trim_company_name` (cuts on first comma/period/narrative marker, caps at 120 chars) + defensive 255-char truncation in `service._safe_name`.
+3. **`max_pages=12` walks 12 listing pages of 50 rows = ~16 years of history**, not 12 months. → **Fix:** `since: date | None` parameter on `iter_all`; `run_backfill` defaults to `today-365d`, `run_incremental` to `today-90d`.
+
+### Step-9 security finding — ScrapingBee key leak
+
+During the failed first run, `httpx` INFO-level logging emitted the full request URL (including `?api_key=…` query string) to stdout. Captured artifact `consob-backfill-stdout.txt` was scrubbed in place; **`src/core/logging.py` was hardened** to mute `httpx`/`httpcore` to `WARNING` permanently. Operator rotated the ScrapingBee key 3× over the course of the phase (most recent rotation: post-leak, post-hardening).
+
+### Validation
+
+(awaiting VALIDATE PHASE 4)

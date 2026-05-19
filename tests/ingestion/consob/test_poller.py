@@ -9,6 +9,7 @@ Asserts the full pipeline writes 50 deals + 50 events + downloads 50 PDFs.
 
 from __future__ import annotations
 
+from datetime import date
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -116,7 +117,9 @@ async def test_run_backfill_creates_deals_and_downloads_pdfs(
     )
 
     try:
-        result = await poller.run_backfill(max_pages=1)
+        # since=date(2010,1,1) disables the 12-month cutoff so the test
+        # asserts on all 50 fixture rows regardless of their announce date.
+        result = await poller.run_backfill(max_pages=1, since=date(2010, 1, 1))
     finally:
         await poller.aclose()
 
@@ -178,7 +181,7 @@ async def test_run_incremental_stops_on_known_ref(
         session_factory=sf,
     )
     try:
-        await poller_1.run_backfill(max_pages=1)
+        await poller_1.run_backfill(max_pages=1, since=date(2010, 1, 1))
     finally:
         await poller_1.aclose()
 
@@ -195,7 +198,7 @@ async def test_run_incremental_stops_on_known_ref(
         session_factory=sf,
     )
     try:
-        result = await poller_2.run_incremental(max_pages=1)
+        result = await poller_2.run_incremental(max_pages=1, since=date(2010, 1, 1))
     finally:
         await poller_2.aclose()
 
