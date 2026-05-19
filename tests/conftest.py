@@ -132,7 +132,7 @@ async def _truncate_all(db_engine: Any) -> None:
         await conn.execute(
             sa_text(
                 "TRUNCATE TABLE paper_positions, analyses, scores, events, deals, "
-                "prices RESTART IDENTITY CASCADE"
+                "prices, vendor_api_usage RESTART IDENTITY CASCADE"
             )
         )
 
