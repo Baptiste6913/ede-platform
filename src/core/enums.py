@@ -40,11 +40,14 @@ DealType = Literal[
     "opa_volontaire_totalitaria",
     "opa_volontaire_parziale",
     "opa_consolidamento",
+    "opa_volontaria_preventiva",  # Phase 5 migration 0007 — IT future use
     # DE
     "pflichtangebot",
     "freiwilliges_uebernahmeangebot",
     "erwerbsangebot",
     "delisting_erwerbsangebot",
+    # Cross-jurisdiction (Phase 5 migration 0007)
+    "delisting_offer",
 ]
 DEAL_TYPES: Final[tuple[DealType, ...]] = (
     "opa",
@@ -53,6 +56,7 @@ DEAL_TYPES: Final[tuple[DealType, ...]] = (
     "opa_volontaire_totalitaria",
     "opa_volontaire_parziale",
     "opa_consolidamento",
+    "opa_volontaria_preventiva",
     "ope",
     "opas",
     "opra",
@@ -63,6 +67,7 @@ DEAL_TYPES: Final[tuple[DealType, ...]] = (
     "freiwilliges_uebernahmeangebot",
     "delisting_erwerbsangebot",
     "erwerbsangebot",
+    "delisting_offer",
 )
 
 # ---- Deal status ---------------------------------------------------------

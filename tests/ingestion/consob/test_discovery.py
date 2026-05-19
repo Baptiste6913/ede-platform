@@ -187,7 +187,7 @@ async def test_iter_all_stops_when_all_rows_older_than_since(page1_html: str) ->
     import httpx
 
     from src.ingestion.consob.discovery import ConsobDiscoveryClient
-    from src.ingestion.consob.scrapingbee_client import ScrapingBeeClient
+    from src.core.scrapingbee_client import ScrapingBeeClient
 
     pages: dict[str, int] = {"n": 0}
 
@@ -201,7 +201,7 @@ async def test_iter_all_stops_when_all_rows_older_than_since(page1_html: str) ->
     class _NullSB:
         async def get(self, target_url: str, **_: object) -> object:  # type: ignore[no-untyped-def]
             resp = handler(httpx.Request("GET", target_url))
-            from src.ingestion.consob.scrapingbee_client import ScrapingBeeResponse
+            from src.core.scrapingbee_client import ScrapingBeeResponse
 
             return ScrapingBeeResponse(
                 status_code=200,
