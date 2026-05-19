@@ -45,13 +45,21 @@ def main() -> int:
         print("ERROR: SCRAPINGBEE_API_KEY not set in environment", file=sys.stderr)
         return 3
 
-    params = {
+    # Cost optimisation: test cheap config first (render_js=true,
+    # premium_proxy=false → 5 credits instead of 25). Override via
+    # SCRAPINGBEE_PREMIUM_PROXY env var if user wants premium.
+    import os
+
+    premium = os.environ.get("SCRAPINGBEE_PREMIUM_PROXY", "false").lower() == "true"
+    render_js = os.environ.get("SCRAPINGBEE_RENDER_JS", "true").lower() == "true"
+    params: dict[str, str] = {
         "api_key": key,
         "url": CONSOB_TARGET,
-        "render_js": "true",
-        "premium_proxy": "true",
-        "country_code": "it",
+        "render_js": "true" if render_js else "false",
     }
+    if premium:
+        params["premium_proxy"] = "true"
+        params["country_code"] = "it"
     headers_to_log: dict[str, Any] = {}
     body_len = 0
 
