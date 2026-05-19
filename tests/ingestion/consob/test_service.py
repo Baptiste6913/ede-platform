@@ -130,3 +130,24 @@ async def test_upsert_unknown_deal_type_falls_back_to_default(
     result = await upsert_deal_from_opa(db_session, record, pdf_path=None)
     deal = (await db_session.execute(select(Deal).where(Deal.id == result.deal_id))).scalar_one()
     assert deal.deal_type == "opa_volontaire_totalitaria"  # safe default
+
+
+async def test_upsert_truncates_overlong_names_to_255_chars(
+    db_session: AsyncSession,
+) -> None:
+    """Defensive: discovery may leak narrative text into target/offerente
+    names. The service must clip at 255 (column width) instead of
+    crashing the whole backfill."""
+    long_target = "Yorkville Bhn spa, " + "x" * 500
+    long_offerente = "Acme " + "y" * 500
+    record = _opa(
+        consob_ref="CONSOB-overlong",
+        target_name=long_target,
+        offerente_name=long_offerente,
+    )
+    result = await upsert_deal_from_opa(db_session, record, pdf_path=None)
+    deal = (await db_session.execute(select(Deal).where(Deal.id == result.deal_id))).scalar_one()
+    assert len(deal.target_name) <= 255
+    assert len(deal.acquirer_name) <= 255
+    assert deal.target_name.startswith("Yorkville Bhn spa")
+    assert deal.acquirer_name.startswith("Acme")

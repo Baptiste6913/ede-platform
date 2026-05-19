@@ -14,7 +14,7 @@ Both paths share the same orchestration:
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -40,6 +40,12 @@ if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 _log = structlog.get_logger(__name__)
+
+# Default window for full backfill (12 months) and daily incremental (90 days
+# — large enough that a paused scheduler resuming after a long break still
+# walks back far enough to catch all unseen filings).
+_BACKFILL_DAYS_DEFAULT = 365
+_INCREMENTAL_DAYS_DEFAULT = 90
 
 
 @dataclass(frozen=True, slots=True)
@@ -78,24 +84,51 @@ class ConsobPoller:
             jitter_seconds=settings.poller_amf_jitter_seconds,
         )
         self._discovery = discovery or ConsobDiscoveryClient(self._scrapingbee)
-        self._pdf_fetcher = pdf_fetcher or ConsobPdfFetcher(self._pdf_client, self._rate_limiter)
+        # Wire ScrapingBee into the PDF fetcher so it can fall back when
+        # Radware blocks the direct httpx download.
+        self._pdf_fetcher = pdf_fetcher or ConsobPdfFetcher(
+            self._pdf_client,
+            self._rate_limiter,
+            scrapingbee=self._scrapingbee,
+        )
 
     async def aclose(self) -> None:
         await self._scrapingbee.aclose()
         if self._owns_pdf_client:
             await self._pdf_client.aclose()
 
-    async def run_backfill(self, *, max_pages: int | None = None) -> ConsobPollResult:
-        return await self._run(stop_after_known=False, max_pages=max_pages)
+    async def run_backfill(
+        self,
+        *,
+        max_pages: int | None = None,
+        since: date | None = None,
+    ) -> ConsobPollResult:
+        effective_since = since or (date.today() - timedelta(days=_BACKFILL_DAYS_DEFAULT))
+        return await self._run(
+            stop_after_known=False,
+            max_pages=max_pages,
+            since=effective_since,
+        )
 
-    async def run_incremental(self, *, max_pages: int = 2) -> ConsobPollResult:
-        return await self._run(stop_after_known=True, max_pages=max_pages)
+    async def run_incremental(
+        self,
+        *,
+        max_pages: int = 2,
+        since: date | None = None,
+    ) -> ConsobPollResult:
+        effective_since = since or (date.today() - timedelta(days=_INCREMENTAL_DAYS_DEFAULT))
+        return await self._run(
+            stop_after_known=True,
+            max_pages=max_pages,
+            since=effective_since,
+        )
 
     async def _run(
         self,
         *,
         stop_after_known: bool,
         max_pages: int | None,
+        since: date | None = None,
     ) -> ConsobPollResult:
         discovered = 0
         created = 0
@@ -108,7 +141,10 @@ class ConsobPoller:
 
         try:
             async with self._session_factory() as session:
-                async for record in self._discovery.iter_all(max_pages=max_pages):
+                async for record in self._discovery.iter_all(
+                    max_pages=max_pages,
+                    since=since,
+                ):
                     discovered += 1
                     if stop_after_known and await _ref_already_known(session, record.consob_ref):
                         stopped_on_known = True

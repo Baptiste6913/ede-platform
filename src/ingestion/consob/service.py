@@ -30,6 +30,23 @@ if TYPE_CHECKING:
 
 _log = structlog.get_logger(__name__)
 
+_NAME_MAX_LEN = 255  # Mirrors Deal.target_name / Deal.acquirer_name column width.
+
+
+def _safe_name(value: str | None) -> str:
+    """Truncate to the column width and fall back to a sentinel.
+
+    Defensive: discovery may still produce odd extractions on
+    weirdly-formatted rows; this keeps the upsert from crashing the
+    whole backfill on a single bad row.
+    """
+    if not value:
+        return "[pending parse]"
+    text = value.strip()
+    if len(text) > _NAME_MAX_LEN:
+        text = text[:_NAME_MAX_LEN].rstrip()
+    return text or "[pending parse]"
+
 
 @dataclass(frozen=True, slots=True)
 class UpsertResult:
@@ -71,8 +88,8 @@ async def upsert_deal_from_opa(
     deal = Deal(
         juridiction="IT",
         regulator_ref=ref,
-        target_name=record.target_name or "[pending parse]",
-        acquirer_name=record.offerente_name or "[pending parse]",
+        target_name=_safe_name(record.target_name),
+        acquirer_name=_safe_name(record.offerente_name),
         announcement_date=announcement,
         deal_type=record.deal_type or "opa_volontaire_totalitaria",
         status="announced",

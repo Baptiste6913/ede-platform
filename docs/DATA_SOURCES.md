@@ -138,7 +138,104 @@ These items are explicitly **accepted** and scheduled — not blockers for paper
 
 ---
 
-## Consob (IT) — phase 4 (pending)
+## Consob (IT) — phase 4 ✅
+
+### Endpoints
+
+| Resource | URL pattern |
+|---|---|
+| Listing (HTML, paginated) | `https://www.consob.it/web/area-pubblica/documenti-opa?...&_it_consob_OpaDocumentsPortlet_delta=50&_it_consob_OpaDocumentsPortlet_cur={page}` |
+| PDF (recent, ~2024+) | `https://www.consob.it/documents/11973/9797550/{filename}.pdf/{uuid}?...` |
+| PDF (legacy archive) | `https://www.consob.it/documents/11973/543xxxx/{filename}.pdf/{uuid}?...` |
+
+### Anti-bot landscape — Radware Bot Manager
+
+The Consob site is fronted by Radware Bot Manager. Behavior observed in
+Step-0 / Step-9 (2026-05-19):
+
+| Endpoint family | Direct httpx | ScrapingBee (cheap config) |
+|---|---|---|
+| `/web/area-pubblica/documenti-opa` (listing) | **403 → validate.perfdrive.com captcha** | ✅ 1 credit/page, full HTML |
+| `/documents/11973/9797550/*.pdf` (recent) | ✅ free, returns real PDF | (not needed) |
+| `/documents/11973/543xxxx/*.pdf` (legacy) | **redirected to Radware captcha, returns 15 KB HTML** | ✅ 1 credit/PDF (fallback) |
+
+The fetcher (`src/ingestion/consob/fetcher.py`) validates `%PDF-` magic bytes
+on every response and falls back to ScrapingBee when direct httpx returns
+non-PDF content.
+
+### ScrapingBee config
+
+- API base: `https://app.scrapingbee.com/api/v1/`
+- **Auth: API key in `.env` (`SCRAPINGBEE_API_KEY`), NEVER committed.**
+- Cheap config used (empirically validated cheapest viable on Consob):
+  `render_js=false`, `premium_proxy=false` → **1 credit / call**
+- Monthly budget: 900 of 1000-credit Free Tier (100 headroom for incremental
+  ticks of the next month). Enforced via `vendor_api_usage` ledger
+  (migration 0006). Discord alerts at 50/75/90% (phase 11).
+- Step-9 backfill (12-month window, 22 deals, 22 PDFs): **2 credits consumed**.
+
+### Logging hardening (Phase-4 Step-9 security fix)
+
+- `httpx` and `httpcore` loggers are forced to `WARNING` in `src/core/logging.py`.
+  Default INFO output included the full request URL with query string, which
+  on the ScrapingBee endpoint contained `api_key=...`. Muting prevents repeat.
+- **Operational rule (any new vendor integration): vendor API keys live in
+  `.env`. NEVER log full URLs with query strings. Pass secrets via headers
+  or POST body when the vendor supports it.**
+
+### Italian deal-type classifier
+
+`src/ingestion/consob/discovery.py::ITALIAN_TYPE_RULES` maps the narrative
+description on each row to the canonical `DEAL_TYPES` enum:
+
+| Italian narrative | Canonical |
+|---|---|
+| `acquisto e scambio`, `di scambio` | `opas` |
+| `consolidamento` | `opa_consolidamento` |
+| `residuale`, `obbligatoria` | `opa_obligatoire` |
+| `volontaria totalitaria`, `volontaria preventiva`, `volontaria` | `opa_volontaire_totalitaria` |
+| `volontaria parziale` | `opa_volontaire_parziale` |
+
+### Dedup
+
+- Unique key: `(juridiction='IT', regulator_ref)` where `regulator_ref =
+  CONSOB-{pdf_filename_slug}` (e.g. `CONSOB-opa_bancasistema_20260511`).
+- Fallback when no PDF link: `CONSOB-{slug(target)}-{slug(offerente)}-{YYYYMMDD}`.
+
+### Polling cadence
+
+- `run_backfill(since=today-365d)` — once at deploy, populates ~22 OPAs.
+- `run_incremental(since=today-90d, stop_after_known=True)` — daily tick,
+  breaks on first known `consob_ref`, typically 1 listing call + 0–2 PDFs.
+
+### On-disk storage
+
+```
+data/pdfs/it/{year}/CONSOB-{slug}.pdf
+```
+
+Atomic write via `tempfile.mkstemp` + `os.replace`. Idempotent on rerun.
+
+### Tech debt opened at phase 4
+
+| # | Item | Severity | Owner |
+|---|---|---|---|
+| 1 | **4/22 deals carry `[pending parse]`** in `target_name` or `acquirer_name`. Discovery extractor is robust when both `<strong>` markers are present (offerente + target). Rows with missing markers leave the field unfilled. Resolution: the PDF body parser already extracts `target_name_from_pdf` / `offerente_name_from_pdf` — wire it to back-fill placeholders during upsert. | medium | phase 6 |
+| 2 | **Consob *Comunicati ex art. 102 TUF*** (pre-OPA announcements, often days/weeks before the formal *documento d'offerta*) are not ingested. These are the earliest possible signal for an event-driven strategy. Resolution: add a sibling `ConsobComunicatiClient` in Phase 6-7 multi-document-type expansion (one extra listing endpoint, same Radware/ScrapingBee path). | medium | phase 6-7 |
+| 3 | **Legacy archive PDFs (`/documents/11973/543xxxx/`)** require ScrapingBee fallback (~1 credit each) when ingested. Currently silently absorbed by the fallback path. Resolution: monitor the share of fallback hits via `vendor_api_usage.extra.fallback=true` and tune the budget if the historical-backfill scenario ever consumes >50 % of the monthly cap. | low | monitor |
+
+### Phase-4 Step-9 incident — narrative-leak crash
+
+The first 12-page run crashed on `StringDataRightTruncationError` after 252
+rows. Two upstream causes (now fixed):
+
+1. **Discovery extractor leaked the full narrative** into `target_name` /
+   `acquirer_name` when `<strong>` tags were missing on a row (200+ char
+   sentences overflowing the 255-char column). Fixed by `_trim_company_name`
+   (cuts on first comma/period/narrative marker, caps at 120 chars) + a
+   defensive 255-char truncation in `service._safe_name`.
+2. **Direct httpx silently accepted 15 KB Radware captcha pages as "PDFs"**.
+   Fixed by the `%PDF-` magic check + ScrapingBee fallback in `fetcher.py`.
 
 ## BaFin (DE) — phase 5 (pending)
 

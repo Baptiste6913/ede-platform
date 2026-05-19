@@ -275,8 +275,24 @@ def _derive_consob_ref(
     return "CONSOB-" + "-".join(parts)
 
 
+_COMPANY_NAME_MAX_LEN = 120
+# Anything past one of these markers is no longer the company name —
+# it's offer-narrative leak ("Banca X spa, ad un corrispettivo di ...").
+_COMPANY_NAME_TAILS = re.compile(
+    r"\s*(?:,|\.|;|:|\(|\bai sensi\b|\bavente\b|\brappresentative\b|\bad un\b|\bal prezzo\b)",
+    re.IGNORECASE,
+)
+
+
 def _trim_company_name(name: str) -> str:
-    return re.sub(r"\s+", " ", name).strip().rstrip(".,;:")
+    text = re.sub(r"\s+", " ", name).strip().rstrip(".,;:")
+    # Cut at the first narrative marker so we keep only the company name.
+    m = _COMPANY_NAME_TAILS.search(text)
+    if m:
+        text = text[: m.start()].rstrip().rstrip(".,;:")
+    if len(text) > _COMPANY_NAME_MAX_LEN:
+        text = text[:_COMPANY_NAME_MAX_LEN].rstrip()
+    return text
 
 
 def _slugify(text: str) -> str:
@@ -296,10 +312,16 @@ class ConsobDiscoveryClient:
         self._listing_template = LISTING_URL_TEMPLATE
         _ = settings  # placeholder for future per-jurisdiction toggles
 
-    async def iter_all(self, *, max_pages: int | None = None) -> AsyncIterator[OpaRecord]:
-        """Yield every `OpaRecord` discovered until pages run out or
-        `max_pages` is reached. Pagination stops automatically when a
-        page returns fewer than `page_size` rows."""
+    async def iter_all(
+        self,
+        *,
+        max_pages: int | None = None,
+        since: date | None = None,
+    ) -> AsyncIterator[OpaRecord]:
+        """Yield every `OpaRecord` discovered until pages run out, the
+        `max_pages` cap is hit, or every row on a page is older than
+        `since` (date floor on `period_start`). Items with no parseable
+        `period_start` are emitted regardless of `since`."""
         page = 1
         while True:
             if max_pages is not None and page > max_pages:
@@ -313,8 +335,23 @@ class ConsobDiscoveryClient:
                 rows=len(records),
                 cost=resp.credits_cost,
             )
-            for record in records:
-                yield record
+            if since is not None and records:
+                fresh_count = sum(
+                    1 for r in records if r.period_start is None or r.period_start >= since
+                )
+                if fresh_count == 0:
+                    _log.info(
+                        "consob.discovery.stop_on_since",
+                        page=page,
+                        since=since.isoformat(),
+                    )
+                    return
+                for record in records:
+                    if record.period_start is None or record.period_start >= since:
+                        yield record
+            else:
+                for record in records:
+                    yield record
             if len(records) < self._page_size:
                 return
             page += 1

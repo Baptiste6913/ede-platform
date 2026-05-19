@@ -1,0 +1,85 @@
+﻿WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+
+[notice] A new release of pip is available: 25.0.1 -> 26.1.1
+[notice] To update, run: pip install --upgrade pip
+HTTP Request: GET https://www.consob.it/documents/11973/11173223/opa_antares_20260216.pdf/3d16d01f-e8d0-32eb-6dad-b3aefab28c5f?version=1.0&t=1771247533790&download=false "HTTP/1.1 200 200"
+{"ref": "CONSOB-opa_antares_20260216", "bytes": 14718019, "path": "/repo/data/pdfs/it/2026/CONSOB-opa_antares_20260216.pdf", "event": "consob.pdf.downloaded", "logger": "src.ingestion.consob.fetcher", "level": "info", "timestamp": "2026-05-19T14:42:02.623008Z"}
+{"ref": "CONSOB-opa_antares_20260216", "deal_id": 333, "target": null, "deal_type": "opa_obligatoire", "has_document": true, "event": "consob.upsert.created", "logger": "src.ingestion.consob.service", "level": "info", "timestamp": "2026-05-19T14:42:02.767143Z"}
+HTTP Request: GET https://www.consob.it/documents/11973/11173223/opa_health_italia_20260409.pdf/63a6f544-5c05-5c36-e3f4-620d67ae7972?version=1.0&t=1770374793287&download=false "HTTP/1.1 200 200"
+{"ref": "CONSOB-opa_health_italia_20260409", "bytes": 19385393, "path": "/repo/data/pdfs/it/2026/CONSOB-opa_health_italia_20260409.pdf", "event": "consob.pdf.downloaded", "logger": "src.ingestion.consob.fetcher", "level": "info", "timestamp": "2026-05-19T14:42:05.220088Z"}
+{"ref": "CONSOB-opa_health_italia_20260409", "deal_id": 334, "target": "Health Italia Spa", "deal_type": "opa_obligatoire", "has_document": true, "event": "consob.upsert.created", "logger": "src.ingestion.consob.service", "level": "info", "timestamp": "2026-05-19T14:42:05.378412Z"}
+HTTP Request: GET https://www.consob.it/documents/11973/11173223/opas_Banca_Sistema_20260116.pdf/35910c2c-1d58-445e-c93c-a297cb5f3557?version=1.0&t=1768571745569&download=false "HTTP/1.1 200 200"
+{"ref": "CONSOB-opas_Banca_Sistema_20260116", "bytes": 2051278, "path": "/repo/data/pdfs/it/2026/CONSOB-opas_Banca_Sistema_20260116.pdf", "event": "consob.pdf.downloaded", "logger": "src.ingestion.consob.fetcher", "level": "info", "timestamp": "2026-05-19T14:42:06.219431Z"}
+{"ref": "CONSOB-opas_Banca_Sistema_20260116", "deal_id": 335, "target": "Banca Sistema Spa", "deal_type": "opas", "has_document": true, "event": "consob.upsert.created", "logger": "src.ingestion.consob.service", "level": "info", "timestamp": "2026-05-19T14:42:06.391587Z"}
+HTTP Request: GET https://www.consob.it/documents/11973/9797550/opa_eles_20260105.pdf/18a730f7-de22-6923-1c48-b61f81cba606?version=1.0&t=1766135766099&download=false "HTTP/1.1 200 200"
+{"ref": "CONSOB-opa_eles_20260105", "bytes": 1405996, "path": "/repo/data/pdfs/it/2026/CONSOB-opa_eles_20260105.pdf", "event": "consob.pdf.downloaded", "logger": "src.ingestion.consob.fetcher", "level": "info", "timestamp": "2026-05-19T14:42:07.256322Z"}
+{"ref": "CONSOB-opa_eles_20260105", "deal_id": 336, "target": "Eles Semiconductor Equipment Spa", "deal_type": "opa_obligatoire", "has_document": true, "event": "consob.upsert.created", "logger": "src.ingestion.consob.service", "level": "info", "timestamp": "2026-05-19T14:42:07.438700Z"}
+HTTP Request: GET https://www.consob.it/documents/11973/9797550/opa_spindox_20251215.pdf/05e590ab-3b41-70e4-dd5a-3993e348c7f1?version=1.0&t=1765794867359&download=false "HTTP/1.1 200 200"
+{"ref": "CONSOB-opa_spindox_20251215", "bytes": 2728770, "path": "/repo/data/pdfs/it/2025/CONSOB-opa_spindox_20251215.pdf", "event": "consob.pdf.downloaded", "logger": "src.ingestion.consob.fetcher", "level": "info", "timestamp": "2026-05-19T14:42:08.661623Z"}
+{"ref": "CONSOB-opa_spindox_20251215", "deal_id": 337, "target": "Spindox Spa", "deal_type": "opa_obligatoire", "has_document": true, "event": "consob.upsert.created", "logger": "src.ingestion.consob.service", "level": "info", "timestamp": "2026-05-19T14:42:08.873789Z"}
+HTTP Request: GET https://www.consob.it/documents/11973/9797550/opa_mare_20251205.pdf/efe44fae-dbee-db5a-6b36-6dc1d011d52e?version=1.0&t=1764331106900&download=false "HTTP/1.1 200 200"
+{"ref": "CONSOB-opa_mare_20251205", "bytes": 1458723, "path": "/repo/data/pdfs/it/2025/CONSOB-opa_mare_20251205.pdf", "event": "consob.pdf.downloaded", "logger": "src.ingestion.consob.fetcher", "level": "info", "timestamp": "2026-05-19T14:42:09.662982Z"}
+{"ref": "CONSOB-opa_mare_20251205", "deal_id": 338, "target": "Eles Semiconductor Equipment Spa", "deal_type": "opa_volontaire_totalitaria", "has_document": true, "event": "consob.upsert.created", "logger": "src.ingestion.consob.service", "level": "info", "timestamp": "2026-05-19T14:42:09.878404Z"}
+HTTP Request: GET https://www.consob.it/documents/11973/9797550/opa_ala_20251201.pdf/2a6a3d66-37c0-f56c-ac6b-41cadd8ab468?version=1.0&t=1765359905870&download=false "HTTP/1.1 200 200"
+{"ref": "CONSOB-opa_ala_20251201", "bytes": 17327548, "path": "/repo/data/pdfs/it/2025/CONSOB-opa_ala_20251201.pdf", "event": "consob.pdf.downloaded", "logger": "src.ingestion.consob.fetcher", "level": "info", "timestamp": "2026-05-19T14:42:12.442968Z"}
+{"ref": "CONSOB-opa_ala_20251201", "deal_id": 339, "target": "Ala Spa", "deal_type": "opa_obligatoire", "has_document": true, "event": "consob.upsert.created", "logger": "src.ingestion.consob.service", "level": "info", "timestamp": "2026-05-19T14:42:12.712502Z"}
+HTTP Request: GET https://www.consob.it/documents/11973/9797550/opa_almawave_20251117.pdf/aee6d015-accb-eac7-2e08-481fec834ea2?version=1.0&t=1763130632619&download=false "HTTP/1.1 200 200"
+{"ref": "CONSOB-opa_almawave_20251117", "bytes": 6660318, "path": "/repo/data/pdfs/it/2025/CONSOB-opa_almawave_20251117.pdf", "event": "consob.pdf.downloaded", "logger": "src.ingestion.consob.fetcher", "level": "info", "timestamp": "2026-05-19T14:42:13.931070Z"}
+{"ref": "CONSOB-opa_almawave_20251117", "deal_id": 340, "target": "Almawave Spa", "deal_type": "opa_volontaire_totalitaria", "has_document": true, "event": "consob.upsert.created", "logger": "src.ingestion.consob.service", "level": "info", "timestamp": "2026-05-19T14:42:14.120201Z"}
+HTTP Request: GET https://www.consob.it/documents/11973/9797550/opa_palingeo_20251027.pdf/cf025b6c-b585-7cf4-3224-6ed2fc9fc433?version=1.0&t=1761559308256&download=false "HTTP/1.1 200 200"
+{"ref": "CONSOB-opa_palingeo_20251027", "bytes": 7450143, "path": "/repo/data/pdfs/it/2025/CONSOB-opa_palingeo_20251027.pdf", "event": "consob.pdf.downloaded", "logger": "src.ingestion.consob.fetcher", "level": "info", "timestamp": "2026-05-19T14:42:15.856617Z"}
+{"ref": "CONSOB-opa_palingeo_20251027", "deal_id": 341, "target": "Palingeo", "deal_type": "opa_obligatoire", "has_document": true, "event": "consob.upsert.created", "logger": "src.ingestion.consob.service", "level": "info", "timestamp": "2026-05-19T14:42:16.041820Z"}
+HTTP Request: GET https://www.consob.it/documents/11973/9797550/ops_montepaschi_20250714.pdf/3c5564d1-e993-8042-0f67-aa8ca1264b0e?version=1.0&t=1751693617850&download=false "HTTP/1.1 200 200"
+{"ref": "CONSOB-ops_montepaschi_20250714", "bytes": 4422208, "path": "/repo/data/pdfs/it/2025/CONSOB-ops_montepaschi_20250714.pdf", "event": "consob.pdf.downloaded", "logger": "src.ingestion.consob.fetcher", "level": "info", "timestamp": "2026-05-19T14:42:17.037792Z"}
+{"ref": "CONSOB-ops_montepaschi_20250714", "deal_id": 342, "target": "Mediobanca-Banca di Credito Finanziario Spa", "deal_type": "opas", "has_document": true, "event": "consob.upsert.created", "logger": "src.ingestion.consob.service", "level": "info", "timestamp": "2026-05-19T14:42:17.271426Z"}
+HTTP Request: GET https://www.consob.it/documents/11973/9797550/opa_bialetti_20250707.pdf/ec0fe530-d442-b144-3bf2-7a86415326a7?version=1.0&t=1752150728895&download=false "HTTP/1.1 200 200"
+{"ref": "CONSOB-opa_bialetti_20250707", "bytes": 5049181, "path": "/repo/data/pdfs/it/2025/CONSOB-opa_bialetti_20250707.pdf", "event": "consob.pdf.downloaded", "logger": "src.ingestion.consob.fetcher", "level": "info", "timestamp": "2026-05-19T14:42:18.318681Z"}
+{"ref": "CONSOB-opa_bialetti_20250707", "deal_id": 343, "target": "Bialetti Spa", "deal_type": "opa_obligatoire", "has_document": true, "event": "consob.upsert.created", "logger": "src.ingestion.consob.service", "level": "info", "timestamp": "2026-05-19T14:42:18.790866Z"}
+HTTP Request: GET https://www.consob.it/documents/11973/9797550/ops_Banca_Popolare_Sondrio_20250616.pdf/f554472c-33fe-1ede-ad0e-63d53f5ff8fa?version=1.0&t=1749203433633&download=false "HTTP/1.1 200 200"
+{"ref": "CONSOB-ops_Banca_Popolare_Sondrio_20250616", "bytes": 3246006, "path": "/repo/data/pdfs/it/2025/CONSOB-ops_Banca_Popolare_Sondrio_20250616.pdf", "event": "consob.pdf.downloaded", "logger": "src.ingestion.consob.fetcher", "level": "info", "timestamp": "2026-05-19T14:42:19.622317Z"}
+{"ref": "CONSOB-ops_Banca_Popolare_Sondrio_20250616", "deal_id": 344, "target": "Banca Popolare di Sondrio S", "deal_type": "opas", "has_document": true, "event": "consob.upsert.created", "logger": "src.ingestion.consob.service", "level": "info", "timestamp": "2026-05-19T14:42:19.790760Z"}
+HTTP Request: GET https://www.consob.it/documents/11973/9797550/opa_Alkemy_20250609.pdf/7d34b102-d152-787c-41ac-e5152d1fadd9?version=1.0&t=1749480240987&download=false "HTTP/1.1 200 200"
+{"ref": "CONSOB-opa_Alkemy_20250609", "bytes": 1806289, "path": "/repo/data/pdfs/it/2025/CONSOB-opa_Alkemy_20250609.pdf", "event": "consob.pdf.downloaded", "logger": "src.ingestion.consob.fetcher", "level": "info", "timestamp": "2026-05-19T14:42:20.599744Z"}
+{"ref": "CONSOB-opa_Alkemy_20250609", "deal_id": 345, "target": "Alkemy S", "deal_type": null, "has_document": true, "event": "consob.upsert.created", "logger": "src.ingestion.consob.service", "level": "info", "timestamp": "2026-05-19T14:42:20.758360Z"}
+HTTP Request: GET https://www.consob.it/documents/11973/9797550/Opa_IlSole24Ore_20250603.pdf/9f1eaf2d-4eb3-3612-aab0-b7eb2eb29598?version=1.0&t=1748421998484&download=false "HTTP/1.1 200 200"
+{"ref": "CONSOB-Opa_IlSole24Ore_20250603", "bytes": 1483548, "path": "/repo/data/pdfs/it/2025/CONSOB-Opa_IlSole24Ore_20250603.pdf", "event": "consob.pdf.downloaded", "logger": "src.ingestion.consob.fetcher", "level": "info", "timestamp": "2026-05-19T14:42:21.585559Z"}
+{"ref": "CONSOB-Opa_IlSole24Ore_20250603", "deal_id": 346, "target": "Il Sole 24 Ore Spa", "deal_type": "opa_volontaire_totalitaria", "has_document": true, "event": "consob.upsert.created", "logger": "src.ingestion.consob.service", "level": "info", "timestamp": "2026-05-19T14:42:21.752716Z"}
+HTTP Request: GET https://www.consob.it/documents/11973/9797550/opa_illimity_20250519.pdf/4c9b537c-54b0-0057-357a-451785b2511d?version=1.0&t=1747032853909&download=false "HTTP/1.1 200 200"
+{"ref": "CONSOB-opa_illimity_20250519", "bytes": 2244172, "path": "/repo/data/pdfs/it/2025/CONSOB-opa_illimity_20250519.pdf", "event": "consob.pdf.downloaded", "logger": "src.ingestion.consob.fetcher", "level": "info", "timestamp": "2026-05-19T14:42:22.845308Z"}
+{"ref": "CONSOB-opa_illimity_20250519", "deal_id": 347, "target": "Illimity Bank Spa", "deal_type": "opas", "has_document": true, "event": "consob.upsert.created", "logger": "src.ingestion.consob.service", "level": "info", "timestamp": "2026-05-19T14:42:23.002787Z"}
+HTTP Request: GET https://app.scrapingbee.com/api/v1/?api_key=[REDACTED]&url=https%3A%2F%2Fwww.consob.it%2Fweb%2Farea-pubblica%2Fdocumenti-opa%3Fp_p_id%3Dit_consob_OpaDocumentsPortlet%26p_p_lifecycle%3D0%26p_p_state%3Dnormal%26p_p_mode%3Dview%26_it_consob_OpaDocumentsPortlet_delta%3D50%26_it_consob_OpaDocumentsPortlet_resetCur%3Dfalse%26_it_consob_OpaDocumentsPortlet_cur%3D2&render_js=false "HTTP/1.1 200 OK"
+{"page": 2, "rows": 50, "cost": 1, "event": "consob.discovery.page", "logger": "src.ingestion.consob.discovery", "level": "info", "timestamp": "2026-05-19T14:42:26.813590Z"}
+{"page": 2, "since": "2025-05-19", "event": "consob.discovery.stop_on_since", "logger": "src.ingestion.consob.discovery", "level": "info", "timestamp": "2026-05-19T14:42:26.813786Z"}
+{"discovered": 22, "created": 22, "skipped": 0, "pdf_downloaded": 22, "pdf_failed": 0, "credits_consumed": 2, "stopped_on_known": false, "budget_exhausted": false, "event": "consob.poll.run", "logger": "src.ingestion.consob.poller", "level": "info", "timestamp": "2026-05-19T14:42:26.817430Z"}
+{
+  "phase": "consob_run_once",
+  "status": "ok",
+  "result": {
+    "discovered": 22,
+    "created": 22,
+    "skipped": 0,
+    "pdf_downloaded": 22,
+    "pdf_failed": 0,
+    "credits_consumed_run": 2,
+    "stopped_on_known": false,
+    "budget_exhausted": false
+  },
+  "scrapingbee": {
+    "month_used_before": 0,
+    "month_used_after": 2,
+    "monthly_budget": 900,
+    "remaining_this_month": 898
+  },
+  "timing": {
+    "started_at_utc": "2026-05-19T14:41:46.008467+00:00",
+    "finished_at_utc": "2026-05-19T14:42:26.817624+00:00",
+    "duration_seconds": 40.81
+  },
+  "settings": {
+    "data_dir": "/repo/data",
+    "scrapingbee_render_js": false,
+    "scrapingbee_premium_proxy": false,
+    "rate_per_second": 1.0
+  }
+}
+
