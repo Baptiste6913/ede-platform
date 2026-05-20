@@ -1,0 +1,64 @@
+﻿WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+
+[notice] A new release of pip is available: 25.0.1 -> 26.1.1
+[notice] To update, run: pip install --upgrade pip
+{"reason": "non_offer_narrative", "offer_type": "Untersagung", "bieter": "Deutsche Balaton Aktiengesellschaft, Heidelberg", "target": "Biofrontera AG , Leverkusen", "event": "bafin.discovery.row.skipped", "logger": "src.ingestion.bafin.discovery", "level": "info", "timestamp": "2026-05-19T16:22:29.601966Z"}
+{"reason": "non_offer_narrative", "offer_type": "Untersagung", "bieter": "Handgo (China) Holding Co. Limited, Volksrepublik China", "target": "Panamax Aktiengesellschaft, Frankfurt am Main", "event": "bafin.discovery.row.skipped", "logger": "src.ingestion.bafin.discovery", "level": "info", "timestamp": "2026-05-19T16:22:29.602506Z"}
+{"rows": 232, "since": "2025-05-19", "event": "bafin.discovery.page", "logger": "src.ingestion.bafin.discovery", "level": "info", "timestamp": "2026-05-19T16:22:29.605741Z"}
+{"ref": "BAFIN-DE000CBK1001-20260505", "bytes": 3255699, "path": "/repo/data/pdfs/de/2026/BAFIN-DE000CBK1001-20260505.pdf", "event": "bafin.pdf.downloaded", "logger": "src.ingestion.bafin.fetcher", "level": "info", "timestamp": "2026-05-19T16:22:30.088799Z"}
+{"ref": "BAFIN-DE000CBK1001-20260505", "deal_id": 348, "target": "COMMERZBANK Aktiengesellschaft", "deal_type": "opa_volontaire_totalitaria", "has_document": true, "event": "bafin.upsert.created", "logger": "src.ingestion.bafin.service", "level": "info", "timestamp": "2026-05-19T16:22:31.044571Z"}
+{"ref": "BAFIN-DE000KC01000-20260205", "bytes": 1485198, "path": "/repo/data/pdfs/de/2026/BAFIN-DE000KC01000-20260205.pdf", "event": "bafin.pdf.downloaded", "logger": "src.ingestion.bafin.fetcher", "level": "info", "timestamp": "2026-05-19T16:22:31.313358Z"}
+{"ref": "BAFIN-DE000KC01000-20260205", "deal_id": 349, "target": "Kl\u00f6ckner & Co SE", "deal_type": "opa_volontaire_totalitaria", "has_document": true, "event": "bafin.upsert.created", "logger": "src.ingestion.bafin.service", "level": "info", "timestamp": "2026-05-19T16:22:31.731127Z"}
+{"ref": "BAFIN-DE000A0Z1JH9-20251117", "bytes": 1539037, "path": "/repo/data/pdfs/de/2025/BAFIN-DE000A0Z1JH9-20251117.pdf", "event": "bafin.pdf.downloaded", "logger": "src.ingestion.bafin.fetcher", "level": "info", "timestamp": "2026-05-19T16:22:32.342321Z"}
+{"ref": "BAFIN-DE000A0Z1JH9-20251117", "deal_id": 350, "target": "PSI Software SE", "deal_type": "opa_volontaire_totalitaria", "has_document": true, "event": "bafin.upsert.created", "logger": "src.ingestion.bafin.service", "level": "info", "timestamp": "2026-05-19T16:22:32.911599Z"}
+{"ref": "BAFIN-DE0007504508-20251021", "bytes": 705374, "path": "/repo/data/pdfs/de/2025/BAFIN-DE0007504508-20251021.pdf", "event": "bafin.pdf.downloaded", "logger": "src.ingestion.bafin.fetcher", "level": "info", "timestamp": "2026-05-19T16:22:33.329137Z"}
+{"ref": "BAFIN-DE0007504508-20251021", "deal_id": 351, "target": "Turbon AG", "deal_type": "opa_obligatoire", "has_document": true, "event": "bafin.upsert.created", "logger": "src.ingestion.bafin.service", "level": "info", "timestamp": "2026-05-19T16:22:33.709779Z"}
+{"ref": "BAFIN-DE000A1E89S5-20251002", "bytes": 909611, "path": "/repo/data/pdfs/de/2025/BAFIN-DE000A1E89S5-20251002.pdf", "event": "bafin.pdf.downloaded", "logger": "src.ingestion.bafin.fetcher", "level": "info", "timestamp": "2026-05-19T16:22:34.447042Z"}
+{"ref": "BAFIN-DE000A1E89S5-20251002", "deal_id": 352, "target": "Readcrest Capital AG", "deal_type": "opa_volontaire_totalitaria", "has_document": true, "event": "bafin.upsert.created", "logger": "src.ingestion.bafin.service", "level": "info", "timestamp": "2026-05-19T16:22:34.944716Z"}
+{"ref": "BAFIN-DE0007257503-20250901", "bytes": 2359505, "path": "/repo/data/pdfs/de/2025/BAFIN-DE0007257503-20250901.pdf", "event": "bafin.pdf.downloaded", "logger": "src.ingestion.bafin.fetcher", "level": "info", "timestamp": "2026-05-19T16:22:35.762273Z"}
+{"ref": "BAFIN-DE0007257503-20250901", "deal_id": 353, "target": "CECONOMY AG", "deal_type": "opa_volontaire_totalitaria", "has_document": true, "event": "bafin.upsert.created", "logger": "src.ingestion.bafin.service", "level": "info", "timestamp": "2026-05-19T16:22:36.021600Z"}
+{"ref": "BAFIN-DE000A254294-20250804", "bytes": 1145792, "path": "/repo/data/pdfs/de/2025/BAFIN-DE000A254294-20250804.pdf", "event": "bafin.pdf.downloaded", "logger": "src.ingestion.bafin.fetcher", "level": "info", "timestamp": "2026-05-19T16:22:36.780049Z"}
+{"ref": "BAFIN-DE000A254294-20250804", "deal_id": 354, "target": "Heidelberger Beteiligungsholding AG", "deal_type": "opa_obligatoire", "has_document": true, "event": "bafin.upsert.created", "logger": "src.ingestion.bafin.service", "level": "info", "timestamp": "2026-05-19T16:22:37.870482Z"}
+{"ref": "BAFIN-DE000FPH9000-20250731", "bytes": 1684514, "path": "/repo/data/pdfs/de/2025/BAFIN-DE000FPH9000-20250731.pdf", "event": "bafin.pdf.downloaded", "logger": "src.ingestion.bafin.fetcher", "level": "info", "timestamp": "2026-05-19T16:22:38.164902Z"}
+{"ref": "BAFIN-DE000FPH9000-20250731", "deal_id": 355, "target": "Francotyp-Postalia Holding AG", "deal_type": "opa_volontaire_parziale", "has_document": true, "event": "bafin.upsert.created", "logger": "src.ingestion.bafin.service", "level": "info", "timestamp": "2026-05-19T16:22:38.928767Z"}
+{"ref": "BAFIN-DE0005490601-20250725", "bytes": 1203978, "path": "/repo/data/pdfs/de/2025/BAFIN-DE0005490601-20250725.pdf", "event": "bafin.pdf.downloaded", "logger": "src.ingestion.bafin.fetcher", "level": "info", "timestamp": "2026-05-19T16:22:39.256664Z"}
+{"ref": "BAFIN-DE0005490601-20250725", "deal_id": 356, "target": "Leo International Precision Health Aktiengesellschaft", "deal_type": "opa_obligatoire", "has_document": true, "event": "bafin.upsert.created", "logger": "src.ingestion.bafin.service", "level": "info", "timestamp": "2026-05-19T16:22:39.688362Z"}
+{"ref": "BAFIN-DE000A2P4LJ5-20250714", "bytes": 1029880, "path": "/repo/data/pdfs/de/2025/BAFIN-DE000A2P4LJ5-20250714.pdf", "event": "bafin.pdf.downloaded", "logger": "src.ingestion.bafin.fetcher", "level": "info", "timestamp": "2026-05-19T16:22:40.326679Z"}
+{"ref": "BAFIN-DE000A2P4LJ5-20250714", "deal_id": 357, "target": "PharmaSGP Holding SE", "deal_type": "delisting_offer", "has_document": true, "event": "bafin.upsert.created", "logger": "src.ingestion.bafin.service", "level": "info", "timestamp": "2026-05-19T16:22:40.650544Z"}
+{"ref": "BAFIN-DE000FPH9000-20250709", "bytes": 928980, "path": "/repo/data/pdfs/de/2025/BAFIN-DE000FPH9000-20250709.pdf", "event": "bafin.pdf.downloaded", "logger": "src.ingestion.bafin.fetcher", "level": "info", "timestamp": "2026-05-19T16:22:41.336683Z"}
+{"ref": "BAFIN-DE000FPH9000-20250709", "deal_id": 358, "target": "Francotyp-Postalia Holding AG", "deal_type": "delisting_offer", "has_document": true, "event": "bafin.upsert.created", "logger": "src.ingestion.bafin.service", "level": "info", "timestamp": "2026-05-19T16:22:41.681363Z"}
+{"ref": "BAFIN-DE000A1K0375-20250708", "bytes": 717605, "path": "/repo/data/pdfs/de/2025/BAFIN-DE000A1K0375-20250708.pdf", "event": "bafin.pdf.downloaded", "logger": "src.ingestion.bafin.fetcher", "level": "info", "timestamp": "2026-05-19T16:22:42.522752Z"}
+{"ref": "BAFIN-DE000A1K0375-20250708", "deal_id": 359, "target": "artnet AG", "deal_type": "delisting_offer", "has_document": true, "event": "bafin.upsert.created", "logger": "src.ingestion.bafin.service", "level": "info", "timestamp": "2026-05-19T16:22:43.045217Z"}
+{"ref": "BAFIN-DE000A2E4T77-20250630", "bytes": 184494, "path": "/repo/data/pdfs/de/2025/BAFIN-DE000A2E4T77-20250630.pdf", "event": "bafin.pdf.downloaded", "logger": "src.ingestion.bafin.fetcher", "level": "info", "timestamp": "2026-05-19T16:22:43.563746Z"}
+{"ref": "BAFIN-DE000A2E4T77-20250630", "deal_id": 360, "target": "H&R GmbH & Co. KGaA", "deal_type": "opa_volontaire_parziale", "has_document": true, "event": "bafin.upsert.created", "logger": "src.ingestion.bafin.service", "level": "info", "timestamp": "2026-05-19T16:22:43.851700Z"}
+{"ref": "BAFIN-DE0005545503-20250605", "bytes": 706575, "path": "/repo/data/pdfs/de/2025/BAFIN-DE0005545503-20250605.pdf", "event": "bafin.pdf.downloaded", "logger": "src.ingestion.bafin.fetcher", "level": "info", "timestamp": "2026-05-19T16:22:44.621006Z"}
+{"ref": "BAFIN-DE0005545503-20250605", "deal_id": 361, "target": "1&1 AG", "deal_type": "opa_volontaire_parziale", "has_document": true, "event": "bafin.upsert.created", "logger": "src.ingestion.bafin.service", "level": "info", "timestamp": "2026-05-19T16:22:45.037914Z"}
+{"ref": "BAFIN-DE000PSM7770-20250604", "bytes": 1034058, "path": "/repo/data/pdfs/de/2025/BAFIN-DE000PSM7770-20250604.pdf", "event": "bafin.pdf.downloaded", "logger": "src.ingestion.bafin.fetcher", "level": "info", "timestamp": "2026-05-19T16:22:45.732662Z"}
+{"ref": "BAFIN-DE000PSM7770-20250604", "deal_id": 362, "target": "ProSiebenSat.1 Media SE", "deal_type": "opa_volontaire_parziale", "has_document": true, "event": "bafin.upsert.created", "logger": "src.ingestion.bafin.service", "level": "info", "timestamp": "2026-05-19T16:22:46.077282Z"}
+{"ref": "BAFIN-DE000A288904-20250523", "bytes": 3283717, "path": "/repo/data/pdfs/de/2025/BAFIN-DE000A288904-20250523.pdf", "event": "bafin.pdf.downloaded", "logger": "src.ingestion.bafin.fetcher", "level": "info", "timestamp": "2026-05-19T16:22:46.919083Z"}
+{"ref": "BAFIN-DE000A288904-20250523", "deal_id": 363, "target": "CompuGroup Medical SE & Co . KGaA", "deal_type": "delisting_offer", "has_document": true, "event": "bafin.upsert.created", "logger": "src.ingestion.bafin.service", "level": "info", "timestamp": "2026-05-19T16:22:47.338611Z"}
+{"discovered": 16, "created": 16, "skipped": 0, "pdf_downloaded": 16, "pdf_failed": 0, "stopped_on_known": false, "event": "bafin.poll.run", "logger": "src.ingestion.bafin.poller", "level": "info", "timestamp": "2026-05-19T16:22:47.339315Z"}
+{
+  "phase": "bafin_run_once",
+  "status": "ok",
+  "result": {
+    "discovered": 16,
+    "created": 16,
+    "skipped": 0,
+    "pdf_downloaded": 16,
+    "pdf_failed": 0,
+    "stopped_on_known": false
+  },
+  "timing": {
+    "started_at_utc": "2026-05-19T16:22:28.732849+00:00",
+    "finished_at_utc": "2026-05-19T16:22:47.339452+00:00",
+    "duration_seconds": 18.61
+  },
+  "settings": {
+    "data_dir": "/repo/data",
+    "since": "2025-05-19",
+    "days_back": 365,
+    "rate_per_second": 1.0
+  }
+}
+{"discovered": 16, "created": 16, "pdf_downloaded": 16, "event": "bafin.run_once.done", "logger": "bafin.run_once", "level": "info", "timestamp": "2026-05-19T16:22:47.365155Z"}

@@ -31,7 +31,7 @@ from bs4 import BeautifulSoup, Tag
 from src.core.settings import get_settings
 
 if TYPE_CHECKING:
-    from src.ingestion.consob.scrapingbee_client import ScrapingBeeClient
+    from src.core.scrapingbee_client import ScrapingBeeClient
 
 _log = structlog.get_logger(__name__)
 
