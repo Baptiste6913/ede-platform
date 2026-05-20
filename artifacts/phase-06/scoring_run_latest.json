@@ -1,0 +1,260 @@
+{
+  "phase": "phase-06-scoring-v1-run",
+  "executed_at_utc": "20260520T141111Z",
+  "model_path": "models/scoring_v1_20260520T141111Z.pkl",
+  "model_version": "scoring_v1_20260520T141111Z",
+  "n_clusters_scored": 329,
+  "n_clusters_labelled_for_training": 128,
+  "class_balance": {
+    "n_label_0": 7,
+    "n_label_1": 121
+  },
+  "validation": {
+    "overall_auc": 0.6105263157894737,
+    "overall_brier": 0.17314552101396907,
+    "n_folds": 3
+  },
+  "distribution": {
+    "1_stars": 0,
+    "2_stars": 19,
+    "3_stars": 2,
+    "4_stars": 87,
+    "5_stars": 221
+  },
+  "top_10_high_p_completion": [
+    {
+      "deal_id": 348,
+      "target": "COMMERZBANK Aktiengesellschaft",
+      "jurisdiction": "DE",
+      "p_completion": 1.0,
+      "stars": 5,
+      "decision": "enter",
+      "label": null
+    },
+    {
+      "deal_id": 338,
+      "target": "Eles Semiconductor Equipment Spa",
+      "jurisdiction": "IT",
+      "p_completion": 1.0,
+      "stars": 5,
+      "decision": "enter",
+      "label": 1
+    },
+    {
+      "deal_id": 1035,
+      "target": "Monti Riffeser Srl",
+      "jurisdiction": "IT",
+      "p_completion": 1.0,
+      "stars": 5,
+      "decision": "enter",
+      "label": 1
+    },
+    {
+      "deal_id": 340,
+      "target": "Almawave Spa",
+      "jurisdiction": "IT",
+      "p_completion": 1.0,
+      "stars": 5,
+      "decision": "enter",
+      "label": 1
+    },
+    {
+      "deal_id": 1052,
+      "target": "Eagle Spa",
+      "jurisdiction": "IT",
+      "p_completion": 1.0,
+      "stars": 5,
+      "decision": "enter",
+      "label": 1
+    },
+    {
+      "deal_id": 331,
+      "target": "Ferretti Spa",
+      "jurisdiction": "IT",
+      "p_completion": 1.0,
+      "stars": 5,
+      "decision": "enter",
+      "label": null
+    },
+    {
+      "deal_id": 1051,
+      "target": "Alkemy Spa",
+      "jurisdiction": "IT",
+      "p_completion": 1.0,
+      "stars": 5,
+      "decision": "enter",
+      "label": 1
+    },
+    {
+      "deal_id": 342,
+      "target": "Mediobanca-Banca di Credito Finanziario Spa",
+      "jurisdiction": "IT",
+      "p_completion": 1.0,
+      "stars": 5,
+      "decision": "enter",
+      "label": 1
+    },
+    {
+      "deal_id": 1066,
+      "target": "CompuGroup Medical SE & Co . KGaA",
+      "jurisdiction": "DE",
+      "p_completion": 1.0,
+      "stars": 5,
+      "decision": "enter",
+      "label": 1
+    },
+    {
+      "deal_id": 1038,
+      "target": "Anima Holding Spa",
+      "jurisdiction": "IT",
+      "p_completion": 1.0,
+      "stars": 5,
+      "decision": "enter",
+      "label": 1
+    }
+  ],
+  "top_10_low_p_completion": [
+    {
+      "deal_id": 939,
+      "target": "ZODIAC AEROSPACE",
+      "jurisdiction": "FR",
+      "p_completion": 0.4333,
+      "stars": 2,
+      "decision": "skip",
+      "label": 1
+    },
+    {
+      "deal_id": 564,
+      "target": "LINEDATA SERVICES",
+      "jurisdiction": "FR",
+      "p_completion": 0.4333,
+      "stars": 2,
+      "decision": "skip",
+      "label": null
+    },
+    {
+      "deal_id": 967,
+      "target": "NETGEM",
+      "jurisdiction": "FR",
+      "p_completion": 0.4333,
+      "stars": 2,
+      "decision": "skip",
+      "label": null
+    },
+    {
+      "deal_id": 23,
+      "target": "UV GERMI",
+      "jurisdiction": "FR",
+      "p_completion": 0.4333,
+      "stars": 2,
+      "decision": "skip",
+      "label": null
+    },
+    {
+      "deal_id": 410,
+      "target": "OVH GROUPE",
+      "jurisdiction": "FR",
+      "p_completion": 0.4333,
+      "stars": 2,
+      "decision": "skip",
+      "label": 1
+    },
+    {
+      "deal_id": 457,
+      "target": "VOYAGEURS DU MONDE",
+      "jurisdiction": "FR",
+      "p_completion": 0.4333,
+      "stars": 2,
+      "decision": "skip",
+      "label": 1
+    },
+    {
+      "deal_id": 469,
+      "target": "COVIVIO HOTELS",
+      "jurisdiction": "FR",
+      "p_completion": 0.4333,
+      "stars": 2,
+      "decision": "skip",
+      "label": 0
+    },
+    {
+      "deal_id": 966,
+      "target": "EUROSIC",
+      "jurisdiction": "FR",
+      "p_completion": 0.4333,
+      "stars": 2,
+      "decision": "skip",
+      "label": null
+    },
+    {
+      "deal_id": 1004,
+      "target": "CHRISTIAN DIOR SE",
+      "jurisdiction": "FR",
+      "p_completion": 0.4333,
+      "stars": 2,
+      "decision": "skip",
+      "label": null
+    },
+    {
+      "deal_id": 956,
+      "target": "ASSYSTEM",
+      "jurisdiction": "FR",
+      "p_completion": 0.4333,
+      "stars": 2,
+      "decision": "skip",
+      "label": null
+    }
+  ],
+  "sanity_check_5_deals": [
+    {
+      "jurisdiction": "DE",
+      "target_substring": "MorphoSys",
+      "expectation": "HIGH",
+      "why": "Novartis delisting closed Q2 2024",
+      "matched_target": "MorphoSys AG",
+      "p_completion": 1.0,
+      "stars": 5,
+      "label_y_in_db": 1
+    },
+    {
+      "jurisdiction": "IT",
+      "target_substring": "Banco BPM",
+      "expectation": "LOW",
+      "why": "UniCredit withdrew Banco BPM offer July 2025",
+      "matched_target": "Banco BPM Spa",
+      "p_completion": 0.5583,
+      "stars": 3,
+      "label_y_in_db": 0
+    },
+    {
+      "jurisdiction": "DE",
+      "target_substring": "Covestro",
+      "expectation": "HIGH",
+      "why": "ADNOC FSR cleared Nov 2025, acceptance 91%",
+      "matched_target": "Covestro AG",
+      "p_completion": 1.0,
+      "stars": 5,
+      "label_y_in_db": 1
+    },
+    {
+      "jurisdiction": "IT",
+      "target_substring": "Mediobanca",
+      "expectation": "HIGH",
+      "why": "MPS OPAS closed Sept 2025, 86% adesione",
+      "matched_target": "Mediobanca-Banca di Credito Finanziario Spa",
+      "p_completion": 1.0,
+      "stars": 5,
+      "label_y_in_db": 1
+    },
+    {
+      "jurisdiction": "DE",
+      "target_substring": "1&1",
+      "expectation": "HIGH",
+      "why": "United Internet partial 85% July 2025",
+      "matched_target": "1&1 AG",
+      "p_completion": 1.0,
+      "stars": 5,
+      "label_y_in_db": 1
+    }
+  ]
+}
