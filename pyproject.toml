@@ -117,6 +117,20 @@ ignore_missing_imports = true
 module = ["bs4", "lxml.*"]
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+module = ["sklearn.*", "joblib", "pandas", "pandas.*"]
+ignore_missing_imports = true
+
+# The scoring module relies heavily on dynamically typed sklearn /
+# pandas / numpy. We accept Any-leaning return types and untyped
+# inner helpers there for V1; full type hardening lands in phase 7+.
+[[tool.mypy.overrides]]
+module = ["src.scoring.*"]
+disallow_untyped_calls = false
+disallow_any_explicit = false
+warn_return_any = false
+disable_error_code = ["type-arg", "no-any-return", "assignment"]
+
 [tool.pytest.ini_options]
 minversion = "8.0"
 testpaths = ["tests"]
