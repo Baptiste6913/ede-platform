@@ -1,0 +1,44 @@
+﻿WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+
+[notice] A new release of pip is available: 25.0.1 -> 26.1.1
+[notice] To update, run: pip install --upgrade pip
+{"ref": "CONSOB-opa_Civitanavi_Systems_20240527", "bytes": 2279659, "path": "/repo/data/pdfs/it/2024/CONSOB-opa_Civitanavi_Systems_20240527.pdf", "event": "consob.pdf.downloaded", "logger": "src.ingestion.consob.fetcher", "level": "info", "timestamp": "2026-05-20T13:07:26.248228Z"}
+{"ref": "CONSOB-opa_Civitanavi_Systems_20240527", "deal_id": 1057, "target": "Civitanavi Systems Spa", "deal_type": "opa_volontaire_totalitaria", "has_document": true, "event": "consob.upsert.created", "logger": "src.ingestion.consob.service", "level": "info", "timestamp": "2026-05-20T13:07:26.381876Z"}
+{"ref": "CONSOB-opa_saes_20240527", "bytes": 5450099, "path": "/repo/data/pdfs/it/2024/CONSOB-opa_saes_20240527.pdf", "event": "consob.pdf.downloaded", "logger": "src.ingestion.consob.fetcher", "level": "info", "timestamp": "2026-05-20T13:07:27.669102Z"}
+{"ref": "CONSOB-opa_saes_20240527", "deal_id": 1058, "target": "SAES Getters Spa", "deal_type": "opa_volontaire_totalitaria", "has_document": true, "event": "consob.upsert.created", "logger": "src.ingestion.consob.service", "level": "info", "timestamp": "2026-05-20T13:07:27.928003Z"}
+{"page": 2, "rows": 50, "cost": 1, "event": "consob.discovery.page", "logger": "src.ingestion.consob.discovery", "level": "info", "timestamp": "2026-05-20T13:07:32.761672Z"}
+{"page": 2, "since": "2024-05-20", "event": "consob.discovery.stop_on_since", "logger": "src.ingestion.consob.discovery", "level": "info", "timestamp": "2026-05-20T13:07:32.761846Z"}
+{"discovered": 47, "created": 25, "skipped": 22, "pdf_downloaded": 47, "pdf_failed": 0, "credits_consumed": 2, "stopped_on_known": false, "budget_exhausted": false, "event": "consob.poll.run", "logger": "src.ingestion.consob.poller", "level": "info", "timestamp": "2026-05-20T13:07:32.765664Z"}
+{
+  "phase": "consob_run_once",
+  "status": "ok",
+  "result": {
+    "discovered": 47,
+    "created": 25,
+    "skipped": 22,
+    "pdf_downloaded": 47,
+    "pdf_failed": 0,
+    "credits_consumed_run": 2,
+    "stopped_on_known": false,
+    "budget_exhausted": false
+  },
+  "scrapingbee": {
+    "month_used_before": 2,
+    "month_used_after": 4,
+    "monthly_budget": 900,
+    "remaining_this_month": 896
+  },
+  "timing": {
+    "started_at_utc": "2026-05-20T13:06:37.672607+00:00",
+    "finished_at_utc": "2026-05-20T13:07:32.765915+00:00",
+    "duration_seconds": 55.09
+  },
+  "settings": {
+    "data_dir": "/repo/data",
+    "scrapingbee_render_js": false,
+    "scrapingbee_premium_proxy": false,
+    "rate_per_second": 1.0,
+    "since": "2024-05-20",
+    "days_back": 730
+  }
+}

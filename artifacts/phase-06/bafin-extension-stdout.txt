@@ -1,0 +1,44 @@
+﻿WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+
+[notice] A new release of pip is available: 25.0.1 -> 26.1.1
+[notice] To update, run: pip install --upgrade pip
+{"ref": "BAFIN-DE0006569403-20241021", "deal_id": 1077, "target": "Albis Leasing AG", "deal_type": "opa_volontaire_totalitaria", "has_document": true, "event": "bafin.upsert.created", "logger": "src.ingestion.bafin.service", "level": "info", "timestamp": "2026-05-20T13:08:57.625404Z"}
+{"ref": "BAFIN-DE000A2NBVD5-20241014", "bytes": 1187817, "path": "/repo/data/pdfs/de/2024/BAFIN-DE000A2NBVD5-20241014.pdf", "event": "bafin.pdf.downloaded", "logger": "src.ingestion.bafin.fetcher", "level": "info", "timestamp": "2026-05-20T13:08:58.624187Z"}
+{"ref": "BAFIN-DE000A2NBVD5-20241014", "deal_id": 1078, "target": "DFV Deutsche Familienversicherung AG", "deal_type": "delisting_offer", "has_document": true, "event": "bafin.upsert.created", "logger": "src.ingestion.bafin.service", "level": "info", "timestamp": "2026-05-20T13:08:59.233625Z"}
+{"ref": "BAFIN-DE0006097108-20241007", "bytes": 998765, "path": "/repo/data/pdfs/de/2024/BAFIN-DE0006097108-20241007.pdf", "event": "bafin.pdf.downloaded", "logger": "src.ingestion.bafin.fetcher", "level": "info", "timestamp": "2026-05-20T13:08:59.697795Z"}
+{"ref": "BAFIN-DE0006097108-20241007", "deal_id": 1079, "target": "infas Holding Aktiengesellschaft", "deal_type": "opa_volontaire_totalitaria", "has_document": true, "event": "bafin.upsert.created", "logger": "src.ingestion.bafin.service", "level": "info", "timestamp": "2026-05-20T13:08:59.834448Z"}
+{"ref": "BAFIN-philomaxcap-20241004", "bytes": 672015, "path": "/repo/data/pdfs/de/2024/BAFIN-philomaxcap-20241004.pdf", "event": "bafin.pdf.downloaded", "logger": "src.ingestion.bafin.fetcher", "level": "info", "timestamp": "2026-05-20T13:09:00.726704Z"}
+{"ref": "BAFIN-philomaxcap-20241004", "deal_id": 1080, "target": "Philomaxcap AG", "deal_type": "opa_obligatoire", "has_document": true, "event": "bafin.upsert.created", "logger": "src.ingestion.bafin.service", "level": "info", "timestamp": "2026-05-20T13:09:00.835391Z"}
+{"ref": "BAFIN-DE000A2G9MZ9-20240902", "bytes": 1826774, "path": "/repo/data/pdfs/de/2024/BAFIN-DE000A2G9MZ9-20240902.pdf", "event": "bafin.pdf.downloaded", "logger": "src.ingestion.bafin.fetcher", "level": "info", "timestamp": "2026-05-20T13:09:01.918450Z"}
+{"ref": "BAFIN-DE000A2G9MZ9-20240902", "deal_id": 1081, "target": "Stemmer Imaging AG", "deal_type": "opa_volontaire_totalitaria", "has_document": true, "event": "bafin.upsert.created", "logger": "src.ingestion.bafin.service", "level": "info", "timestamp": "2026-05-20T13:09:02.546646Z"}
+{"ref": "BAFIN-DE000NWRK013-20240715", "bytes": 1251965, "path": "/repo/data/pdfs/de/2024/BAFIN-DE000NWRK013-20240715.pdf", "event": "bafin.pdf.downloaded", "logger": "src.ingestion.bafin.fetcher", "level": "info", "timestamp": "2026-05-20T13:09:03.050261Z"}
+{"ref": "BAFIN-DE000NWRK013-20240715", "deal_id": 1082, "target": "New Work SE", "deal_type": "delisting_offer", "has_document": true, "event": "bafin.upsert.created", "logger": "src.ingestion.bafin.service", "level": "info", "timestamp": "2026-05-20T13:09:03.202144Z"}
+{"ref": "BAFIN-DE0006632003-20240704", "bytes": 1308547, "path": "/repo/data/pdfs/de/2024/BAFIN-DE0006632003-20240704.pdf", "event": "bafin.pdf.downloaded", "logger": "src.ingestion.bafin.fetcher", "level": "info", "timestamp": "2026-05-20T13:09:04.229407Z"}
+{"ref": "BAFIN-DE0006632003-20240704", "deal_id": 1083, "target": "MorphoSys AG", "deal_type": "delisting_offer", "has_document": true, "event": "bafin.upsert.created", "logger": "src.ingestion.bafin.service", "level": "info", "timestamp": "2026-05-20T13:09:04.470672Z"}
+{"ref": "BAFIN-DE000A2TSL71-20240614", "bytes": 549615, "path": "/repo/data/pdfs/de/2024/BAFIN-DE000A2TSL71-20240614.pdf", "event": "bafin.pdf.downloaded", "logger": "src.ingestion.bafin.fetcher", "level": "info", "timestamp": "2026-05-20T13:09:05.339284Z"}
+{"ref": "BAFIN-DE000A2TSL71-20240614", "deal_id": 1084, "target": "SYNLAB AG", "deal_type": "delisting_offer", "has_document": true, "event": "bafin.upsert.created", "logger": "src.ingestion.bafin.service", "level": "info", "timestamp": "2026-05-20T13:09:05.471955Z"}
+{"discovered": 42, "created": 26, "skipped": 16, "pdf_downloaded": 42, "pdf_failed": 0, "stopped_on_known": false, "event": "bafin.poll.run", "logger": "src.ingestion.bafin.poller", "level": "info", "timestamp": "2026-05-20T13:09:05.472383Z"}
+{
+  "phase": "bafin_run_once",
+  "status": "ok",
+  "result": {
+    "discovered": 42,
+    "created": 26,
+    "skipped": 16,
+    "pdf_downloaded": 42,
+    "pdf_failed": 0,
+    "stopped_on_known": false
+  },
+  "timing": {
+    "started_at_utc": "2026-05-20T13:08:30.719852+00:00",
+    "finished_at_utc": "2026-05-20T13:09:05.472485+00:00",
+    "duration_seconds": 34.75
+  },
+  "settings": {
+    "data_dir": "/repo/data",
+    "since": "2024-05-20",
+    "days_back": 730,
+    "rate_per_second": 1.0
+  }
+}
+{"discovered": 42, "created": 26, "pdf_downloaded": 42, "event": "bafin.run_once.done", "logger": "bafin.run_once", "level": "info", "timestamp": "2026-05-20T13:09:05.494607Z"}

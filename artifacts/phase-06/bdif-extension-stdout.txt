@@ -1,0 +1,54 @@
+﻿WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+
+[notice] A new release of pip is available: 25.0.1 -> 26.1.1
+[notice] To update, run: pip install --upgrade pip
+{"numero": "216C2899", "bytes": 100136, "path": "/repo/data/pdfs/fr/2022/216C2899.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-20T13:04:48.804033Z"}
+{"ref": "216C2899", "deal_id": 1028, "target": "CNOVA N.V.", "deal_type": "opa_simplifiee", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-20T13:04:48.814272Z"}
+{"numero": "216C2894", "bytes": 107887, "path": "/repo/data/pdfs/fr/2022/216C2894.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-20T13:04:49.924883Z"}
+{"ref": "216C2894", "deal_id": 1029, "target": "FAIVELEY TRANSPORT", "deal_type": "opa", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-20T13:04:49.930177Z"}
+{"numero": "216C2808", "bytes": 17451, "path": "/repo/data/pdfs/fr/2022/216C2808.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-20T13:04:50.981406Z"}
+{"ref": "216C2808", "deal_id": 1030, "target": "EUROMEDIS GROUPE", "deal_type": "opa", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-20T13:04:50.990781Z"}
+{"numero": "216C2794", "bytes": 24581, "path": "/repo/data/pdfs/fr/2022/216C2794.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-20T13:04:52.021814Z"}
+{"ref": "216C2794", "deal_id": 1031, "target": "OCTO TECHNOLOGY", "deal_type": "opa", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-20T13:04:52.028350Z"}
+{"numero": "216C2793", "bytes": 22284, "path": "/repo/data/pdfs/fr/2022/216C2793.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-20T13:04:53.151546Z"}
+{"ref": "216C2793", "deal_id": 1032, "target": "CFAO", "deal_type": "opr_ro", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-20T13:04:53.162471Z"}
+{"numero": "216C2789", "bytes": 97076, "path": "/repo/data/pdfs/fr/2022/216C2789.pdf", "event": "amf.bdif.pdf.downloaded", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-20T13:04:54.273679Z"}
+{"ref": "216C2789", "deal_id": 1033, "target": "AUSY", "deal_type": "opa", "has_document": true, "event": "amf.bdif.upsert.created", "logger": "src.ingestion.amf.service", "level": "info", "timestamp": "2026-05-20T13:04:54.279007Z"}
+{"discovered": 730, "created": 670, "skipped": 60, "pdf_downloaded": 730, "pdf_failed": 0, "event": "amf.bdif.poll.run_once", "logger": "src.ingestion.amf.bdif_poller", "level": "info", "timestamp": "2026-05-20T13:04:54.279557Z"}
+{
+  "phase": "bdif_run_once",
+  "status": "ok",
+  "result": {
+    "discovered": 730,
+    "created": 670,
+    "skipped": 60,
+    "pdf_downloaded": 730,
+    "pdf_failed": 0
+  },
+  "http_log_summary": {
+    "total_requests": 684,
+    "by_status": {
+      "200": 684
+    },
+    "first_request": {
+      "method": "GET",
+      "url": "https://bdif.amf-france.org/back/api/v1/informations?From=0&Size=50&typesInformation=OPA&typesDocument=NotesEtAutresInformations",
+      "status_code": 200,
+      "content_type": "application/json; charset=utf-8",
+      "content_length": 139163
+    },
+    "last_request": {
+      "method": "GET",
+      "url": "https://bdif.amf-france.org/back/api/v1/documents/2016/216C2789/0436B06538A4FCBF11A03A1A03C5A7CEBE50F59B2AB654B5F464F6E3CC30636A.pdf",
+      "status_code": 200,
+      "content_type": "application/pdf",
+      "content_length": 97076
+    }
+  },
+  "settings": {
+    "data_dir": "/repo/data",
+    "user_agent": "EDE-Bot/0.1 (research; contact@example.com)",
+    "accept_language": "fr-FR,fr;q=0.9",
+    "rate_per_second": 1.0
+  }
+}

@@ -1,0 +1,230 @@
+﻿=== Q1 FR isolated visas >180d (candidate withdrawals) ===
+ regulator_ref |                  target_name                   | announcement_date | days_since_visa | events_count 
+---------------+------------------------------------------------+-------------------+-----------------+--------------
+ 224C0763      | COVIVIO HOTELS                                 | 2024-05-31        |             719 |            1
+ 224C0768      | [pending parse]                                | 2024-05-31        |             719 |            1
+ 224C0765      | BELIEVE                                        | 2024-05-31        |             719 |            1
+ 224C0817      | IDSUD                                          | 2024-06-05        |             714 |            1
+ 224C0830      | TIPIAK                                         | 2024-06-06        |             713 |            1
+ 224C0837      | VOYAGEURS DU MONDE                             | 2024-06-07        |             712 |            1
+ 224C0866      | OSMOZIS                                        | 2024-06-11        |             708 |            1
+ 224C0888      | ADEUNIS                                        | 2024-06-13        |             706 |            1
+ 224C0915      | TRAVEL TECHNOLOGY INTERACTIVE                  | 2024-06-14        |             705 |            1
+ 224C0953      | [pending parse]                                | 2024-06-18        |             701 |            1
+ 224C1020      | VOYAGEURS DU MONDE                             | 2024-06-25        |             694 |            1
+ 224C1037      | MICROPOLE                                      | 2024-06-26        |             693 |            1
+ 224C1021      | IDSUD                                          | 2024-06-27        |             692 |            1
+ 224C1119      | TRAVEL TECHNOLOGY INTERACTIVE                  | 2024-07-05        |             684 |            1
+ 224C1129      | NHOA                                           | 2024-07-09        |             680 |            1
+ 224C1141      | [pending parse]                                | 2024-07-10        |             679 |            1
+ 224C1144      | TIPIAK                                         | 2024-07-10        |             679 |            1
+ 224C1145      | OSMOZIS                                        | 2024-07-10        |             679 |            1
+ 224C1143      | ADEUNIS                                        | 2024-07-10        |             679 |            1
+ 224C1211      | MICROPOLE                                      | 2024-07-16        |             673 |            1
+ 224C1289      | TRAVEL TECHNOLOGY INTERACTIVE                  | 2024-07-24        |             665 |            1
+ 224C0964      | [pending parse]                                | 2024-08-06        |             652 |            1
+ 224C1513      | GROUPE PAROT                                   | 2024-08-28        |             630 |            1
+ 219C1696      | AUREA                                          | 2024-08-29        |             629 |            1
+ 224C1562      | GALIMMO                                        | 2024-09-06        |             621 |            1
+ 224C0762      | MONTAGNE ET NEIGE DEVELOPPEMENT                | 2024-09-16        |             611 |            1
+ 224C1625      | SOCIETE INDUSTRIELLE ET FINANCIERE DE L'ARTOIS | 2024-09-17        |             610 |            1
+ 224C1669      | SQLI                                           | 2024-09-20        |             607 |            1
+ 224C1670      | WEDIA                                          | 2024-09-20        |             607 |            1
+ 221C1261      | IDSUD                                          | 2024-09-25        |             602 |            1
+ 219C2562      | FUTUREN                                        | 2024-09-25        |             602 |            1
+ 220C4606      | LE BELIER                                      | 2024-09-25        |             602 |            1
+ 221C0243      | DALET SA                                       | 2024-09-25        |             602 |            1
+ 221C0372      | DALET SA                                       | 2024-09-25        |             602 |            1
+ 224C1700      | GALIMMO                                        | 2024-09-26        |             601 |            1
+ 221C3400      | ETABLISSEMENTS FAUVET GIREL                    | 2024-09-26        |             601 |            1
+ 223C0159      | UNION FINANCIERE DE FRANCE BANQUE              | 2024-09-26        |             601 |            1
+ 222C2728      | SOMFY SA                                       | 2024-09-26        |             601 |            1
+ 224C1695      | GROUPE PAROT                                   | 2024-09-26        |             601 |            1
+ 224C1753      | EUROBIO-SCIENTIFIC                             | 2024-09-30        |             597 |            1
+ 224C1862      | ORAPI                                          | 2024-10-09        |             588 |            1
+ 224C1860      | MRM                                            | 2024-10-09        |             588 |            1
+ 224C1861      | NHOA                                           | 2024-10-09        |             588 |            1
+ 224C1903      | COMPAGNIE DU CAMBODGE                          | 2024-10-11        |             586 |            1
+ 224C1902      | SOCIETE INDUSTRIELLE ET FINANCIERE DE L'ARTOIS | 2024-10-11        |             586 |            1
+ 224C1904      | FINANCIERE MONCEY                              | 2024-10-11        |             586 |            1
+ 224C1925      | CLASQUIN                                       | 2024-10-14        |             583 |            1
+ 217C2859      | ZODIAC AEROSPACE                               | 2024-10-15        |             582 |            1
+ 224C1951      | LEXIBOOK                                       | 2024-10-15        |             582 |            1
+ 224C1968      | SQLI                                           | 2024-10-16        |             581 |            1
+ 224C2016      | ALPHA MOS                                      | 2024-10-18        |             579 |            1
+ 224C2025      | NHOA                                           | 2024-10-21        |             576 |            1
+ 224C1737      | GROUPE BERKEM                                  | 2024-10-22        |             575 |            1
+ 224C2040      | GROUPE BERKEM                                  | 2024-10-22        |             575 |            1
+ 224C2042      | 1000MERCIS                                     | 2024-10-22        |             575 |            1
+ 224C2043      | AUGROS COSMETIC PACKAGING                      | 2024-10-22        |             575 |            1
+ 224C2091      | ESKER                                          | 2024-10-25        |             572 |            1
+ 224C2071      | OVH GROUPE                                     | 2024-10-25        |             572 |            1
+ 224C2131      | IDSUD                                          | 2024-10-30        |             567 |            1
+ 224C2142      | ORAPI                                          | 2024-10-31        |             566 |            1
+ 224C2044      | EUROBIO-SCIENTIFIC                             | 2024-11-05        |             561 |            1
+ 224C2190      | LEXIBOOK                                       | 2024-11-06        |             560 |            1
+ 224C2186      | CLASQUIN                                       | 2024-11-06        |             560 |            1
+ 224C2188      | SQLI                                           | 2024-11-06        |             560 |            1
+ 224C2215      | UTI GROUP                                      | 2024-11-07        |             559 |            1
+ 224C2231      | MRM                                            | 2024-11-08        |             558 |            1
+ 224C2263      | AUGROS COSMETIC PACKAGING                      | 2024-11-12        |             554 |            1
+ 224C2343      | 1000MERCIS                                     | 2024-11-19        |             547 |            1
+ 224C2344      | ALPHA MOS                                      | 2024-11-19        |             547 |            1
+ 22-0376       | [pending parse]                                | 2024-11-21        |             545 |            1
+ 223C0548      | LISI                                           | 2024-12-04        |             532 |            1
+ 224C2547      | ALPHA MOS                                      | 2024-12-05        |             531 |            1
+ 224C2548      | GROUPE BERKEM                                  | 2024-12-05        |             531 |            1
+ 224C2549      | 1000MERCIS                                     | 2024-12-05        |             531 |            1
+ 224C2561      | AURES TECHNOLOGIES                             | 2024-12-05        |             531 |            1
+ 224C2405      | MRM                                            | 2024-12-11        |             525 |            1
+ 224C2406      | ESKER                                          | 2024-12-11        |             525 |            1
+ 224C2407      | ORAPI                                          | 2024-12-11        |             525 |            1
+ 224C2688      | UTI GROUP                                      | 2024-12-16        |             520 |            1
+ 224C2193      | NHOA                                           | 2024-12-17        |             519 |            1
+ 224C2690      | AUGROS COSMETIC PACKAGING                      | 2024-12-17        |             519 |            1
+ 224C2704      | OVH GROUPE                                     | 2024-12-17        |             519 |            1
+ 224C2761      | EXCLUSIVE NETWORKS                             | 2024-12-19        |             517 |            1
+ 224C2775      | AURES TECHNOLOGIES                             | 2024-12-20        |             516 |            1
+ 225C0117      | SOCIETE INDUSTRIELLE ET FINANCIERE DE L'ARTOIS | 2025-01-14        |             491 |            1
+ 225C0129      | EXCLUSIVE NETWORKS                             | 2025-01-16        |             489 |            1
+ 225C0297      | NEOEN                                          | 2025-02-12        |             462 |            1
+ 225C0286      | AURES TECHNOLOGIES                             | 2025-02-12        |             462 |            1
+ 225C0288      | EXCLUSIVE NETWORKS                             | 2025-02-12        |             462 |            1
+ 225C0368      | TARKETT S.A.                                   | 2025-02-24        |             450 |            1
+ 224C1605      | IDSUD                                          | 2025-03-18        |             428 |            1
+ 225C0515      | IDSUD                                          | 2025-03-18        |             428 |            1
+ 225C0519      | IDSUD                                          | 2025-03-20        |             426 |            1
+ 224C1626      | COMPAGNIE DU CAMBODGE                          | 2025-03-21        |             425 |            1
+ 224C1907      | WEDIA                                          | 2025-03-21        |             425 |            1
+ 224C1627      | FINANCIERE MONCEY                              | 2025-03-21        |             425 |            1
+ 224C1572      | MICROPOLE                                      | 2025-03-21        |             425 |            1
+ 224C0890      | MONTAGNE ET NEIGE DEVELOPPEMENT                | 2025-03-21        |             425 |            1
+ 225C0553      | UNIBEL                                         | 2025-03-25        |             421 |            1
+ 225C0659      | UNIBEL                                         | 2025-04-16        |             399 |            1
+ 225C0658      | IDSUD                                          | 2025-04-16        |             399 |            1
+ 225C0657      | BELIEVE                                        | 2025-04-16        |             399 |            1
+ 225C0694      | VERALLIA                                       | 2025-04-24        |             391 |            1
+ 225C0697      | TARKETT S.A.                                   | 2025-04-24        |             391 |            1
+ 225C0741      | FINANCIERE MONCEY                              | 2025-05-05        |             380 |            1
+ 225C0740      | COMPAGNIE DU CAMBODGE                          | 2025-05-05        |             380 |            1
+ 225C0838      | GROUPE ETPO SA                                 | 2025-05-22        |             363 |            1
+ 225C0845      | UNIBEL                                         | 2025-05-26        |             359 |            1
+ 225C0920      | BELIEVE                                        | 2025-06-05        |             349 |            1
+ 225C0708      | VERALLIA                                       | 2025-06-06        |             348 |            1
+ 225C0725      | M2I                                            | 2025-06-06        |             348 |            1
+ 225C0921      | M2I                                            | 2025-06-06        |             348 |            1
+ 225C0943      | TARKETT S.A.                                   | 2025-06-06        |             348 |            1
+ 225C0995      | GROUPE ETPO SA                                 | 2025-06-13        |             341 |            1
+ 225C1003      | ALTAMIR                                        | 2025-06-16        |             338 |            1
+ 225C1139      | ELECTRICITE ET EAUX DE MADAGASCAR              | 2025-07-02        |             322 |            1
+ 225C1154      | ALTAMIR                                        | 2025-07-04        |             320 |            1
+ 225C1227      | GROUPE ETPO SA                                 | 2025-07-18        |             306 |            1
+ 225C1285      | AMPLITUDE SURGICAL                             | 2025-07-30        |             294 |            1
+ 225C1404      | AGROGENERATION                                 | 2025-08-18        |             275 |            1
+ 225C1439      | AGROGENERATION                                 | 2025-08-26        |             267 |            1
+ 225C1507      | TRONIC'S MICROSYSTEMS S.A.                     | 2025-09-09        |             253 |            1
+ 225C1665      | TRONIC'S MICROSYSTEMS S.A.                     | 2025-10-01        |             231 |            1
+ 225C1666      | WAGA ENERGY                                    | 2025-10-02        |             230 |            1
+ 225C1734      | AGROGENERATION                                 | 2025-10-13        |             219 |            1
+ 225C1755      | COGELEC                                        | 2025-10-15        |             217 |            1
+ 225C1797      | PRODWARE                                       | 2025-10-24        |             208 |            1
+ 225C1884      | TRONIC'S MICROSYSTEMS S.A.                     | 2025-11-13        |             188 |            1
+ 225C1924      | PRODWARE                                       | 2025-11-14        |             187 |            1
+(129 rows)
+
+
+=== Q2 IT candidate withdrawals (UC/BPM + expected_close > 60d ago) ===
+                regulator_ref                |                 target_name                 |            acquirer_name            | announcement_date |    offer_price    | expected_close_date | days_past_expected_close 
+---------------------------------------------+---------------------------------------------+-------------------------------------+-------------------+-------------------+---------------------+--------------------------
+ CONSOB-opa_saes_20240527                    | SAES Getters Spa                            | SGG Holding Spa                     | 2024-05-27        |         26.300000 | 2024-06-21          | 698 days
+ CONSOB-opa_openjobmetis_20240610            | Plavisgas Srl                               | Openjobmetis Spa                    | 2024-06-10        |         16.500000 | 2024-06-28          | 691 days
+ CONSOB-opa_Civitanavi_Systems_20240527      | Civitanavi Systems Spa                      | Honeywell II Srl                    | 2024-05-27        |          6.170000 | 2024-07-19          | 670 days
+ CONSOB-opa_medica_20240701                  | Medica Spa                                  | MavenDanc Srl                       | 2024-07-01        |         27.000000 | 2024-07-19          | 670 days
+ CONSOB-opa_vianini_20240708                 | Capitolium Srl                              | Vianini Spa                         | 2024-07-08        |          0.860000 | 2024-07-26          | 663 days
+ CONSOB-opa_saras_20240712                   | Saras spa                                   | Varas Spa                           | 2024-07-12        |          1.600000 | 2024-08-09          | 649 days
+ CONSOB-opa_greenthesis_20240819             | Eagle Spa                                   | Greenthesis Spa                     | 2024-08-19        |          2.293000 | 2024-09-12          | 615 days
+ CONSOB-opa_retex_20240819                   | Alkemy Spa                                  | Retex Spa - Società Benefit         | 2024-08-19        |         12.000000 | 2024-09-20          | 607 days
+ CONSOB-opa_grey_20240909                    | IVS Group Sa                                | Grey Sarl                           | 2024-09-09        |          7.150000 | 2024-09-27          | 600 days
+ CONSOB-opsc_unieuro_20240902                | Ruby Equity Investment Sàrl                 | Fnac-Darty Sa                       | 2024-09-02        |          9.000000 | 2024-10-25          | 572 days
+ CONSOB-opa_gemini_20241007                  | Relatech Spa                                | Gemini BidCo Srl                    | 2024-10-07        |          2.530000 | 2024-10-25          | 572 days
+ CONSOB-opa_defence_20241014                 | Defence Tech Holding S                      | Tinexta Defence S                   | 2024-10-14        |          3.150000 | 2024-11-07          | 559 days
+ CONSOB-opa_salcef_20241007                  | Salcef Group Spa                            | Salbid Spa                          | 2024-10-07        |         26.000000 | 2024-11-08          | 558 days
+ CONSOB-opa_serviziitalia_20241028           | Servizi Italia Spa                          | Cometa Srl                          | 2024-10-28        |          2.370000 | 2024-11-15          | 551 days
+ CONSOB-opa_cir_20241125                     | CIR Spa                                     | CIR Spa                             | 2024-11-25        |          0.610000 | 2024-12-13          | 523 days
+ CONSOB-opa_Intermonte_Partners_SIM_20241223 | Intermonte Partners Sim Spa                 | Banca Generali Spa                  | 2024-12-23        |          3.040000 | 2025-01-24          | 481 days
+ CONSOB-Opa_Mittel_20250130                  | Mittel Spa                                  | euro 1                              | 2025-01-30        |          1.750000 | 2025-02-27          | 447 days
+ CONSOB-Opa_NPV_20250210                     | NVP Spa                                     | Darien Spa                          | 2025-02-10        |          3.900000 | 2025-02-28          | 446 days
+ CONSOB-opa_comal_20250217                   | Comal Spa                                   | Duferco Solar Projects Srl          | 2025-02-17        |                   | 2025-03-07          | 439 days
+ CONSOB-opa_Piovan_20250303                  | Piovan Spa                                  | Automation Systems Spa              | 2025-03-03        |                   | 2025-03-21          | 425 days
+ CONSOB-opa_anima_20250317                   | Anima Holding Spa                           | Banco BPM Vita Spa                  | 2025-03-17        |          7.000000 | 2025-04-04          | 411 days
+ CONSOB-opa_Beghelli_20250314                | Beghelli Spa                                | [pending parse]                     | 2025-03-17        |          0.337500 | 2025-04-04          | 411 days
+ CONSOB-opa_morif_20250407                   | Monti Riffeser Srl                          | Monrif Spa                          | 2025-04-07        |                   | 2025-04-29          | 386 days
+ CONSOB-opa_cairo_20250407                   | Cairo Communication Spa                     | Cairo Communication Spa             | 2025-04-07        |          2.900000 | 2025-05-07          | 378 days
+ CONSOB-ops_Banco_BPM_20250428               | Banco BPM Spa                               | [pending parse]                     | 2025-04-28        | 3828060000.000000 | 2025-06-23          | 331 days
+ CONSOB-opa_illimity_20250519                | Illimity Bank Spa                           | Banca Ifis Spa                      | 2025-05-19        |          1.414000 | 2025-06-27          | 327 days
+ CONSOB-Opa_IlSole24Ore_20250603             | Il Sole 24 Ore Spa                          | Zenit Spa                           | 2025-06-03        |          1.100000 | 2025-06-30          | 324 days
+ CONSOB-opa_Alkemy_20250609                  | Alkemy S                                    | [pending parse]                     | 2025-06-09        |         12.000000 | 2025-07-04          | 320 days
+ CONSOB-ops_Banca_Popolare_Sondrio_20250616  | Banca Popolare di Sondrio S                 | [pending parse]                     | 2025-06-16        |                   | 2025-07-11          | 313 days
+ CONSOB-opa_bialetti_20250707                | Bialetti Spa                                | Octagon BidCo Spa                   | 2025-07-07        |          0.467000 | 2025-07-25          | 299 days
+ CONSOB-ops_montepaschi_20250714             | Mediobanca-Banca di Credito Finanziario Spa | Banca Monte dei Paschi di Siena Spa | 2025-07-14        |                   | 2025-09-08          | 254 days
+ CONSOB-opa_palingeo_20251027                | Palingeo                                    | Icop Spa Società Benefit            | 2025-10-27        |          6.000000 | 2025-11-14          | 187 days
+ CONSOB-opa_almawave_20251117                | Almawave Spa                                | Almaviva Spa                        | 2025-11-17        |          4.300000 | 2025-12-05          | 166 days
+ CONSOB-opa_ala_20251201                     | Ala Spa                                     | Wing BidCo Spa                      | 2025-12-01        |         36.080000 | 2025-12-19          | 152 days
+ CONSOB-opa_mare_20251205                    | Eles Semiconductor Equipment Spa            | Mare Engineering Group Spa          | 2025-12-05        |          2.610000 | 2025-12-30          | 141 days
+ CONSOB-opa_spindox_20251215                 | Spindox Spa                                 | BackSpin Spa                        | 2025-12-15        |         13.000000 | 2026-01-16          | 124 days
+ CONSOB-opa_eles_20260105                    | Eles Semiconductor Equipment Spa            | Ebidco srl                          | 2026-01-05        |          2.650000 | 2026-02-06          | 103 days
+ CONSOB-opas_Banca_Sistema_20260116          | Banca Sistema Spa                           | Banca CF+ Credito Fondiario Spa     | 2026-01-16        |          1.800000 | 2026-02-27          | 82 days
+ CONSOB-opa_antares_20260216                 | [pending parse]                             | [pending parse]                     | 2026-02-16        |          5.000000 | 2026-03-06          | 75 days
+ CONSOB-opa_health_italia_20260409           | Health Italia Spa                           | Lonvita Spa                         | 2026-02-09        |        300.000000 | 2026-03-06          | 75 days
+ CONSOB-opa_Tinexta_20260223                 | Tinexta Spa                                 | [pending parse]                     | 2026-02-23        |         15.000000 | 2026-03-20          | 61 days
+(41 rows)
+
+
+=== Q3 DE listing (oldest first, for failure scan) ===
+        regulator_ref         |                      target_name                      |              acquirer_name              | announcement_date |         deal_type          
+------------------------------+-------------------------------------------------------+-----------------------------------------+-------------------+----------------------------
+ BAFIN-DE000A2TSL71-20240614  | SYNLAB AG                                             | Ephios Bidco GmbH                       | 2024-06-14        | delisting_offer
+ BAFIN-DE0006632003-20240704  | MorphoSys AG                                          | Novartis BidCo AG                       | 2024-07-04        | delisting_offer
+ BAFIN-DE000NWRK013-20240715  | New Work SE                                           | Burda Digital SE                        | 2024-07-15        | delisting_offer
+ BAFIN-DE000A2G9MZ9-20240902  | Stemmer Imaging AG                                    | Ventrifossa BidCo AG                    | 2024-09-02        | opa_volontaire_totalitaria
+ BAFIN-philomaxcap-20241004   | Philomaxcap AG                                        | H2E Americas LLC                        | 2024-10-04        | opa_obligatoire
+ BAFIN-DE0006097108-20241007  | infas Holding Aktiengesellschaft                      | Ipsos DACH Holding AG                   | 2024-10-07        | opa_volontaire_totalitaria
+ BAFIN-DE000A2NBVD5-20241014  | DFV Deutsche Familienversicherung AG                  | Haron Holdings S.A                      | 2024-10-14        | delisting_offer
+ BAFIN-DE0006569403-20241021  | Albis Leasing AG                                      | Herr Rolf Ernst Peter Jürgen Hauschildt | 2024-10-21        | opa_volontaire_totalitaria
+ BAFIN-DE0006062144-20241025  | Covestro AG                                           | ADNOC International Germany Holding AG  | 2024-10-25        | opa_volontaire_totalitaria
+ BAFIN-DE0006209901-20241028  | ALBA SE                                               | ALBA plc & Co . KG                      | 2024-10-28        | delisting_offer
+ BAFIN-DE0007279507-20241030  | Splendid Medien AG                                    | Andreas Klein Vermögensverwaltung GmbH  | 2024-10-30        | delisting_offer
+ BAFIN-DE000A1X3X33-20241105  | WCM Beteiligungs- und Grundbesitz-Aktiengesellschaft  | TLG IMMOBILIEN AG                       | 2024-11-05        | delisting_offer
+ BAFIN-DE0005176903-20241106  | SURTECO GROUP SE                                      | BANASINO INVESTMENTS S.à r.l            | 2024-11-06        | opa_obligatoire
+ BAFIN-DE0007857476-20241111  | Klassik Radio AG                                      | UK Media Invest GmbH                    | 2024-11-11        | delisting_offer
+ BAFIN-DE000A2QRHL6-20241112  | Linus Digital Finance AG                              | Linus Holding GmbH                      | 2024-11-12        | delisting_offer
+ BAFIN-DE0005220909-20241118  | NEXUS AG                                              | Project Neptune Bidco GmbH              | 2024-11-18        | opa_volontaire_totalitaria
+ BAFIN-DE0005653604-20241129  | MedNation AG                                          | MedNation AG                            | 2024-11-29        | delisting_offer
+ BAFIN-DE000A2G9MZ9-20241129  | STEMMER IMAGING AG                                    | VENTRIFOSSSA BIDCO AG                   | 2024-11-29        | delisting_offer
+ BAFIN-DE000A288904-20241223  | CompuGroup Medical SE & Co . KGaA                     | Caesar BidCo GmbH                       | 2024-12-23        | opa_volontaire_totalitaria
+ BAFIN-DE0006095003-20241223  | ENCAVIS AG                                            | Elbe BidCo AG                           | 2024-12-23        | delisting_offer
+ BAFIN-DE000A3CNK42-20250120  | ABOUT YOU Holding SE                                  | Zalando SE                              | 2025-01-20        | opa_volontaire_totalitaria
+ BAFIN-DE0007203705-20250131  | SNP Schneider-Neureither & Partner SE                 | Succession German Bidco GmbH            | 2025-01-31        | opa_volontaire_totalitaria
+ BAFIN-metro_ag_2025-20250319 | METRO AG                                              | EP Global Commerce GmbH                 | 2025-03-19        | delisting_offer
+ BAFIN-westag-20250505        | Westag AG                                             | Broadview Industries AG                 | 2025-05-05        | delisting_offer
+ BAFIN-biotest_2025-20250506  | Biotest Aktiengesellschaft                            | Grifols Biotest Holding GmbH            | 2025-05-06        | delisting_offer
+ BAFIN-DE000PSM7770-20250508  | ProSiebenSat.1 Media SE                               | MFE-MEDIAFOREUROPE N.V                  | 2025-05-08        | opa_volontaire_totalitaria
+ BAFIN-DE000A288904-20250523  | CompuGroup Medical SE & Co . KGaA                     | Caesar BidCo GmbH                       | 2025-05-23        | delisting_offer
+ BAFIN-DE000PSM7770-20250604  | ProSiebenSat.1 Media SE                               | PPF IM LTD                              | 2025-06-04        | opa_volontaire_parziale
+ BAFIN-DE0005545503-20250605  | 1&1 AG                                                | United Internet AG                      | 2025-06-05        | opa_volontaire_parziale
+ BAFIN-DE000A2E4T77-20250630  | H&R GmbH & Co. KGaA                                   | H&R Holding GmbH                        | 2025-06-30        | opa_volontaire_parziale
+ BAFIN-DE000A1K0375-20250708  | artnet AG                                             | Leonardo Art Holdings GmbH              | 2025-07-08        | delisting_offer
+ BAFIN-DE000FPH9000-20250709  | Francotyp-Postalia Holding AG                         | Francotyp-Postalia Holding AG           | 2025-07-09        | delisting_offer
+ BAFIN-DE000A2P4LJ5-20250714  | PharmaSGP Holding SE                                  | FUTRUE GmbH                             | 2025-07-14        | delisting_offer
+ BAFIN-DE0005490601-20250725  | Leo International Precision Health Aktiengesellschaft | SCGI Corporate Finance GmbH             | 2025-07-25        | opa_obligatoire
+ BAFIN-DE000FPH9000-20250731  | Francotyp-Postalia Holding AG                         | SALTARAX GmbH                           | 2025-07-31        | opa_volontaire_parziale
+ BAFIN-DE000A254294-20250804  | Heidelberger Beteiligungsholding AG                   | Apeiron Investment Group Ltd            | 2025-08-04        | opa_obligatoire
+ BAFIN-DE0007257503-20250901  | CECONOMY AG                                           | JINGDONG HOLDING GERMANY GMBH           | 2025-09-01        | opa_volontaire_totalitaria
+ BAFIN-DE000A1E89S5-20251002  | Readcrest Capital AG                                  | Obotritia Capital KGaA                  | 2025-10-02        | opa_volontaire_totalitaria
+ BAFIN-DE0007504508-20251021  | Turbon AG                                             | S77 Holdings GmbH                       | 2025-10-21        | opa_obligatoire
+ BAFIN-DE000A0Z1JH9-20251117  | PSI Software SE                                       | Zest Bidco GmbH                         | 2025-11-17        | opa_volontaire_totalitaria
+ BAFIN-DE000KC01000-20260205  | Klöckner & Co SE                                      | Worthington Steel GmbH                  | 2026-02-05        | opa_volontaire_totalitaria
+ BAFIN-DE000CBK1001-20260505  | COMMERZBANK Aktiengesellschaft                        | UniCredit S.p.A                         | 2026-05-05        | opa_volontaire_totalitaria
+(42 rows)
+
+

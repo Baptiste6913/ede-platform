@@ -1,0 +1,111 @@
+{
+  "phase": "phase-06-step0-extension-24mo",
+  "executed_at_utc": "2026-05-20T13:09:05+00:00",
+  "since_target": "2024-05-20",
+  "baseline_before_extension": {
+    "deals": {"FR": 60, "IT": 22, "DE": 16, "total": 98},
+    "events": {"filing_amf": 60, "filing_consob": 22, "filing_bafin": 16},
+    "alembic_version": "0007"
+  },
+  "result_after_extension": {
+    "deals": {"FR": 730, "IT": 47, "DE": 42, "total": 819},
+    "events": {"filing_amf": 730, "filing_consob": 47, "filing_bafin": 42, "total": 819},
+    "alembic_version": "0008"
+  },
+  "delta": {
+    "FR_new_rows": 670,
+    "IT_new_rows": 25,
+    "DE_new_rows": 26,
+    "total_new_rows": 721
+  },
+  "date_ranges": {
+    "FR": {"earliest": "2022-01-11", "latest": "2026-05-19", "span_days": 1590},
+    "IT": {"earliest": "2024-05-27", "latest": "2026-05-11", "span_days": 715},
+    "DE": {"earliest": "2024-06-14", "latest": "2026-05-05", "span_days": 691}
+  },
+  "scrapingbee_budget": {
+    "credits_before": 2,
+    "credits_after": 4,
+    "credits_consumed_this_extension": 2,
+    "monthly_budget": 900,
+    "remaining_this_month": 896
+  },
+  "per_jurisdiction": {
+    "FR": {
+      "backfill_arg": "max_items=730 (legacy positional, not days_back)",
+      "actual_walked_back_to": "2022-01-11 (4+ years, not 24mo target)",
+      "http_calls": 684,
+      "all_200": true,
+      "scrapingbee_credits": 0,
+      "deal_type_distribution": {
+        "opa_simplifiee": 369,
+        "opa": 142,
+        "opr": 139,
+        "opra": 37,
+        "opr_ro": 33,
+        "ope": 10
+      },
+      "note": "BDIF returns each filing stage as a separate row (visa, suite, reouverture, OPR-RO, etc.). 730 rows != 730 unique OPAs. Multi-stage targets observed: 1000MERCIS=9 filings, IDSUD=9, ALTUR=8, ADVENIS=7, NHOA=7, MEDIA 6=7, TESSI=7, SPIR COMMUNICATION=7, IGE+XAO=6. Estimated unique OPAs in the 730 rows: ~150-200."
+    },
+    "IT": {
+      "backfill_arg": "days_back=730 (since=2024-05-20)",
+      "actual_walked_back_to": "2024-05-27 (window respected via since= cutoff)",
+      "listing_pages_fetched": 2,
+      "scrapingbee_credits": 2,
+      "duration_seconds": 55.09,
+      "stop_reason": "consob.discovery.stop_on_since (every row on page 2 older than 2024-05-20)",
+      "discovered": 47,
+      "created": 25,
+      "skipped_already_in_db": 22,
+      "pdfs_downloaded": 47,
+      "deal_type_distribution": {
+        "opa_volontaire_totalitaria": 21,
+        "opa_obligatoire": 15,
+        "opas": 7,
+        "opa_volontaire_parziale": 4
+      }
+    },
+    "DE": {
+      "backfill_arg": "days_back=730 (since=2024-05-20)",
+      "actual_walked_back_to": "2024-06-14 (window respected)",
+      "scrapingbee_credits": 0,
+      "duration_seconds": 34.75,
+      "discovered": 42,
+      "created": 26,
+      "skipped_already_in_db": 16,
+      "pdfs_downloaded": 42,
+      "deal_type_distribution": {
+        "delisting_offer": 19,
+        "opa_volontaire_totalitaria": 14,
+        "opa_obligatoire": 5,
+        "opa_volontaire_parziale": 4,
+        "prohibition_ungenutzt": 0
+      },
+      "untersagung_finding": "0 Untersagung rows ingested in the 24mo window. The 9 Untersagung rows in the captured fixture all cluster in 2017-2018-2019 — too old for since=2024-05-20. Migration 0008 + discovery refactor are in place and will catch any future Untersagung. To label historical Untersagung failures (criterion #2 source), would need to widen BaFin window to days_back=2920 (~8 years) at 0 ScrapingBee cost."
+    }
+  },
+  "success_criteria_evaluation": {
+    "1_at_least_200_deals_total": {"target": "≥200", "actual": 819, "pass": true},
+    "2_at_least_5_failures_identifiable": {
+      "target": "≥5",
+      "via_untersagung_DE": 0,
+      "via_FR_opr_chains_truncated": "TBD (requires manual labelling — no automated proxy)",
+      "via_IT_decadenza": "TBD (none captured in `opas` type alone)",
+      "pass": false,
+      "note": "Criterion partially met. The Untersagung-based automated label-0 source returned 0 rows because all DE Untersagung are pre-2024. Failure detection now requires either (a) widening BaFin window to ~8 years, or (b) manual labelling of FR multi-stage truncations (visa without follow-on within 180j)."
+    },
+    "3_multi_stage_enriched": {
+      "pass": true,
+      "note": "Multi-stage chains fully captured. Top targets carry 6-9 filings each, providing rich within-deal training signal once chained at labelling time."
+    },
+    "4_amf_it_de_no_regression": {"pass": true, "note": "All 3 pipelines operational, baselines preserved as superset of pre-extension counts."},
+    "5_scrapingbee_under_100_credits": {"target": "≤100", "actual": 2, "pass": true},
+    "6_test_coverage_above_80": {"pass": "tested_locally", "note": "27 bafin tests pass with updated Untersagung assertion. Full suite + coverage re-run needed before PR."}
+  },
+  "tech_debt_observations": [
+    "BDIF poller has no since= filter — uses max_items hard cap. Walking 24mo precisely would require either an API date filter (does BDIF expose one? — TBD) or client-side date stop. Current 730 items = ~4 years overshoot.",
+    "Untersagung historical depth: to satisfy criterion #2 we'd need a separate BaFin backfill with days_back=2920 (~8 years). Free in ScrapingBee terms (no anti-bot), ~5min runtime, would add ~200 historical DE deals incl. ~9 Untersagung (label_y=0 candidates).",
+    "FR multi-stage chain detection at labelling time: same target + chronological filings within ~24 months = one underlying deal. Labelling tool should group rows by (target_name, juridiction) with date gap heuristic.",
+    "[pending parse] still appears on FR acquirer + IT/DE target/acquirer for rows without strong markers. Discovery extractor improvement deferred to phase 7."
+  ]
+}
