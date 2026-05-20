@@ -28,6 +28,10 @@ dependencies = [
   "apscheduler==3.10.4",
   "beautifulsoup4==4.12.3",
   "lxml==5.3.0",
+  "scikit-learn==1.5.2",
+  "numpy==2.1.3",
+  "pandas==2.2.3",
+  "joblib==1.4.2",
 ]
 
 [project.optional-dependencies]
@@ -74,7 +78,12 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**/*.py" = ["S101", "PLR2004"]
+# N806: tests use `X` for feature matrices (sklearn / pandas convention).
+"tests/**/*.py" = ["S101", "PLR2004", "N806"]
+# N803/N806: scoring module follows sklearn convention (X = features matrix).
+"src/scoring/**/*.py" = ["N803", "N806"]
+# Same convention for the scoring CLI runner.
+"scripts/score_deals_run.py" = ["N806"]
 
 [tool.ruff.format]
 quote-style = "double"
@@ -107,6 +116,20 @@ ignore_missing_imports = true
 [[tool.mypy.overrides]]
 module = ["bs4", "lxml.*"]
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["sklearn.*", "joblib", "pandas", "pandas.*"]
+ignore_missing_imports = true
+
+# The scoring module relies heavily on dynamically typed sklearn /
+# pandas / numpy. We accept Any-leaning return types and untyped
+# inner helpers there for V1; full type hardening lands in phase 7+.
+[[tool.mypy.overrides]]
+module = ["src.scoring.*"]
+disallow_untyped_calls = false
+disallow_any_explicit = false
+warn_return_any = false
+disable_error_code = ["type-arg", "no-any-return", "assignment"]
 
 [tool.pytest.ini_options]
 minversion = "8.0"
