@@ -54,11 +54,15 @@ def test_parse_listing_first_row_is_unicredit_commerzbank(listing_html: str) -> 
     assert "commerzbank" in first.wrapper_url.lower()
 
 
-def test_parse_listing_filters_untersagung(listing_html: str) -> None:
+def test_parse_listing_ingests_untersagung_as_prohibition(listing_html: str) -> None:
+    """Phase-6 Step-0 extension: Untersagung rows previously filtered are
+    now ingested as `prohibition_ungenutzt` so they can be used as
+    label=0 training examples for the scoring model."""
     records = parse_listing(listing_html)
-    # No record should have "untersagung" in its raw offer type.
-    for r in records:
-        assert "untersagung" not in r.offer_type_raw.lower()
+    untersagung_rows = [r for r in records if "untersagung" in r.offer_type_raw.lower()]
+    # The captured fixture has 9 Untersagung rows per Step-0 audit.
+    assert len(untersagung_rows) >= 5
+    assert all(r.deal_type == "prohibition_ungenutzt" for r in untersagung_rows)
 
 
 def test_parse_listing_maps_delisting_variants_to_delisting_offer(
@@ -104,15 +108,16 @@ def test_parse_listing_empty_on_missing_table() -> None:
         ("Delisting-Rückerwerbsangebot", "delisting_offer"),
         ("Pflichtangebot / Erwerbsangebot", "opa_obligatoire"),
         ("Erwerbsangebot Änderung", "opa_volontaire_parziale"),
+        # Phase-6 Step-0 extension — Untersagung now ingested.
+        ("Untersagung", "prohibition_ungenutzt"),
     ],
 )
 def test_classifier_maps_german_to_canonical(narrative: str, expected: str) -> None:
     assert _classify_deal_type(narrative) == expected
 
 
-def test_classifier_returns_none_on_untersagung() -> None:
-    # Untersagung is filtered upstream — classifier itself returns None.
-    assert _classify_deal_type("Untersagung") is None
+def test_classifier_returns_none_on_unknown_narrative() -> None:
+    assert _classify_deal_type("Some unknown communication") is None
 
 
 def test_classifier_rules_use_canonical_enum_values() -> None:

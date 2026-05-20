@@ -48,6 +48,10 @@ DealType = Literal[
     "delisting_erwerbsangebot",
     # Cross-jurisdiction (Phase 5 migration 0007)
     "delisting_offer",
+    # DE — BaFin Untersagung rows (Phase 6 Step-0 extension migration 0008).
+    # Ingested as standalone deals (1 per Untersagung row) so they can later
+    # be matched to a prior deal via ISIN+bieter heuristic (tech debt P7).
+    "prohibition_ungenutzt",
 ]
 DEAL_TYPES: Final[tuple[DealType, ...]] = (
     "opa",
@@ -68,6 +72,7 @@ DEAL_TYPES: Final[tuple[DealType, ...]] = (
     "delisting_erwerbsangebot",
     "erwerbsangebot",
     "delisting_offer",
+    "prohibition_ungenutzt",
 )
 
 # ---- Deal status ---------------------------------------------------------
