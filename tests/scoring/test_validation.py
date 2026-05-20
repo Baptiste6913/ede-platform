@@ -19,7 +19,7 @@ def test_chronological_folds_respects_gap() -> None:
             continue
         max_train_date = max(dates[i] for i in train_idx)
         min_valid_date = min(dates[i] for i in valid_idx)
-        assert (min_valid_date - max_train_date).days >= 5  # noqa: PLR2004 — gap respected
+        assert (min_valid_date - max_train_date).days >= 5
 
 
 def test_chronological_folds_skips_empty_validation_windows() -> None:
@@ -87,9 +87,16 @@ def test_write_report_md_creates_file(tmp_path) -> None:  # type: ignore[no-unty
     report = ValidationReport(
         folds=[
             FoldResult(
-                fold=0, train_n=10, valid_n=4, valid_label_pos=3, valid_label_neg=1,
-                auc=0.8, brier=0.12, train_min_date="2024-01-01",
-                train_max_date="2024-06-01", valid_min_date="2024-09-01",
+                fold=0,
+                train_n=10,
+                valid_n=4,
+                valid_label_pos=3,
+                valid_label_neg=1,
+                auc=0.8,
+                brier=0.12,
+                train_min_date="2024-01-01",
+                train_max_date="2024-06-01",
+                valid_min_date="2024-09-01",
                 valid_max_date="2024-12-01",
             )
         ],

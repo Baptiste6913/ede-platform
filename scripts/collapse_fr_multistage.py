@@ -106,9 +106,9 @@ async def fetch_deals() -> list[Deal]:
     sf = async_sessionmaker(engine, expire_on_commit=False)
     async with sf() as session:
         result = await session.execute(
-            select(Deal).where(Deal.announcement_date >= _SINCE).order_by(
-                Deal.juridiction, Deal.target_name, Deal.announcement_date
-            )
+            select(Deal)
+            .where(Deal.announcement_date >= _SINCE)
+            .order_by(Deal.juridiction, Deal.target_name, Deal.announcement_date)
         )
         return list(result.scalars().all())
 
@@ -280,8 +280,7 @@ async def main(output_path: Path) -> int:
     print(f"Wrote {len(rows)} collapsed rows to {output_path}")
     print(f"  By jurisdiction (rows): FR={by_jur['FR']} IT={by_jur['IT']} DE={by_jur['DE']}")
     print(
-        "  candidate_failure_flag=Y: "
-        f"FR={flagged['FR']} IT={flagged['IT']} DE={flagged['DE']}"
+        "  candidate_failure_flag=Y: " f"FR={flagged['FR']} IT={flagged['IT']} DE={flagged['DE']}"
     )
     print(
         "  label_y=1 auto-filled    : "

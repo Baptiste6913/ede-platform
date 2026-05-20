@@ -49,9 +49,11 @@ class ValidationReport:
         lines: list[str] = []
         lines.append("# Phase 6 V1 — Validation report\n")
         lines.append("## Cross-validation (date-ordered, gap=90 j)\n")
-        lines.append(
-            "| Fold | Train n | Valid n | Valid pos/neg | AUC | Brier | Train range | Valid range |\n"
+        header = (
+            "| Fold | Train n | Valid n | Valid pos/neg | AUC | Brier | "
+            "Train range | Valid range |\n"
         )
+        lines.append(header)
         lines.append("|---|---:|---:|---|---:|---:|---|---|\n")
         for fr in self.folds:
             auc = "n/a" if fr.auc is None else f"{fr.auc:.3f}"
@@ -196,9 +198,7 @@ def evaluate(
         and hasattr(final_model, "feature_names_post_transform")
     ):
         coefs = final_model.inner_clf.coef_[0]
-        named = list(
-            zip(final_model.feature_names_post_transform, coefs, strict=True)
-        )
+        named = list(zip(final_model.feature_names_post_transform, coefs, strict=True))
         named.sort(key=lambda kv: kv[1])
         neg_contrib = [(n, float(v)) for n, v in named[:5]]
         pos_contrib = [(n, float(v)) for n, v in named[-5:][::-1]]

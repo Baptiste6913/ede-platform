@@ -78,7 +78,12 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**/*.py" = ["S101", "PLR2004"]
+# N806: tests use `X` for feature matrices (sklearn / pandas convention).
+"tests/**/*.py" = ["S101", "PLR2004", "N806"]
+# N803/N806: scoring module follows sklearn convention (X = features matrix).
+"src/scoring/**/*.py" = ["N803", "N806"]
+# Same convention for the scoring CLI runner.
+"scripts/score_deals_run.py" = ["N806"]
 
 [tool.ruff.format]
 quote-style = "double"

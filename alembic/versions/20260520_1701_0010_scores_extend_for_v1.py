@@ -10,8 +10,8 @@ The existing `scores` table from migration 0002 stored
 needs three additional fields:
 
   - `score_stars` SMALLINT  — 1..5 derived from p_completion
-  - `risk_factors` JSONB    — top-3 negative coefficients × feature values
-  - `positive_factors` JSONB — top-3 positive coefficients × feature values
+  - `risk_factors` JSONB    — top-3 negative coefficients x feature values
+  - `positive_factors` JSONB — top-3 positive coefficients x feature values
 
 We also relax `decision NOT NULL → NULLABLE`: V1 only assigns a decision
 for `enter` / `wait` / `skip` thresholds at scoring time, but legacy

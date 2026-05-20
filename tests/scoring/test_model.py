@@ -15,8 +15,18 @@ from src.scoring.model import (
 
 @pytest.mark.parametrize(
     ("p", "expected"),
-    [(0.0, 1), (0.29, 1), (0.3, 2), (0.49, 2), (0.5, 3), (0.69, 3),
-     (0.7, 4), (0.84, 4), (0.85, 5), (1.0, 5)],
+    [
+        (0.0, 1),
+        (0.29, 1),
+        (0.3, 2),
+        (0.49, 2),
+        (0.5, 3),
+        (0.69, 3),
+        (0.7, 4),
+        (0.84, 4),
+        (0.85, 5),
+        (1.0, 5),
+    ],
 )
 def test_map_p_to_stars(p: float, expected: int) -> None:
     assert map_p_to_stars(p) == expected
@@ -94,7 +104,7 @@ def test_scoring_model_learns_class_separation() -> None:
     proba = model.predict_proba(X)[:, 1]
     mean_pos = float(np.mean(proba[y == 1]))
     mean_neg = float(np.mean(proba[y == 0]))
-    assert mean_pos - mean_neg > 0.2  # noqa: PLR2004 — meaningful separation
+    assert mean_pos - mean_neg > 0.2
 
 
 def test_scoring_model_feature_contributions_align_with_post_transform_names() -> None:
@@ -120,9 +130,7 @@ def test_scoring_model_save_and_load_roundtrip(tmp_path) -> None:  # type: ignor
     loaded = ScoringModel.load(p_path)
     assert loaded.version == "test_v1"
     assert loaded.n_samples_train == len(X)
-    np.testing.assert_array_almost_equal(
-        loaded.predict_proba(X), model.predict_proba(X), decimal=4
-    )
+    np.testing.assert_array_almost_equal(loaded.predict_proba(X), model.predict_proba(X), decimal=4)
 
 
 def test_scoring_model_load_rejects_wrong_type(tmp_path) -> None:  # type: ignore[no-untyped-def]

@@ -130,7 +130,7 @@ class ScoringModel:
         # NaN columns transparently.
         try:
             raw_names = list(self.pre.get_feature_names_out())
-        except Exception:  # noqa: BLE001 — fallback for older sklearn
+        except Exception:
             raw_names = [f"feat_{i}" for i in range(self.inner_clf.coef_.shape[1])]
         # Strip the ColumnTransformer prefix ('num__', 'cat__', 'bool__').
         self.feature_names_post_transform = [
@@ -152,7 +152,7 @@ class ScoringModel:
         return self.calibrated.predict_proba(X)
 
     def feature_contributions(self, row: pd.DataFrame) -> list[tuple[str, float]]:
-        """Per-feature coefficient × scaled value. Higher = more positive
+        """Per-feature coefficient x scaled value. Higher = more positive
         (label=1 nudging). Lower = more negative."""
         if self.inner_clf is None or self.pre is None:
             raise RuntimeError("Model not trained; call fit() first")

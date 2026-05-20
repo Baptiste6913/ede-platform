@@ -59,10 +59,10 @@ async def test_score_deal_returns_full_payload(db_session) -> None:  # type: ign
     out = await score_deal(deal.id, model, db_session)
     assert out is not None
     assert 0.0 <= out.p_completion <= 1.0
-    assert 1 <= out.score_stars <= 5  # noqa: PLR2004
+    assert 1 <= out.score_stars <= 5
     assert out.decision in {"enter", "wait", "skip"}
-    assert len(out.top_3_positive_factors) <= 3  # noqa: PLR2004
-    assert len(out.top_3_risk_factors) <= 3  # noqa: PLR2004
+    assert len(out.top_3_positive_factors) <= 3
+    assert len(out.top_3_risk_factors) <= 3
     assert out.model_version == "quick"
 
 
