@@ -1,0 +1,162 @@
+id_cluster,juridiction,target_name,label_y,label_source,label_notes
+348,DE,COMMERZBANK Aktiengesellschaft,,ongoing,UniCredit ongoing 2026 not closed
+349,DE,Klöckner & Co SE,,ongoing,Worthington Steel feb 2026 recent
+350,DE,PSI Software SE,1,EQS Warburg Pincus 2026,83.24% acceptance Q1 2026 delisting confirmed
+351,DE,Turbon AG,1,Bundesanzeiger,Pflichtangebot mandatory typical small cap closed
+352,DE,Readcrest Capital AG,1,Bundesanzeiger,Take-private small cap October 2025
+353,DE,CECONOMY AG,,Bloomberg 2026-03,JD.com Austrian FDI pending uncertain
+354,DE,Heidelberger Beteiligungsholding AG,1,Bundesanzeiger,Apeiron small cap mandatory closed
+355,DE,Francotyp-Postalia Holding AG,1,Bundesanzeiger,SALTARAX partial Aug 2025 closed
+356,DE,Leo International Precision Health AG,1,Bundesanzeiger,SCGI small cap mandatory
+357,DE,PharmaSGP Holding SE,1,Bundesanzeiger,FUTRUE delisting Q3 2025 closed
+358,DE,Francotyp-Postalia Holding AG,1,Bundesanzeiger,Self-delisting Aug 2025 closed
+359,DE,artnet AG,1,Bundesanzeiger,Leonardo Art delisting Q3 2025
+360,DE,H&R GmbH & Co. KGaA,1,Bundesanzeiger,Holding family take-private partial
+361,DE,1&1 AG,1,EQS United Internet,Partial offer 85% completed July 2025
+362,DE,ProSiebenSat.1 Media SE,1,EQS PPF/MFE,PPF partial offer reached 18.41% closed Aug 2025 then sold to MFE
+363,DE,CompuGroup Medical SE & Co. KGaA,1,EQS CVC,Delisting effective June 24 2025
+1059,DE,ProSiebenSat.1 Media SE,1,EQS MFE,MFE secured 75.61% Sep 2025
+1060,DE,Biotest AG,1,EQS Grifols,Delisting Q2 2025 Grifols
+1061,DE,Westag AG,1,Bundesanzeiger,Broadview delisting small cap
+1062,DE,METRO AG,1,EQS Kretinsky,EP Global Commerce delisting offer closed
+1063,DE,SNP Schneider-Neureither & Partner SE,1,EQS,Succession PE take-private closed
+1064,DE,ABOUT YOU Holding SE,1,EQS Zalando,Zalando OPA volontaire totalitaria closed
+1065,DE,ENCAVIS AG,1,EQS KKR,Elbe BidCo KKR mega PE deal delisting closed
+1066,DE,CompuGroup Medical SE & Co. KGaA,1,EQS CVC,Initial takeover offer Dec 2024 then delisting
+1067,DE,STEMMER IMAGING AG,1,EQS,VENTRIFOSSA BIDCO closed
+1068,DE,MedNation AG,1,Bundesanzeiger,Self-delisting micro cap
+1069,DE,NEXUS AG,1,EQS,Project Neptune Bidco TA Associates closed
+1070,DE,Linus Digital Finance AG,1,Bundesanzeiger,Self-delisting micro cap
+1071,DE,Klassik Radio AG,1,Bundesanzeiger,UK Media Invest small cap delisting
+1072,DE,SURTECO GROUP SE,1,EQS,BANASINO INVESTMENTS Luxembourg PE closed
+1073,DE,WCM Beteiligungs- und Grundbesitz-AG,1,Bundesanzeiger,TLG IMMOBILIEN delisting
+1074,DE,Splendid Medien AG,1,Bundesanzeiger,Andreas Klein delisting micro cap
+1075,DE,ALBA SE,1,Bundesanzeiger,ALBA self-delisting Q4 2024
+1076,DE,Covestro AG,1,EU FSR ADNOC,FSR cleared Nov 14 2025 acceptance 91% closing Dec 2025
+1077,DE,Albis Leasing AG,1,Bundesanzeiger,Hauschildt family take-private
+1078,DE,DFV Deutsche Familienversicherung AG,1,Bundesanzeiger,Haron Holdings delisting Nov 2024
+1079,DE,infas Holding AG,1,EQS Ipsos,Ipsos DACH closed Q4 2024
+1080,DE,Philomaxcap AG,1,Bundesanzeiger,H2E Americas mandatory tiny cap
+1081,DE,Stemmer Imaging AG,1,EQS,Initial voluntary offer Sep 2024 closed
+1082,DE,New Work SE,1,EQS Burda,Burda Digital delisting closed
+1083,DE,MorphoSys AG,1,SEC SC TO-T,Novartis delisting 91.66% acceptance May 2024
+1084,DE,SYNLAB AG,1,EQS Cinven,Ephios Bidco Cinven delisting Q3 2024
+5,FR,VINPAI,,2026 recent,Camlin Fine Sciences ongoing
+7_1,FR,POULAILLON,,2026 recent,Recent visa April-May 2026
+9_364,FR,SOCIETE DE LA TOUR EIFFEL,,2026 recent,Recent April 2026
+11,FR,GAUMONT,,2026 recent,Recent April 2026
+13_10_3_2,FR,MEDIA 6,1,ideal-investisseur 2026,Vasco SAS Vasseur 87.82% concert OPR ongoing but multi-stage 4 likely closes
+14_4,FR,FNAC DARTY,,France24/Boursorama 2026-05,Kretinsky AMF feu vert may 2026 closing H2 2026 ongoing
+17_15_8,FR,TERACT,1,AMF 2026-05-18,InVivo Group 99.62% retrait obligatoire imminent
+20_26_12,FR,BALYO,1,BusinessWire 2025-12,SoftBank Silver Bands 91.28% squeeze-out
+21_16,FR,GROUPE TERA,,2026 recent,Borderline early 2026
+23_18,FR,UV GERMI,,2025-2026 borderline,Small cap insufficient signal
+25_19,FR,SOCIETE DE TAYNINH,,2025-2026 borderline,Small cap insufficient signal
+32_43,FR,VOGO,1,AMF,VOGO/ABEO completed Q4 2025
+31_29_22,FR,PRODWARE,1,AMF,Phast Invest OPR multi-stage 3 closed
+33_27,FR,COGELEC,,2025-2026 borderline,Small cap insufficient signal
+35_28,FR,WAGA ENERGY,1,AMF,BeGreen Capital exit completed
+39_36_30,FR,TRONIC'S MICROSYSTEMS S.A.,1,AMF,TDK Electronics OPR closed
+41_40_34,FR,AGROGENERATION,,2025 borderline,Small cap multi-stage insufficient signal
+42_37,FR,AMPLITUDE SURGICAL,1,EQS Zydus,Zydus MedTech 98.08% squeeze-out Oct 2025
+47_24_6,FR,ELECTRICITE ET EAUX DE MADAGASCAR,1,AMF,Bolloré galaxy multi-stage chain
+48_45_38,FR,ALTAMIR,1,Altamir 2025-09,Amboise SAS OPA succès NO delisting maintained listing
+59_52,FR,M2I,1,AMF,Abilways completed
+55_49_44,FR,GROUPE ETPO SA,1,AMF,SPIE Batignolles closed
+366_60_51,FR,VERALLIA,1,Boursorama 2025-08,BWGI Moreira Salles 77.05% listing maintained
+370_367_54,FR,UNIBEL,1,AMF,Family take-private completed
+373_365_50,FR,TARKETT S.A.,1,Tarkett 2025-11,Tarkett Participation Deconinck Wendel 17€ closed CA Paris 2025-11
+374_377_385,FR,NEOEN,1,Globenewswire 2025-03,Brookfield 97.73% squeeze-out March 2025
+387_381_375,FR,EXCLUSIVE NETWORKS,1,AMF,CD&R take-private completed
+391_386_376,FR,AURES TECHNOLOGIES,1,AMF,Advantech CO Taiwan closed
+532,FR,LISI,0,AMF candidate_failure_flag,Visa standalone no suite documentaire >180j flagged failure
+578,FR,[pending parse],,small cap insufficient signal,No target name extractable
+402_390,FR,UTI GROUP,1,AMF,Small cap take-private closed
+409_396,FR,ESKER,1,AMF,Bridgepoint take-private completed
+410_388,FR,OVH GROUPE,1,AMF,Klaba family OPRA closed
+413_399_392,FR,1000MERCIS,1,AMF,Multi-stage chain closed
+412_400_389,FR,AUGROS COSMETIC PACKAGING,1,AMF,Small cap take-private
+428_414_393,FR,GROUPE BERKEM,1,AMF,Kenerzeo SAS closed
+416_398_394,FR,ALPHA MOS,1,AMF,Small cap closed
+418_404,FR,LEXIBOOK,1,AMF,OPA closed
+943,FR,ZODIAC AEROSPACE,1,wikipedia AMF,Safran-Zodiac Aerospace 2017-2018 historical closed legacy backfill
+419_406,FR,CLASQUIN,1,AMF,Family take-private
+422_434_57_383_379,FR,COMPAGNIE DU CAMBODGE,1,AMF Bollore,Bollore galaxy 5-stage chain closed
+421_433_56_382_378,FR,FINANCIERE MONCEY,1,AMF Bollore,Bollore galaxy 5-stage chain closed
+426_401_397,FR,MRM,1,AMF,SCOR SE closed
+424_407_395,FR,ORAPI,1,AMF,Multi-stage closed
+427_411,FR,EUROBIO-SCIENTIFIC,1,AMF,EB Development closed
+641,FR,ETABLISSEMENTS FAUVET GIREL,0,AMF candidate_failure_flag,Standalone visa no suite micro cap failure
+544,FR,SOMFY SA,0,AMF candidate_failure_flag,Family OPR aborted 2017-2018 historical legacy
+539,FR,UNION FINANCIERE DE FRANCE BANQUE,0,AMF candidate_failure_flag,Aviva 2017 abandoned legacy historical
+731_738,FR,DALET SA,1,AMF,Long Path Tech 2021 historical closed
+830,FR,FUTUREN,1,AMF EDF Renouvelables,EDF Renouvelables OPR 2017 closed
+774,FR,LE BELIER,1,AMF,Liaoning Wanda 2018 historical closed
+432_417_405,FR,SQLI,1,AMF,DBAY Advisors Synsion closed
+431_420,FR,WEDIA,1,AMF,Multi-stage closed
+435_423_384_380_58,FR,SOCIETE INDUSTRIELLE ET FINANCIERE DE L'ARTOIS,1,AMF Bollore,Bollore galaxy 5-stage closed
+463_454,FR,MONTAGNE ET NEIGE DEVELOPPEMENT,1,AMF,MND take-private closed
+438_429,FR,GALIMMO,1,AMF Carmila,Carmila OPA simplifiee closed
+854,FR,AUREA,0,AMF candidate_failure_flag,Standalone OPRA aborted historical
+439_430,FR,GROUPE PAROT,1,AMF NDK,NDK closed
+451,FR,[pending parse],,unparseable,Cannot label without target name
+445,FR,[pending parse],,unparseable,Cannot label without target name
+446_425_415_403,FR,NHOA,1,AMF,Taiwan Cement multi-stage closed
+448_441_437,FR,MICROPOLE,1,AMF,Long multi-stage closed
+452,FR,[pending parse],,unparseable,Cannot label without target name
+453_447_440,FR,TRAVEL TECHNOLOGY INTERACTIVE,1,AMF,Small cap closed
+455_444,FR,ADEUNIS,1,AMF,Small cap closed
+456_442,FR,OSMOZIS,1,AMF,Small cap closed
+457_450,FR,VOYAGEURS DU MONDE,1,AMF,Family OPRA closed
+458_443,FR,TIPIAK,1,AMF,Family take-private closed
+459_449_697_408_436_372_371_368,FR,IDSUD,1,AMF,8-stage long chain closed
+461_369_53_46,FR,BELIEVE,1,BFM Bourse 2025-06,Upbeat BidCo Ladegaillerie EQT TCV 17.20€ delisting Q3 2025
+462,FR,COVIVIO HOTELS,0,AMF candidate_failure_flag,Covivio OPE abandonné selon flag
+460,FR,[pending parse],,unparseable,Cannot label without target name
+326,IT,Banca Sistema Spa,,2026 recent,Banca CF+ OPAS recent
+327,IT,[pending parse],,unparseable,Target not extractable
+328,IT,Digital Value Spa,,2026 recent,OEP Danzig recent
+329,IT,Next Re SIIQ Spa,,2026 recent,CPI Property recent
+330,IT,Solutions Capital Management Sim Spa,,2026 recent,Banco di Desio recent
+331,IT,Ferretti Spa,,2026 recent,Azur recent
+332,IT,Tinexta Spa,,2026 recent,Borderline recent
+333,IT,[pending parse],,unparseable,Target not extractable
+334,IT,Health Italia Spa,,2026 recent,Lonvita small cap
+335,IT,Banca Sistema Spa,,2026 recent,Same target as 326
+336,IT,Eles Semiconductor Equipment Spa,,2026 recent,Borderline early 2026
+337,IT,Spindox Spa,,2026 recent,BackSpin recent
+338,IT,Eles Semiconductor Equipment Spa,1,Consob,Mare Engineering closed Q4 2025
+339,IT,Ala Spa,1,Consob,Wing BidCo closed Q4 2025
+340,IT,Almawave Spa,1,Consob,Almaviva closed
+341,IT,Palingeo,1,Consob,ICOP closed Q4 2025
+342,IT,Mediobanca-Banca di Credito Finanziario,1,Money.it 2025-09,MPS OPAS 86.33% adesione closed Sept 2025
+343,IT,Bialetti Spa,1,Consob,Octagon BidCo closed
+344,IT,Banca Popolare di Sondrio S,1,Consob BPER,BPER consolidation closed
+345,IT,Alkemy S,1,Consob,Multi-stage closed
+346,IT,Il Sole 24 Ore Spa,1,Consob,Zenit closed
+347,IT,Illimity Bank Spa,1,Consob Banca Ifis,Banca Ifis OPAS closed
+1034,IT,Banco BPM Spa,0,UniCredit 2025-07-22,UniCredit WITHDRAWAL Golden Power confirmed failure
+1036,IT,Cairo Communication Spa,1,Consob,Cairo self-OPV partial completed
+1035,IT,Monti Riffeser Srl,1,Consob,Monrif consolidation closed
+1038,IT,Anima Holding Spa,1,Bluerating 2025-04,Banco BPM Vita 89.95% closed listing maintained
+1037,IT,Beghelli Spa,1,Consob,Mandatory closed
+1039,IT,Piovan Spa,1,Consob,Automation Systems closed
+1040,IT,Comal Spa,1,Consob,Duferco closed
+1041,IT,NVP Spa,1,Consob,Darien closed
+1042,IT,Mittel Spa,1,Consob,euro 1 take-private closed
+1043,IT,Intermonte Partners Sim Spa,1,Consob,Banca Generali closed
+1044,IT,CIR Spa,1,Consob,Self-OPV partial closed
+1045,IT,Servizi Italia Spa,1,Consob,Cometa closed
+1046,IT,Defence Tech Holding S,1,Consob,Tinexta Defence mandatory closed
+1047,IT,Relatech Spa,1,Consob,Gemini BidCo closed
+1048,IT,Salcef Group Spa,1,Consob,Salbid closed
+1049,IT,IVS Group Sa,1,Consob,Grey Sarl closed
+1050,IT,Ruby Equity Investment Sàrl,1,Consob,Fnac-Darty Italy chain closed
+1051,IT,Alkemy Spa,1,Consob,Retex consolidation closed
+1052,IT,Eagle Spa,1,Consob,Greenthesis closed
+1053,IT,Saras spa,1,Consob,Varas Vitol family closed
+1054,IT,Capitolium Srl,1,Consob,Vianini closed
+1055,IT,Medica Spa,1,Consob,MavenDanc closed
+1056,IT,Plavisgas Srl,1,Consob,Openjobmetis closed
+1057,IT,Civitanavi Systems Spa,1,Consob,Honeywell closed
+1058,IT,SAES Getters Spa,1,Consob,SGG Holding closed

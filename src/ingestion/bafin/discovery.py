@@ -75,10 +75,17 @@ GERMAN_TYPE_RULES: tuple[tuple[re.Pattern[str], str], ...] = (
         "opa_volontaire_parziale",
     ),
     (re.compile(r"erwerbsangebot", re.IGNORECASE), "opa_volontaire_parziale"),
+    # Phase-6 Step-0 extension: Untersagung (§15 WpÜG regulatory prohibition)
+    # was previously filtered at discovery. We now ingest these rows as
+    # standalone `prohibition_ungenutzt` deals so they appear as label=0
+    # candidates in the scoring training set.
+    (re.compile(r"untersagung", re.IGNORECASE), "prohibition_ungenutzt"),
 )
 
-# Rows we explicitly skip — these are not deals.
-SKIPPED_NARRATIVES: tuple[re.Pattern[str], ...] = (re.compile(r"untersagung", re.IGNORECASE),)
+# Previously dropped narratives — kept as an empty tuple so the row-filter
+# code path stays in place for any future "regulatory communication only"
+# rows that genuinely aren't deals (none currently identified).
+SKIPPED_NARRATIVES: tuple[re.Pattern[str], ...] = ()
 
 _DATE_RE = re.compile(r"(\d{2})\.(\d{2})\.(\d{4})")
 _ISIN_RE = re.compile(r"^[A-Z]{2}[A-Z0-9]{9}[0-9]$")
