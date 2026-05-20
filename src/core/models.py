@@ -117,6 +117,17 @@ class Deal(Base):
     source_url: Mapped[str | None] = mapped_column(Text, nullable=True)
     pdf_path: Mapped[str | None] = mapped_column(Text, nullable=True)
 
+    # Phase 6 scoring V1 ground-truth label (migration 0009).
+    completion_label: Mapped[int | None] = mapped_column(
+        Integer,  # SMALLINT in SQL; ORM uses Integer.
+        nullable=True,
+    )
+    completion_label_source: Mapped[str | None] = mapped_column(Text, nullable=True)
+    completion_label_date: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
@@ -243,6 +254,14 @@ class Score(Base):
     decision: Mapped[str] = mapped_column(DecisionEnum, nullable=False)
     model_version: Mapped[str] = mapped_column(String(64), nullable=False)
     features: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
+
+    # Phase 6 V1 extensions (migration 0010).
+    score_stars: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    risk_factors: Mapped[list[dict[str, Any]] | None] = mapped_column(JSONB, nullable=True)
+    positive_factors: Mapped[list[dict[str, Any]] | None] = mapped_column(
+        JSONB,
+        nullable=True,
+    )
 
     deal: Mapped[Deal] = relationship(back_populates="scores")
 
