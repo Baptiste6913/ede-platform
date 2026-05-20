@@ -186,8 +186,8 @@ async def test_iter_all_stops_when_all_rows_older_than_since(page1_html: str) ->
 
     import httpx
 
-    from src.ingestion.consob.discovery import ConsobDiscoveryClient
     from src.core.scrapingbee_client import ScrapingBeeClient
+    from src.ingestion.consob.discovery import ConsobDiscoveryClient
 
     pages: dict[str, int] = {"n": 0}
 

@@ -12,13 +12,13 @@ Public surface:
 - `ConsobPdfFetcher` — plain httpx download with atomic write.
 """
 
-from src.ingestion.consob.discovery import ConsobDiscoveryClient, OpaRecord
-from src.ingestion.consob.fetcher import ConsobPdfFetcher
-from src.ingestion.consob.poller import ConsobPoller
 from src.core.scrapingbee_client import (
     ScrapingBeeBudgetExceeded,
     ScrapingBeeClient,
 )
+from src.ingestion.consob.discovery import ConsobDiscoveryClient, OpaRecord
+from src.ingestion.consob.fetcher import ConsobPdfFetcher
+from src.ingestion.consob.poller import ConsobPoller
 
 __all__ = [
     "ConsobDiscoveryClient",
