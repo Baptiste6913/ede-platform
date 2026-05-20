@@ -22,7 +22,6 @@ Outlier capping:
 from __future__ import annotations
 
 import math
-import re
 from dataclasses import dataclass
 from datetime import date, datetime
 from typing import TYPE_CHECKING, Any, Final
@@ -65,25 +64,78 @@ FEATURE_NAMES: Final[tuple[str, ...]] = (
 # Heuristics ----------------------------------------------------------------
 
 _PE_TOKENS = (
-    "bidco", "bid co", "holding", "holdings", "capital", "partners",
-    "investment", "investments", "sarl", "s.à r.l", "luxembourg",
-    "lux", "private equity", "kkr", "cinven", "cvc", "ardian",
-    "warburg", "advent", "ep global", "ephios",
+    "bidco",
+    "bid co",
+    "holding",
+    "holdings",
+    "capital",
+    "partners",
+    "investment",
+    "investments",
+    "sarl",
+    "s.à r.l",
+    "luxembourg",
+    "lux",
+    "private equity",
+    "kkr",
+    "cinven",
+    "cvc",
+    "ardian",
+    "warburg",
+    "advent",
+    "ep global",
+    "ephios",
 )
 _SOE_TOKENS = ("adnoc", "edf", "engie", "orano", "areva", "saudi", "qatar")
 _CORPORATE_SUFFIXES = (
-    " ag", " se", " spa", " s.p.a", " sa", " s.a.", " nv", " n.v",
-    " plc", " ltd", " gmbh", " inc",
+    " ag",
+    " se",
+    " spa",
+    " s.p.a",
+    " sa",
+    " s.a.",
+    " nv",
+    " n.v",
+    " plc",
+    " ltd",
+    " gmbh",
+    " inc",
 )
 _CROSS_BORDER_TOKENS = (
-    "italien", "italy", "italia", "luxembourg", "lux ", "s.à r.l",
-    "sarl", "germany", "uk ", "usa", "canada", "japan", "china",
-    "saudi", "switzerland", "swiss", "abu dhabi", "qatar", "states",
+    "italien",
+    "italy",
+    "italia",
+    "luxembourg",
+    "lux ",
+    "s.à r.l",
+    "sarl",
+    "germany",
+    "uk ",
+    "usa",
+    "canada",
+    "japan",
+    "china",
+    "saudi",
+    "switzerland",
+    "swiss",
+    "abu dhabi",
+    "qatar",
+    "states",
     "international",
 )
 _FDI_RISK_TOKENS = (
-    "adnoc", "china", "chinese", "jd.com", "jingdong", "saudi",
-    "qatar", "abu dhabi", "uae", "uzbek", "huawei", "alibaba",
+    "adnoc",
+    "china",
+    "chinese",
+    "jd.com",
+    "jingdong",
+    "saudi",
+    "qatar",
+    "abu dhabi",
+    "uae",
+    "uzbek",
+    "huawei",
+    "alibaba",
 )
 
 
@@ -106,10 +158,7 @@ def _classify_acquirer(name: str) -> str:
 def _is_cross_border(target: str, acquirer: str) -> bool:
     target_lower = target.lower()
     acq_lower = acquirer.lower()
-    for token in _CROSS_BORDER_TOKENS:
-        if token in acq_lower and token not in target_lower:
-            return True
-    return False
+    return any(token in acq_lower and token not in target_lower for token in _CROSS_BORDER_TOKENS)
 
 
 def _fdi_risk(acquirer: str) -> bool:
@@ -194,14 +243,12 @@ async def extract_cluster_features(
     min_acc_raw = _first_non_null(lambda d: d.min_acceptance_threshold)
     min_acc = float(min_acc_raw) if min_acc_raw is not None else float("nan")
 
-    expected_close = (
-        max((d.expected_close_date for d in rows if d.expected_close_date), default=None)
+    expected_close = max(
+        (d.expected_close_date for d in rows if d.expected_close_date), default=None
     )
     days_to_close = float("nan")
     if expected_close is not None:
-        days_to_close = float(
-            min(max((expected_close - first.announcement_date).days, 0), 730)
-        )
+        days_to_close = float(min(max((expected_close - first.announcement_date).days, 0), 730))
 
     # Cluster-level signals
     events_count = float(len(rows))
@@ -267,7 +314,11 @@ def features_to_vector(features: dict[str, Any]) -> dict[str, float | str]:
     out: dict[str, float | str] = {}
     for k in NUMERIC_FEATURES:
         v = features.get(k, float("nan"))
-        out[k] = float(v) if v is not None and not (isinstance(v, float) and math.isnan(v)) else float("nan")
+        out[k] = (
+            float(v)
+            if v is not None and not (isinstance(v, float) and math.isnan(v))
+            else float("nan")
+        )
     for k in CATEGORICAL_FEATURES:
         out[k] = str(features.get(k, "unknown") or "unknown")
     for k in BOOLEAN_FEATURES:

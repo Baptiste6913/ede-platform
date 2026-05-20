@@ -23,10 +23,18 @@ from src.scoring.features import (
 def _stub_deal(**kw):  # type: ignore[no-untyped-def]
     from types import SimpleNamespace
 
-    defaults = {"deal_type": "opa", "premium_pct": None, "min_acceptance_threshold": None,
-                "expected_close_date": None, "announcement_date": date(2025, 1, 1),
-                "completion_label": None, "id": 1, "target_name": "X",
-                "acquirer_name": "Y", "juridiction": "FR"}
+    defaults = {
+        "deal_type": "opa",
+        "premium_pct": None,
+        "min_acceptance_threshold": None,
+        "expected_close_date": None,
+        "announcement_date": date(2025, 1, 1),
+        "completion_label": None,
+        "id": 1,
+        "target_name": "X",
+        "acquirer_name": "Y",
+        "juridiction": "FR",
+    }
     defaults.update(kw)
     return SimpleNamespace(**defaults)
 
@@ -116,8 +124,8 @@ def test_features_to_vector_handles_nan_booleans_and_categoricals() -> None:
     v = features_to_vector(raw)
     assert math.isnan(float(v["bid_premium_pct"]))
     assert math.isnan(float(v["min_acceptance_threshold"]))
-    assert v["relative_size"] == 1.5  # noqa: PLR2004
-    assert v["events_count"] == 3.0  # noqa: PLR2004
+    assert v["relative_size"] == 1.5
+    assert v["events_count"] == 3.0
     assert v["target_sector"] == "unknown"  # None → unknown
     assert v["cross_border"] == 1.0
     assert v["has_irrevocable_undertaking"] == 0.0

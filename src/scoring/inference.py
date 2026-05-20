@@ -58,12 +58,9 @@ async def score_deal(
     decision = map_p_to_decision(p)
     contributions = model.feature_contributions(row)
     sorted_contributions = sorted(contributions, key=lambda kv: kv[1])
-    top_neg = [
-        {"feature": n, "contribution": round(v, 4)} for n, v in sorted_contributions[:3]
-    ]
+    top_neg = [{"feature": n, "contribution": round(v, 4)} for n, v in sorted_contributions[:3]]
     top_pos = [
-        {"feature": n, "contribution": round(v, 4)}
-        for n, v in sorted_contributions[-3:][::-1]
+        {"feature": n, "contribution": round(v, 4)} for n, v in sorted_contributions[-3:][::-1]
     ]
     _ = select  # keep import in case of future enriched queries
 

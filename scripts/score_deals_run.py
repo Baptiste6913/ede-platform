@@ -19,7 +19,6 @@ from __future__ import annotations
 import asyncio
 import json
 import sys
-from dataclasses import asdict
 from datetime import UTC, datetime
 from decimal import Decimal
 from pathlib import Path
@@ -36,8 +35,6 @@ from src.scoring.inference import score_deal
 from src.scoring.model import (
     ScoringModel,
     clusters_to_dataframe,
-    map_p_to_decision,
-    map_p_to_stars,
 )
 from src.scoring.validation import evaluate, write_report_md
 
