@@ -1,17 +1,19 @@
-"""Phase 4 — Step 9 live backfill runner.
+"""Phase 4 / Phase-6 Step-0 extension — Consob live backfill runner.
 
 Triggers `ConsobPoller.run_backfill()` against the real Consob site
 (ScrapingBee for the listing pages + direct httpx for the PDFs) and
-prints a structured JSON summary on stdout. Captures the per-step
-ScrapingBee credit consumption so the operator can verify the budget
-math (~12 credits for a full 12-month backfill).
+prints a structured JSON summary on stdout.
 
 Usage:
 
     DATABASE_URL=... DATA_DIR=... SCRAPINGBEE_API_KEY=... \\
-        python scripts/consob_run_once.py [max_pages]
+        python scripts/consob_run_once.py [days_back]
 
-`max_pages` defaults to 12 (covers ~12 months at 50 items/page).
+`days_back` defaults to 365 (12-month window). For the Phase-6
+24-month extension pass `730`. The internal `max_pages` cap is set to
+`_MAX_PAGES_SAFETY_CAP` (30 pages = 1500 rows = ~37 years of Consob
+history) — well past any reasonable `days_back`. The `since=` cutoff
+on the discovery iterator handles early termination cheaply.
 
 Exit codes:
   0  success — at least `min_discovered` items found, no budget issue
@@ -26,7 +28,7 @@ import contextlib
 import json
 import sys
 import traceback
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -38,16 +40,26 @@ from src.ingestion.consob.poller import ConsobPoller
 
 _log = structlog.get_logger("consob.run_once")
 
+# Hard ceiling on listing pages fetched — protects the ScrapingBee budget
+# against a misconfigured since=. The since=date cutoff stops iteration
+# the moment every row on a page is older than the floor, so this cap is
+# rarely hit in practice.
+_MAX_PAGES_SAFETY_CAP = 30
 
-async def main(max_pages: int) -> int:
+
+async def main(days_back: int) -> int:
     configure_logging(level="INFO")
     settings = get_settings()
     started = datetime.now(tz=UTC)
+    since = date.today() - timedelta(days=days_back)
 
     poller = ConsobPoller()
     credits_before = await poller._scrapingbee.used_credits_this_month()
     try:
-        result = await poller.run_backfill(max_pages=max_pages)
+        result = await poller.run_backfill(
+            max_pages=_MAX_PAGES_SAFETY_CAP,
+            since=since,
+        )
     except Exception as exc:
         print(
             json.dumps(
@@ -99,6 +111,8 @@ async def main(max_pages: int) -> int:
             "scrapingbee_render_js": settings.scrapingbee_render_js,
             "scrapingbee_premium_proxy": settings.scrapingbee_premium_proxy,
             "rate_per_second": settings.poller_amf_rate_per_second,
+            "since": since.isoformat(),
+            "days_back": days_back,
         },
     }
     print(json.dumps(payload, indent=2, ensure_ascii=False))
@@ -115,5 +129,5 @@ async def main(max_pages: int) -> int:
 
 
 if __name__ == "__main__":
-    max_pages_arg = int(sys.argv[1]) if len(sys.argv) > 1 else 12
-    sys.exit(asyncio.run(main(max_pages_arg)))
+    days_back_arg = int(sys.argv[1]) if len(sys.argv) > 1 else 365
+    sys.exit(asyncio.run(main(days_back_arg)))
