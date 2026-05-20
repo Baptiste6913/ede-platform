@@ -77,8 +77,8 @@ async def test_download_falls_back_to_scrapingbee_when_direct_returns_html(
     monkeypatch.setenv("SCRAPINGBEE_API_KEY", "test-key")
     from sqlalchemy.ext.asyncio import async_sessionmaker
 
-    from src.core.settings import get_settings
     from src.core.scrapingbee_client import ScrapingBeeClient
+    from src.core.settings import get_settings
 
     get_settings.cache_clear()
     sf = async_sessionmaker(db_engine, expire_on_commit=False)  # type: ignore[arg-type]

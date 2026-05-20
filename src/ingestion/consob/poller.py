@@ -25,15 +25,15 @@ from sqlalchemy import select
 
 from src.core.db import get_sessionmaker
 from src.core.models import Deal
+from src.core.scrapingbee_client import (
+    ScrapingBeeBudgetExceeded,
+    ScrapingBeeClient,
+)
 from src.core.settings import get_settings
 from src.ingestion.amf.rate_limiter import RateLimiter
 from src.ingestion.consob import parser as consob_parser
 from src.ingestion.consob.discovery import ConsobDiscoveryClient, OpaRecord
 from src.ingestion.consob.fetcher import ConsobPdfFetcher
-from src.core.scrapingbee_client import (
-    ScrapingBeeBudgetExceeded,
-    ScrapingBeeClient,
-)
 from src.ingestion.consob.service import upsert_deal_from_opa
 
 if TYPE_CHECKING:

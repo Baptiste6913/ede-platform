@@ -113,9 +113,7 @@ async def test_upsert_uses_pdf_metadata_when_provided(
     assert deal.offer_price == Decimal("19.50")
     assert deal.currency == "EUR"
     assert deal.expected_close_date == date(2026, 6, 12)
-    e = (
-        await db_session.execute(select(Event).where(Event.deal_id == deal.id))
-    ).scalar_one()
+    e = (await db_session.execute(select(Event).where(Event.deal_id == deal.id))).scalar_one()
     payload = e.raw_payload or {}
     assert payload["pdf_metadata"]["offer_price"] == "19.50"
     assert payload["opening_date"] == "2026-05-10"
