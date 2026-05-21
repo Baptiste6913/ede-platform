@@ -32,6 +32,9 @@ dependencies = [
   "numpy==2.1.3",
   "pandas==2.2.3",
   "joblib==1.4.2",
+  # Dashboard (Phase 7 MVP)
+  "streamlit==1.41.1",
+  "plotly==5.24.1",
 ]
 
 [project.optional-dependencies]
@@ -84,6 +87,11 @@ ignore = [
 "src/scoring/**/*.py" = ["N803", "N806"]
 # Same convention for the scoring CLI runner.
 "scripts/score_deals_run.py" = ["N806"]
+# Streamlit single-file entry: relax page-function complexity + UI literals.
+# Big-picture page handlers naturally exceed the default 12-branch / 50-stmt
+# thresholds; magic-value thresholds (e.g. p≥0.85 for 5-star UI tier) are
+# domain constants documented in docs/SCORING.md.
+"streamlit_app.py" = ["PLR0912", "PLR0915", "PLR2004", "RUF001"]
 
 [tool.ruff.format]
 quote-style = "double"
@@ -130,6 +138,16 @@ disallow_untyped_calls = false
 disallow_any_explicit = false
 warn_return_any = false
 disable_error_code = ["type-arg", "no-any-return", "assignment"]
+
+# Dashboard module — same rationale (pandas / plotly heavy).
+[[tool.mypy.overrides]]
+module = ["src.dashboard.*"]
+warn_return_any = false
+disable_error_code = ["no-any-return", "type-arg"]
+
+[[tool.mypy.overrides]]
+module = ["plotly", "plotly.*", "streamlit"]
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 minversion = "8.0"
