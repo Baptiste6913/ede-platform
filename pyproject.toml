@@ -98,6 +98,8 @@ ignore = [
 # Step-0 diagnostic CLI: linear top-to-bottom script with prints, magic ports,
 # and ✓/✗/○ status glyphs.
 "scripts/ibkr_preflight.py" = ["PLR0915", "PLR2004", "RUF001"]
+# Entry-point script: sys.path bootstrap before src imports (E402 expected).
+"scripts/run_trading.py" = ["E402"]
 
 [tool.ruff.format]
 quote-style = "double"
