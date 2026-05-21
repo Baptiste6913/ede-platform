@@ -16,7 +16,7 @@
 | 8 | Scoring engine v0 | ⚪ pending | — | — | — |
 | 9 | Module Analyst (Claude Code SDK) | ⚪ pending | — | — | — |
 | 10 | API FastAPI | ⚪ pending | — | — | — |
-| 11 | Streamlit dashboard MVP | ⚪ pending | — | — | — |
+| 11 | Streamlit dashboard MVP | 🟢 done | `phase-07-dashboard-mvp` | (this PR) | 2026-05-21 |
 | 12 | Alerting Discord | ⚪ pending | — | — | — |
 | 13 | Paper trading engine + backtest | ⚪ pending | — | — | — |
 | 14 | Deploy Oracle production + monitoring | ⚪ pending | — | — | — |
