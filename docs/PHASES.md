@@ -18,7 +18,7 @@
 | 10 | API FastAPI | ⚪ pending | — | — | — |
 | 11 | Streamlit dashboard MVP | 🟢 done | `phase-07-dashboard-mvp` | (this PR) | 2026-05-21 |
 | 12 | Alerting Discord | ⚪ pending | — | — | — |
-| 13 | Paper trading engine + backtest | ⚪ pending | — | — | — |
+| 13 | Paper trading engine (IBKR) | 🟢 done | `phase-08-paper-trading-ibkr` | (this PR) | 2026-05-22 |
 | 14 | Deploy Oracle production + monitoring | ⚪ pending | — | — | — |
 
 Legend: 🟢 done · 🟡 in_progress · 🔴 blocked · ⚪ pending
