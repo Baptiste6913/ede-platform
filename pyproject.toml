@@ -92,6 +92,9 @@ ignore = [
 # thresholds; magic-value thresholds (e.g. p≥0.85 for 5-star UI tier) are
 # domain constants documented in docs/SCORING.md.
 "streamlit_app.py" = ["PLR0912", "PLR0915", "PLR2004", "RUF001"]
+# Step-0 diagnostic CLI: linear top-to-bottom script with prints, magic ports,
+# and ✓/✗/○ status glyphs.
+"scripts/ibkr_preflight.py" = ["PLR0915", "PLR2004", "RUF001"]
 
 [tool.ruff.format]
 quote-style = "double"
