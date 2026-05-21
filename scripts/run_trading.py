@@ -14,7 +14,13 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import sys
 from datetime import UTC, datetime
+from pathlib import Path
+
+# Allow `from src...` when run as a plain script (scripts/ dir is on sys.path,
+# not the repo root).
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import structlog
 
