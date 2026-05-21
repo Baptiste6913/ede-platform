@@ -29,6 +29,12 @@ from src.trading.safeguards import (
     daily_loss_breached,
     position_cap_reached,
 )
+from src.trading.scheduler import (
+    CycleSummary,
+    TradingScheduler,
+    load_candidates,
+    next_paris_time,
+)
 from src.trading.ticker_resolver import (
     ResolvedTicker,
     TickerResolver,
@@ -40,6 +46,7 @@ __all__ = [
     "AccountSnapshot",
     "BracketLeg",
     "BrokerPosition",
+    "CycleSummary",
     "DealCandidate",
     "DecisionEngine",
     "DiscordAlerts",
@@ -54,6 +61,7 @@ __all__ = [
     "TradeExecutor",
     "TradeRequest",
     "TradingConfig",
+    "TradingScheduler",
     "build_bracket",
     "compute_kelly",
     "cooldown_active",
@@ -61,6 +69,8 @@ __all__ = [
     "effective_capital",
     "evaluate_candidate",
     "extract_isin",
+    "load_candidates",
+    "next_paris_time",
     "normalize_name",
     "parse_command",
     "position_cap_reached",
