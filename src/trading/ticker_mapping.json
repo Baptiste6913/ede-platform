@@ -1,0 +1,7 @@
+{
+  "MEDIA 6": {"symbol": "MED6", "exchange": "SBF", "currency": "EUR"},
+  "Mediobanca-Banca di Credito Finanziario": {"symbol": "MB", "exchange": "BVME", "currency": "EUR"},
+  "Commerzbank": {"symbol": "CBK", "exchange": "IBIS", "currency": "EUR"},
+  "FNAC DARTY": {"symbol": "FNAC", "exchange": "SBF", "currency": "EUR"},
+  "Tinexta": {"symbol": "TNXT", "exchange": "BVME", "currency": "EUR"}
+}

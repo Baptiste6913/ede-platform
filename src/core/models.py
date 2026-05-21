@@ -97,6 +97,9 @@ class Deal(Base):
 
     ticker_target: Mapped[str | None] = mapped_column(String(32), nullable=True, index=True)
     ticker_acquirer: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    # Phase 8: broker-qualified IBKR symbol + exchange (resolver cache, migration 0011).
+    ibkr_ticker: Mapped[str | None] = mapped_column(Text, nullable=True)
+    ibkr_exchange: Mapped[str | None] = mapped_column(Text, nullable=True)
     target_name: Mapped[str] = mapped_column(String(255), nullable=False)
     acquirer_name: Mapped[str] = mapped_column(String(255), nullable=False)
 
