@@ -8,6 +8,7 @@ from src.trading.decision_engine import (
     TradingConfig,
     evaluate_candidate,
 )
+from src.trading.discord_alerts import DiscordAlerts, parse_command
 from src.trading.executor import TradeExecutor
 from src.trading.ibkr_client import (
     AccountSnapshot,
@@ -41,6 +42,7 @@ __all__ = [
     "BrokerPosition",
     "DealCandidate",
     "DecisionEngine",
+    "DiscordAlerts",
     "IbkrClient",
     "KillSwitch",
     "PositionSize",
@@ -60,6 +62,7 @@ __all__ = [
     "evaluate_candidate",
     "extract_isin",
     "normalize_name",
+    "parse_command",
     "position_cap_reached",
     "to_ib_orders",
 ]
