@@ -27,8 +27,6 @@ from src.dashboard import (
     DealsFilters,
     build_calibration_plot,
     build_feature_importance_bar,
-    build_mock_portfolio,
-    build_mock_watchlist,
     build_pipeline_timeline,
     build_score_distribution,
     decision_badge,
@@ -46,7 +44,15 @@ from src.dashboard.charts import (
     build_class_balance_pie,
     build_jurisdiction_star_heatmap,
 )
-from src.dashboard.data import get_filter_options, get_latest_model_metadata
+from src.dashboard.data import (
+    get_filter_options,
+    get_latest_model_metadata,
+    get_live_positions,
+    get_rampup_status,
+    get_realized_pnl_series,
+    get_recent_trades,
+    get_trading_kpis,
+)
 
 st.set_page_config(
     page_title="EDE Platform Dashboard",
@@ -96,6 +102,31 @@ def _cached_filter_options() -> dict[str, Any]:
 @st.cache_data(ttl=600, show_spinner=False)
 def _cached_model_metadata() -> dict[str, Any]:
     return get_latest_model_metadata()
+
+
+@st.cache_data(ttl=60, show_spinner=False)
+def _cached_live_positions() -> pd.DataFrame:
+    return get_live_positions()
+
+
+@st.cache_data(ttl=60, show_spinner=False)
+def _cached_recent_trades() -> pd.DataFrame:
+    return get_recent_trades()
+
+
+@st.cache_data(ttl=60, show_spinner=False)
+def _cached_rampup() -> dict[str, int]:
+    return get_rampup_status()
+
+
+@st.cache_data(ttl=60, show_spinner=False)
+def _cached_trading_kpis() -> dict[str, Any]:
+    return get_trading_kpis()
+
+
+@st.cache_data(ttl=60, show_spinner=False)
+def _cached_pnl_series() -> pd.DataFrame:
+    return get_realized_pnl_series()
 
 
 # Filter encode/decode is in-process — pickled keys can be unstable
@@ -541,69 +572,55 @@ def _page_analytics(filters: DealsFilters) -> None:
 
 def _page_paper_portfolio() -> None:
     st.title("💼 Paper Portfolio")
-    st.warning(
-        "🚧 **PREVIEW — Phase 8 IBKR connection not yet wired.** "
-        "All numbers below are **mock data** for UX validation only. "
-        "Real positions + P&L land in Phase 8 after paper trading engine ships."
+    st.success(
+        "✅ **Phase 8 Live** — positions & trades from the paper trading engine "
+        "(IBKR **paper** account, delayed market data). Read-only view of the "
+        "`trades` + `paper_positions` tables."
     )
 
-    portfolio = build_mock_portfolio()
+    kpis = _cached_trading_kpis()
+    rampup = _cached_rampup()
+    positions = _cached_live_positions()
+    trades = _cached_recent_trades()
+    pnl = _cached_pnl_series()
 
-    st.subheader("Mock positions (3 most recent 5★ from live scoring)")
-    if not portfolio.positions:
-        st.info("No 5★ clusters in DB yet — nothing to mock.")
-    else:
-        pos_df = pd.DataFrame(
-            [
-                {
-                    "Target": p.target,
-                    "Jur": p.jurisdiction,
-                    "★": format_stars(p.stars),
-                    "Size € (mock)": p.size_eur,
-                    "Entry € (mock)": p.entry_price,
-                    "Now € (mock)": p.now_price,
-                    "P&L € (mock)": p.pnl_eur,
-                    "P&L % (mock)": f"{p.pnl_pct:+.2f}%",
-                }
-                for p in portfolio.positions
-            ]
+    validated = int(rampup.get("validated", 0))
+    required = int(rampup.get("required", 5))
+    if validated < required:
+        st.info(
+            f"🚦 **Ramp-up active — {validated}/{required} trades validated.** "
+            "New trades require manual approval via Discord `approve <trade_id>` "
+            "before they are sent to IBKR."
         )
-        st.dataframe(pos_df, hide_index=True, use_container_width=True)
-        c1, c2, c3 = st.columns(3)
-        with c1:
-            st.metric("Total deployed (mock)", f"€{portfolio.total_deployed_eur:,.0f}")
-        with c2:
-            st.metric(
-                "Open P&L (mock)",
-                f"€{portfolio.open_pnl_eur:+,.0f}",
-                f"{portfolio.open_pnl_pct:+.2f}%",
-            )
-        with c3:
-            st.metric("Positions (mock)", len(portfolio.positions))
+    else:
+        st.caption(f"🟢 Ramp-up complete ({validated}/{required}) — auto mode.")
 
-    st.divider()
-    st.subheader("Mock risk metrics (placeholders)")
-    m = portfolio.metrics
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Sharpe (mock)", f"{m.sharpe_ratio:.2f}")
-    c2.metric("Sortino (mock)", f"{m.sortino_ratio:.2f}")
-    c3.metric("Max DD (mock)", f"{m.max_drawdown_pct:.1f}%")
-    c4.metric("Hit rate (mock)", f"{m.hit_rate:.0%}")
-    st.caption("All numbers above are simulated; Phase 8 will compute them from real IBKR fills.")
+    c1.metric("Open positions", int(kpis.get("open_positions", 0) or 0))
+    c2.metric("Filled trades", int(kpis.get("filled", 0) or 0))
+    c3.metric("Submitted (open)", int(kpis.get("submitted", 0) or 0))
+    c4.metric("Realised P&L", f"€{float(kpis.get('realized_pnl_eur', 0) or 0):+,.0f}")
 
     st.divider()
-    st.subheader("Watchlist (next 5★ candidates not in portfolio)")
-    watch = build_mock_watchlist(limit=5)
-    if not watch:
-        st.info("Nothing to watch.")
+    st.subheader("Open positions")
+    if positions.empty:
+        st.info("No open positions yet.")
     else:
-        wdf = pd.DataFrame(watch)
-        wdf["★"] = wdf["stars"].apply(format_stars)
-        st.dataframe(
-            wdf[["target", "acquirer", "jurisdiction", "★", "p_completion"]],
-            hide_index=True,
-            use_container_width=True,
-        )
+        st.dataframe(positions, hide_index=True, use_container_width=True)
+
+    st.divider()
+    st.subheader("Cumulative realised P&L")
+    if pnl.empty:
+        st.caption("No closed positions yet.")
+    else:
+        st.line_chart(pnl.set_index("day")["cumulative"])
+
+    st.divider()
+    st.subheader("Recent trades")
+    if trades.empty:
+        st.info("No trades yet — the daily run (`scripts/run_trading.py`) populates this.")
+    else:
+        st.dataframe(trades, hide_index=True, use_container_width=True)
 
 
 # --------------------------------------------------------------------- main
