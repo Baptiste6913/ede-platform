@@ -417,6 +417,25 @@ class VendorApiUsage(Base):
     extra: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
 
 
+class SystemState(Base):
+    """Key/value store for trading runtime state (Phase 8, migration 0013).
+
+    Holds ramp-up validated count, the day's NetLiquidation baseline, and the
+    last-order timestamp. Survives restarts.
+    """
+
+    __tablename__ = "system_state"
+
+    key: Mapped[str] = mapped_column(Text, primary_key=True)
+    value: Mapped[str] = mapped_column(Text, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+
 __all__ = [
     "Analysis",
     "Deal",
@@ -424,5 +443,7 @@ __all__ = [
     "PaperPosition",
     "Price",
     "Score",
+    "SystemState",
+    "Trade",
     "VendorApiUsage",
 ]

@@ -21,6 +21,13 @@ from src.trading.position_sizing import (
     compute_kelly,
     effective_capital,
 )
+from src.trading.safeguards import (
+    KillSwitch,
+    SystemStateStore,
+    cooldown_active,
+    daily_loss_breached,
+    position_cap_reached,
+)
 from src.trading.ticker_resolver import (
     ResolvedTicker,
     TickerResolver,
@@ -35,19 +42,24 @@ __all__ = [
     "DealCandidate",
     "DecisionEngine",
     "IbkrClient",
+    "KillSwitch",
     "PositionSize",
     "PositionSizer",
     "PriceSnapshot",
     "ResolvedTicker",
+    "SystemStateStore",
     "TickerResolver",
     "TradeExecutor",
     "TradeRequest",
     "TradingConfig",
     "build_bracket",
     "compute_kelly",
+    "cooldown_active",
+    "daily_loss_breached",
     "effective_capital",
     "evaluate_candidate",
     "extract_isin",
     "normalize_name",
+    "position_cap_reached",
     "to_ib_orders",
 ]
