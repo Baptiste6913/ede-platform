@@ -6,10 +6,20 @@ from src.trading.ibkr_client import (
     IbkrClient,
     PriceSnapshot,
 )
+from src.trading.ticker_resolver import (
+    ResolvedTicker,
+    TickerResolver,
+    extract_isin,
+    normalize_name,
+)
 
 __all__ = [
     "AccountSnapshot",
     "BrokerPosition",
     "IbkrClient",
     "PriceSnapshot",
+    "ResolvedTicker",
+    "TickerResolver",
+    "extract_isin",
+    "normalize_name",
 ]
