@@ -193,6 +193,34 @@ class IbkrClient:
         log.warning("qualify_no_definition", symbol=symbol, exchange=exchange)
         return None
 
+    async def qualify_by_isin(
+        self, isin: str, exchange: str = "SMART", currency: str = "EUR"
+    ) -> Any | None:
+        """Qualify a stock by ISIN (used for DE deals resolved via ISIN)."""
+        from ib_async import Stock
+
+        contract = Stock(
+            symbol="", exchange=exchange, currency=currency, secIdType="ISIN", secId=isin
+        )
+        try:
+            await self.ib.qualifyContractsAsync(contract)
+        except Exception as exc:
+            log.warning("qualify_isin_failed", isin=isin, error=str(exc))
+            return None
+        if getattr(contract, "conId", 0):
+            return contract
+        log.warning("qualify_isin_no_definition", isin=isin)
+        return None
+
+    def next_order_id(self) -> int:
+        """Reserve a base IBKR order id for a bracket (parent, +1 stop, +2 tp).
+
+        NOTE: contiguity of base/+1/+2 vs ib_async's getReqId counter is
+        validated in the Step-11 live run; if IBKR rejects, switch to
+        place-parent-then-capture-id.
+        """
+        return int(self.ib.client.getReqId())
+
     # ----------------------------------------------------------- market data
     async def get_current_price(self, contract: Any) -> PriceSnapshot:
         """Delayed snapshot for a qualified contract (bid/ask/last/close)."""

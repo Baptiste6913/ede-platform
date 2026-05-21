@@ -116,11 +116,11 @@ def build_bracket(
     return legs
 
 
-def to_ib_orders(legs: list[BracketLeg]) -> list[object]:
+def to_ib_orders(legs: list[BracketLeg]) -> list[Any]:
     """Map specs to live ib_async Order objects (lazy import, place in order)."""
     from ib_async import LimitOrder, StopOrder
 
-    orders: list[object] = []
+    orders: list[Any] = []
     for leg in legs:
         order: Any
         if leg.order_type == "LMT":

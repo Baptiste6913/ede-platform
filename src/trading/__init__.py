@@ -8,6 +8,7 @@ from src.trading.decision_engine import (
     TradingConfig,
     evaluate_candidate,
 )
+from src.trading.executor import TradeExecutor
 from src.trading.ibkr_client import (
     AccountSnapshot,
     BrokerPosition,
@@ -39,6 +40,7 @@ __all__ = [
     "PriceSnapshot",
     "ResolvedTicker",
     "TickerResolver",
+    "TradeExecutor",
     "TradeRequest",
     "TradingConfig",
     "build_bracket",

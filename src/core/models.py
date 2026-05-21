@@ -16,6 +16,7 @@ from typing import Any
 
 from sqlalchemy import (
     BigInteger,
+    Boolean,
     CheckConstraint,
     Date,
     DateTime,
@@ -333,6 +334,58 @@ class PaperPosition(Base):
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     deal: Mapped[Deal] = relationship(back_populates="positions")
+
+
+class Trade(Base):
+    """Phase 8 order-execution ledger (status machine + idempotency).
+
+    Distinct from `paper_positions` (current state): one row per submitted
+    order. `trade_id` is UNIQUE for idempotent re-submits.
+    """
+
+    __tablename__ = "trades"
+    __table_args__ = (
+        UniqueConstraint("trade_id", name="uq_trades_trade_id"),
+        CheckConstraint("quantity > 0", name="ck_trades_quantity_positive"),
+        CheckConstraint("side IN ('BUY','SELL')", name="ck_trades_side"),
+        CheckConstraint(
+            "status IN ('PENDING','SUBMITTED','FILLED','REJECTED','CANCELLED')",
+            name="ck_trades_status",
+        ),
+        Index("ix_trades_status", "status"),
+        Index("ix_trades_deal_id", "deal_id"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    trade_id: Mapped[str] = mapped_column(String(36), nullable=False)
+    deal_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("deals.id", ondelete="CASCADE"), nullable=False
+    )
+    side: Mapped[str] = mapped_column(String(8), nullable=False)
+    quantity: Mapped[int] = mapped_column(Integer, nullable=False)
+    limit_price: Mapped[Decimal | None] = mapped_column(Numeric(18, 6), nullable=True)
+    stop_loss_price: Mapped[Decimal | None] = mapped_column(Numeric(18, 6), nullable=True)
+    take_profit_price: Mapped[Decimal | None] = mapped_column(Numeric(18, 6), nullable=True)
+    ibkr_order_id: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    ibkr_stop_order_id: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    status: Mapped[str] = mapped_column(String(16), nullable=False)
+    filled_price: Mapped[Decimal | None] = mapped_column(Numeric(18, 6), nullable=True)
+    filled_quantity: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    filled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    pnl_realized: Mapped[Decimal | None] = mapped_column(Numeric(14, 2), nullable=True)
+    pnl_unrealized: Mapped[Decimal | None] = mapped_column(Numeric(14, 2), nullable=True)
+    rejection_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    rationale: Mapped[str | None] = mapped_column(Text, nullable=True)
+    requires_approval: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, server_default=func.false()
+    )
+    approved: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=func.false())
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+    closed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    deal: Mapped[Deal] = relationship()
 
 
 class VendorApiUsage(Base):
