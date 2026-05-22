@@ -32,8 +32,10 @@ log = structlog.get_logger()
 # else is refused — hard no-real-money guardrail (brief guardrail).
 PAPER_PORTS = frozenset({7497, 4002})
 
-# Market-data type: 3 = delayed (free). Step-0 decision #2.
+# Market-data types. 3 = delayed (free, Step-0 decision #2); 4 = delayed-frozen
+# (last known price) — fallback when delayed-live is not subscribed (Error 354).
 DELAYED_MARKET_DATA = 3
+FROZEN_MARKET_DATA = 4
 
 
 @dataclass(frozen=True, slots=True)
@@ -49,6 +51,7 @@ class PriceSnapshot:
     last: float | None
     close: float | None
     market_data_type: int
+    price_source: str = "delayed_live"  # "delayed_live" | "frozen"
 
     @property
     def mid(self) -> float | None:
@@ -222,9 +225,9 @@ class IbkrClient:
         return int(self.ib.client.getReqId())
 
     # ----------------------------------------------------------- market data
-    async def get_current_price(self, contract: Any) -> PriceSnapshot:
-        """Delayed snapshot for a qualified contract (bid/ask/last/close)."""
-        self.ib.reqMarketDataType(DELAYED_MARKET_DATA)
+    async def _snapshot_at(self, contract: Any, mdt: int, source: str) -> PriceSnapshot:
+        """One snapshot at a given market-data type (delayed-live or frozen)."""
+        self.ib.reqMarketDataType(mdt)
         tickers = await self.ib.reqTickersAsync(contract)
         tk = tickers[0]
         return PriceSnapshot(
@@ -232,8 +235,27 @@ class IbkrClient:
             ask=_clean_price(getattr(tk, "ask", None)),
             last=_clean_price(getattr(tk, "last", None)),
             close=_clean_price(getattr(tk, "close", None)),
-            market_data_type=int(getattr(tk, "marketDataType", DELAYED_MARKET_DATA)),
+            market_data_type=int(getattr(tk, "marketDataType", mdt)),
+            price_source=source,
         )
+
+    async def get_current_price(self, contract: Any) -> PriceSnapshot:
+        """Price snapshot with a 3-tier fallback (Step-11 finding):
+
+        1. delayed-live (type 3) — preferred;
+        2. delayed-frozen (type 4) — last known price, when delayed-live is not
+           subscribed (Error 354). Acceptable for a daily M&A-arb cron since the
+           decision is spread vs the fixed ``offer_price``;
+        3. otherwise a no-quote snapshot (caller skips).
+        """
+        live = await self._snapshot_at(contract, DELAYED_MARKET_DATA, "delayed_live")
+        if live.has_quote:
+            return live
+        frozen = await self._snapshot_at(contract, FROZEN_MARKET_DATA, "frozen")
+        if frozen.has_quote:
+            log.warning("using_frozen_price", market_data_type=frozen.market_data_type)
+            return frozen
+        return live  # no data either way
 
     # --------------------------------------------------------------- account
     async def get_account_summary(self) -> AccountSnapshot:

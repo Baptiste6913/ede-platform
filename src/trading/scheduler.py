@@ -24,7 +24,7 @@ from zoneinfo import ZoneInfo
 import structlog
 
 from src.core.settings import Settings, get_settings
-from src.trading.decision_engine import DealCandidate, DecisionEngine
+from src.trading.decision_engine import DealCandidate, DecisionEngine, TradeRequest
 from src.trading.discord_alerts import DiscordAlerts
 from src.trading.executor import TradeExecutor
 from src.trading.safeguards import (
@@ -134,24 +134,9 @@ class TradingScheduler:
                 if trade is None:
                     summary.skipped += 1
                     continue
-                if trade.status == "PENDING" and req.requires_approval:
-                    await self.discord.trade_generated(
-                        req.deal_target,
-                        req.quantity,
-                        req.limit_price,
-                        rampup + 1,
-                        self.settings.trading_rampup_required,
-                    )
-                    summary.pending_approval.append(req.trade_id)
-                elif trade.status == "SUBMITTED":
-                    open_positions += 1
-                    await store.set_last_order_now(now)
-                    await self.discord.trade_submitted(
-                        req.deal_target, req.quantity, req.limit_price
-                    )
-                    summary.submitted.append(req.trade_id)
-                else:
-                    summary.skipped += 1
+                open_positions = await self._handle_trade(
+                    trade, req, store, summary, open_positions, rampup, now
+                )
             return summary
         finally:
             # Persist system_state (daily baseline, last-order ts) even when no
@@ -159,6 +144,37 @@ class TradingScheduler:
             # every cycle and the safeguard never fires (Step-11 dry-run bug).
             if session is not None:
                 await session.commit()  # type: ignore[attr-defined]
+
+    async def _handle_trade(
+        self,
+        trade: Any,
+        req: TradeRequest,
+        store: SystemStateStore,
+        summary: CycleSummary,
+        open_positions: int,
+        rampup: int,
+        now: datetime,
+    ) -> int:
+        """Alert + bookkeep one submitted trade; returns the open-position count."""
+        if trade.status == "PENDING" and req.requires_approval:
+            await self.discord.trade_generated(
+                req.deal_target,
+                req.quantity,
+                req.limit_price,
+                rampup + 1,
+                self.settings.trading_rampup_required,
+            )
+            summary.pending_approval.append(req.trade_id)
+        elif trade.status == "SUBMITTED":
+            open_positions += 1
+            await store.set_last_order_now(now)
+            await self.discord.trade_submitted(req.deal_target, req.quantity, req.limit_price)
+            summary.submitted.append(req.trade_id)
+        else:
+            summary.skipped += 1
+        if req.price_source == "frozen" and trade.status in ("PENDING", "SUBMITTED"):
+            await self.discord.frozen_price_warning(req.deal_target)
+        return open_positions
 
     async def _open_position_count(self, session: object) -> int:
         from sqlalchemy import func, select

@@ -9,6 +9,7 @@ import pytest
 
 from src.trading.ibkr_client import (
     DELAYED_MARKET_DATA,
+    FROZEN_MARKET_DATA,
     AccountSnapshot,
     IbkrClient,
     PriceSnapshot,
@@ -29,6 +30,7 @@ class FakeIB:
         *,
         qualify=None,
         tickers=None,
+        ticker_by_type=None,
         account_rows=None,
         positions=None,
         connected=True,
@@ -40,6 +42,7 @@ class FakeIB:
         self.placed = []
         self._qualify = qualify
         self._tickers = tickers or []
+        self._ticker_by_type = ticker_by_type  # {3: tk, 4: tk} keyed by market-data type
         self._account_rows = account_rows or []
         self._positions = positions or []
 
@@ -61,6 +64,12 @@ class FakeIB:
         return [contract]
 
     async def reqTickersAsync(self, contract):
+        if self._ticker_by_type is not None:
+            nan = float("nan")
+            default = SimpleNamespace(
+                bid=nan, ask=nan, last=nan, close=nan, marketDataType=self.market_data_type
+            )
+            return [self._ticker_by_type.get(self.market_data_type, default)]
         return self._tickers
 
     async def accountSummaryAsync(self):
@@ -154,6 +163,35 @@ async def test_get_current_price_all_nan_has_no_quote():
     client = IbkrClient(settings=_settings(), ib=FakeIB(tickers=[tk]))
     snap = await client.get_current_price(object())
     assert snap.has_quote is False
+
+
+async def test_get_current_price_uses_live_when_available():
+    live = SimpleNamespace(bid=10.0, ask=10.1, last=10.05, close=9.9, marketDataType=3)
+    client = IbkrClient(settings=_settings(), ib=FakeIB(ticker_by_type={DELAYED_MARKET_DATA: live}))
+    snap = await client.get_current_price(object())
+    assert snap.price_source == "delayed_live"
+    assert snap.mid == pytest.approx(10.05)
+
+
+async def test_get_current_price_falls_back_to_frozen_on_no_live():
+    # type 3 yields no quote (NaN, as on Error 354); type 4 returns last close.
+    frozen = SimpleNamespace(
+        bid=-1, ask=-1, last=23.4, close=23.4, marketDataType=FROZEN_MARKET_DATA
+    )
+    client = IbkrClient(
+        settings=_settings(), ib=FakeIB(ticker_by_type={FROZEN_MARKET_DATA: frozen})
+    )
+    snap = await client.get_current_price(object())
+    assert snap.price_source == "frozen"
+    assert snap.last == 23.4
+    assert snap.has_quote is True
+
+
+async def test_get_current_price_returns_no_quote_when_both_fail():
+    client = IbkrClient(settings=_settings(), ib=FakeIB(ticker_by_type={}))  # all NaN
+    snap = await client.get_current_price(object())
+    assert snap.has_quote is False
+    assert snap.price_source == "delayed_live"  # no-data snapshot from tier 1
 
 
 # ------------------------------------------------------------------ account

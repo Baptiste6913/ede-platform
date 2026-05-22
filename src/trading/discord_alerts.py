@@ -91,6 +91,11 @@ class DiscordAlerts:
     async def trade_rejected(self, deal: str, reason: str) -> None:
         await self._post(self._alerts, f"❌ Order rejected: {deal} — {reason}")
 
+    async def frozen_price_warning(self, deal: str) -> None:
+        await self._post(
+            self._alerts, f"⚠️ Trade priced on a FROZEN quote (stale up to ~24h): {deal}"
+        )
+
     async def stop_hit(self, deal: str, pnl: float) -> None:
         await self._post(self._alerts, f"🛑 Stop-loss hit: {deal}, P&L €{pnl:,.0f}")
 
