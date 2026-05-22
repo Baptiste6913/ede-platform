@@ -172,9 +172,16 @@ class TradingScheduler:
 
 
 async def load_candidates(
-    session: object, resolver: object, min_stars: int = 3
+    session: object,
+    resolver: object,
+    min_stars: int = 3,
+    allowed_jurisdictions: list[str] | None = None,
 ) -> list[DealCandidate]:
-    """Load pending, sufficiently-scored deals and resolve their IBKR tickers."""
+    """Load pending, sufficiently-scored deals and resolve their IBKR tickers.
+
+    ``allowed_jurisdictions`` scopes the pipeline (V1 = ``["DE"]``); ``None``
+    means no jurisdiction filter.
+    """
     from sqlalchemy import select
 
     from src.core.models import Deal, Score
@@ -184,6 +191,8 @@ async def load_candidates(
         .join(Score, Score.deal_id == Deal.id)
         .where(Score.score_stars >= min_stars, Deal.completion_label.is_(None))
     )
+    if allowed_jurisdictions:
+        stmt = stmt.where(Deal.juridiction.in_(allowed_jurisdictions))
     rows = (await session.execute(stmt)).all()  # type: ignore[attr-defined]
     out: list[DealCandidate] = []
     for deal, score in rows:

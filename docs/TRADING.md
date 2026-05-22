@@ -8,6 +8,23 @@ safeguards and a manual-approval ramp-up.
 > is true *and* the port is a paper port (7497 / 4002). There is no code path to
 > a live account.
 
+## V1 Scope
+
+Paper trading V1 is scoped to the **DE jurisdiction only** (~42 deals). BaFin
+deals carry an **ISIN systematically** (in `regulator_ref` / `ticker_target`),
+so ticker resolution is reliable. FR (AMF BDIF) and IT (Consob) do **not**
+publish ISIN in `regulator_ref`, making ticker mapping unreliable without
+dedicated extraction. Configurable via env:
+
+```
+TRADING_ALLOWED_JURISDICTIONS=DE          # default (V1)
+TRADING_ALLOWED_JURISDICTIONS=DE,FR,IT    # after Phase-9 ISIN extraction
+```
+
+`load_candidates` filters on `settings.trading_allowed_jurisdictions`; the
+Step-11 dry-run confirmed 203/209 FR/IT candidates were unresolved, validating
+the DE-first scope.
+
 ## Architecture
 
 ```
