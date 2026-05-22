@@ -238,3 +238,66 @@ async def test_baseline_persists_when_zero_trades_submitted(db_session, db_engin
         val = await SystemStateStore(fresh).get(KEY_DAILY_BASELINE)
     assert val is not None
     assert float(val) == 1_000_000.0
+
+
+async def _seed_scored_deal(session, juridiction, ref):
+    from datetime import UTC, date, datetime
+    from decimal import Decimal
+
+    from src.core.models import Deal, Score
+
+    deal = Deal(
+        juridiction=juridiction,
+        regulator_ref=ref,
+        target_name=f"T-{ref}",
+        acquirer_name="ACQ",
+        announcement_date=date(2026, 5, 1),
+        deal_type="opa",
+        status="announced",
+    )
+    session.add(deal)
+    await session.flush()
+    session.add(
+        Score(
+            deal_id=deal.id,
+            p_completion=Decimal("0.9"),
+            decision="enter",
+            model_version="v1",
+            features={},
+            score_stars=5,
+            risk_factors=[],
+            positive_factors=[],
+            ts=datetime.now(tz=UTC),
+        )
+    )
+    await session.flush()
+    return deal.id
+
+
+@pytest.mark.integration
+async def test_load_candidates_respects_allowed_jurisdictions(db_session):
+    from src.trading.scheduler import load_candidates
+    from src.trading.ticker_resolver import TickerResolver
+
+    await _seed_scored_deal(db_session, "DE", "BAFIN-DE000CBK1001-20260505")
+    await _seed_scored_deal(db_session, "FR", "226C0538")
+    await _seed_scored_deal(db_session, "IT", "IT-001")
+
+    cands = await load_candidates(
+        db_session, TickerResolver({}), min_stars=3, allowed_jurisdictions=["DE"]
+    )
+    assert len(cands) == 1
+    assert {c.juridiction for c in cands} == {"DE"}
+
+
+@pytest.mark.integration
+async def test_load_candidates_returns_empty_when_no_matching_jurisdiction(db_session):
+    from src.trading.scheduler import load_candidates
+    from src.trading.ticker_resolver import TickerResolver
+
+    # Only a DE deal exists; scoping to FR (valid enum, no rows) ⇒ empty.
+    await _seed_scored_deal(db_session, "DE", "BAFIN-DE000CBK1001-20260505")
+    cands = await load_candidates(
+        db_session, TickerResolver({}), min_stars=3, allowed_jurisdictions=["FR"]
+    )
+    assert cands == []

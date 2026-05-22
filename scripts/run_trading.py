@@ -54,7 +54,12 @@ async def _run_once() -> None:
         resolver = TickerResolver.from_file()
         net_liq = await ibkr.get_net_liquidation()
         async with get_sessionmaker()() as session:
-            candidates = await load_candidates(session, resolver, settings.trading_min_score_stars)
+            candidates = await load_candidates(
+                session,
+                resolver,
+                settings.trading_min_score_stars,
+                allowed_jurisdictions=settings.trading_allowed_jurisdictions,
+            )
             summary = await scheduler.run_daily_cycle(session, candidates, net_liq)
         log.info(
             "trading_cycle_done",
