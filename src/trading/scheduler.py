@@ -97,60 +97,68 @@ class TradingScheduler:
     ) -> CycleSummary:
         now = now or datetime.now(UTC)
         summary = CycleSummary()
+        try:
+            if self.kill_switch.is_active():
+                await self.discord.kill_switch_active()
+                summary.halted = "kill_switch"
+                return summary
 
-        if self.kill_switch.is_active():
-            await self.discord.kill_switch_active()
-            summary.halted = "kill_switch"
-            return summary
-
-        store = SystemStateStore(session)  # type: ignore[arg-type]
-        baseline = await store.ensure_daily_baseline(net_liquidation)
-        if daily_loss_breached(
-            net_liquidation, baseline, self.settings.trading_daily_loss_limit_pct
-        ):
-            self.kill_switch.activate("daily_loss_limit")
-            await self.discord.daily_loss_limit(self.settings.trading_daily_loss_limit_pct)
-            summary.halted = "daily_loss"
-            return summary
-
-        open_positions = await self._open_position_count(session)
-        rampup = await store.rampup_validated()
-
-        for cand in candidates:
-            if cooldown_active(
-                await store.last_order_ts(), now, self.settings.trading_order_cooldown_min
+            store = SystemStateStore(session)  # type: ignore[arg-type]
+            baseline = await store.ensure_daily_baseline(net_liquidation)
+            if daily_loss_breached(
+                net_liquidation, baseline, self.settings.trading_daily_loss_limit_pct
             ):
-                summary.skipped += 1
-                continue
-            snapshot = await self._snapshot(cand)
-            if snapshot is None:
-                summary.skipped += 1
-                continue
-            req = self.engine.evaluate(cand, snapshot, net_liquidation, open_positions, rampup)
-            if req is None:
-                summary.skipped += 1
-                continue
-            trade = await self.executor.submit(session, req)  # type: ignore[arg-type]
-            if trade is None:
-                summary.skipped += 1
-                continue
-            if trade.status == "PENDING" and req.requires_approval:
-                await self.discord.trade_generated(
-                    req.deal_target,
-                    req.quantity,
-                    req.limit_price,
-                    rampup + 1,
-                    self.settings.trading_rampup_required,
-                )
-                summary.pending_approval.append(req.trade_id)
-            elif trade.status == "SUBMITTED":
-                open_positions += 1
-                await store.set_last_order_now(now)
-                await self.discord.trade_submitted(req.deal_target, req.quantity, req.limit_price)
-                summary.submitted.append(req.trade_id)
-            else:
-                summary.skipped += 1
-        return summary
+                self.kill_switch.activate("daily_loss_limit")
+                await self.discord.daily_loss_limit(self.settings.trading_daily_loss_limit_pct)
+                summary.halted = "daily_loss"
+                return summary
+
+            open_positions = await self._open_position_count(session)
+            rampup = await store.rampup_validated()
+
+            for cand in candidates:
+                if cooldown_active(
+                    await store.last_order_ts(), now, self.settings.trading_order_cooldown_min
+                ):
+                    summary.skipped += 1
+                    continue
+                snapshot = await self._snapshot(cand)
+                if snapshot is None:
+                    summary.skipped += 1
+                    continue
+                req = self.engine.evaluate(cand, snapshot, net_liquidation, open_positions, rampup)
+                if req is None:
+                    summary.skipped += 1
+                    continue
+                trade = await self.executor.submit(session, req)  # type: ignore[arg-type]
+                if trade is None:
+                    summary.skipped += 1
+                    continue
+                if trade.status == "PENDING" and req.requires_approval:
+                    await self.discord.trade_generated(
+                        req.deal_target,
+                        req.quantity,
+                        req.limit_price,
+                        rampup + 1,
+                        self.settings.trading_rampup_required,
+                    )
+                    summary.pending_approval.append(req.trade_id)
+                elif trade.status == "SUBMITTED":
+                    open_positions += 1
+                    await store.set_last_order_now(now)
+                    await self.discord.trade_submitted(
+                        req.deal_target, req.quantity, req.limit_price
+                    )
+                    summary.submitted.append(req.trade_id)
+                else:
+                    summary.skipped += 1
+            return summary
+        finally:
+            # Persist system_state (daily baseline, last-order ts) even when no
+            # trade was submitted — otherwise the daily-loss baseline resets
+            # every cycle and the safeguard never fires (Step-11 dry-run bug).
+            if session is not None:
+                await session.commit()  # type: ignore[attr-defined]
 
     async def _open_position_count(self, session: object) -> int:
         from sqlalchemy import func, select

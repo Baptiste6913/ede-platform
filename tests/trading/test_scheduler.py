@@ -199,3 +199,42 @@ async def test_rampup_cycle_pends_for_approval(db_session, tmp_path):
     summary = await sched.run_daily_cycle(db_session, [_candidate()], 1_000_000)
     assert summary.pending_approval == ["t1"]
     assert "generated" in discord.events
+
+
+class _NoQualifyIbkr:
+    async def qualify_contract(self, *a, **k):
+        return None
+
+    async def qualify_by_isin(self, *a, **k):
+        return None
+
+    async def get_current_price(self, contract):
+        raise AssertionError("should not price an unqualified contract")
+
+
+@pytest.mark.integration
+async def test_baseline_persists_when_zero_trades_submitted(db_session, db_engine, tmp_path):
+    """Daily baseline must be committed even when no trade is submitted, so the
+    daily-loss safeguard survives across cycles (Step-11 dry-run bug)."""
+    from sqlalchemy.ext.asyncio import AsyncSession
+
+    from src.core.settings import get_settings
+    from src.trading.safeguards import KEY_DAILY_BASELINE, SystemStateStore
+
+    discord = MockDiscord()
+    sched = TradingScheduler(
+        ibkr=_NoQualifyIbkr(),
+        executor=MockExecutor("SUBMITTED"),
+        engine=MockEngine(_req()),
+        discord=discord,
+        kill_switch=KillSwitch(tmp_path / "k.flag"),
+        settings=get_settings(),
+    )
+    summary = await sched.run_daily_cycle(db_session, [_candidate()], 1_000_000)
+    assert summary.submitted == [] and summary.pending_approval == []  # nothing traded
+
+    # A FRESH session must see the committed baseline.
+    async with AsyncSession(db_engine, expire_on_commit=False) as fresh:
+        val = await SystemStateStore(fresh).get(KEY_DAILY_BASELINE)
+    assert val is not None
+    assert float(val) == 1_000_000.0
