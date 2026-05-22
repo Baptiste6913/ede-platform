@@ -25,6 +25,23 @@ TRADING_ALLOWED_JURISDICTIONS=DE,FR,IT    # after Phase-9 ISIN extraction
 Step-11 dry-run confirmed 203/209 FR/IT candidates were unresolved, validating
 the DE-first scope.
 
+## Pricing fallback strategy
+
+`IbkrClient.get_current_price` tries three tiers (Step-11 finding: Xetra
+delayed-live can return Error 354 *"market data not subscribed"*):
+
+1. **delayed-live** (`reqMarketDataType(3)`) — preferred; `price_source="delayed_live"`.
+2. **delayed-frozen** (`reqMarketDataType(4)`) — last known price when tier 1 has
+   no quote; `price_source="frozen"`. Acceptable for a **daily** M&A-arb cron
+   because the decision is the spread vs the **fixed `offer_price`** (constant for
+   the life of the offer), not intraday ticks.
+3. otherwise a no-quote snapshot → the candidate is skipped.
+
+When a trade is priced on a frozen quote, the executor flags
+`TradeRequest.price_source="frozen"` and the scheduler posts a Discord
+**`⚠️ frozen price`** warning so the operator knows the quote may be stale
+(up to ~24h). The durable fix is enabling the Xetra market-data subscription.
+
 ## Architecture
 
 ```

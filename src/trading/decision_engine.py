@@ -83,6 +83,7 @@ class TradeRequest:
     position_pct: float
     rationale: str
     requires_approval: bool
+    price_source: str = "delayed_live"  # "delayed_live" | "frozen"
 
 
 def reference_price(snapshot: PriceSnapshot, juridiction: str) -> float | None:
@@ -171,6 +172,7 @@ def evaluate_candidate(
         position_pct=round(sizing.position_pct, 6),
         rationale=rationale,
         requires_approval=requires_approval,
+        price_source=snapshot.price_source,
     )
 
 
