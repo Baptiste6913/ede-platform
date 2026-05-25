@@ -119,12 +119,16 @@ _PAR_VALUE_RE = re.compile(
 )
 
 # Mixed / share-exchange consideration (P9.1a Bug 2): "Gewährung/Gegenleistung
-# (von) <ratio> (Stück)aktien [Klasse] der <Erwerber>". Covers ProSieben (EUR
-# 4,48 cash + 0,4 MFE shares) and Commerzbank (0,485 UniCredit shares, no cash).
-# Such offers cannot be reduced to a scalar EUR price — structuring the cash +
-# share legs is P9.1b.
+# … von <ratio> (Stück)aktien [Klasse] der <Erwerber>". Covers ProSieben (EUR
+# 4,48 cash + 0,4 MFE shares), Commerzbank (0,485 UniCredit shares, no cash) and
+# phrasing variants ("Gewährung einer Gegenleistung von …", "Gegenleistung in
+# Form von …"). The connector keeps "von <digit>": a cash clause reads "von
+# EUR x,xx", so the digit-after-von guard (plus the mixed check running first)
+# keeps cash offers like "Gegenleistung in Höhe von EUR 3,70 je Aktie" out of
+# this path. Such offers cannot be reduced to a scalar EUR price — structuring
+# the cash + share legs is P9.1b.
 _OFFER_MIXED_RE = re.compile(
-    r"(?:Gewährung|Gegenleistung)\s+(?:von\s+)?"
+    r"(?:Gewährung|Gegenleistung)\s+(?:\w+\s+){0,4}?von\s+"
     r"(?P<ratio>\d{1,3}(?:[.,]\d+)?)\s+"
     r"(?:Stück)?[Aa]ktien(?:\s+[A-Z])?\s+der\s+\w+",
     re.IGNORECASE,
