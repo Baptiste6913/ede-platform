@@ -78,6 +78,18 @@ def test_prosieben_flagged_suspect_mixed() -> None:
     assert flag == "suspect_mixed"
 
 
+def test_gegenleistung_share_exchange_stays_mixed() -> None:
+    # Negative guard for the order: "Gegenleistung" is a cash keyword (Klassik),
+    # but a share-exchange "Gegenleistung in Form von <ratio> Aktien der …" must
+    # still resolve to suspect_mixed because the mixed check runs first. Protects
+    # the mixed-before-cash ordering against future refactors.
+    text = (
+        "… der ZielTest AG gegen Gewährung einer Gegenleistung in Form von "
+        "0,5 Aktien der Acquirer AG je Aktie der ZielTest AG …"
+    )
+    assert _extract_offer(text) == (None, None, "suspect_mixed")
+
+
 # --- guards / fallbacks ----------------------------------------------------
 
 
