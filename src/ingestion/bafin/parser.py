@@ -112,6 +112,18 @@ _PAR_VALUE_RE = re.compile(
     re.IGNORECASE,
 )
 
+# Mixed / share-exchange consideration (P9.1a Bug 2): "Gewährung/Gegenleistung
+# (von) <ratio> (Stück)aktien [Klasse] der <Erwerber>". Covers ProSieben (EUR
+# 4,48 cash + 0,4 MFE shares) and Commerzbank (0,485 UniCredit shares, no cash).
+# Such offers cannot be reduced to a scalar EUR price — structuring the cash +
+# share legs is P9.1b.
+_OFFER_MIXED_RE = re.compile(
+    r"(?:Gewährung|Gegenleistung)\s+(?:von\s+)?"
+    r"(?P<ratio>\d{1,3}(?:[.,]\d+)?)\s+"
+    r"(?:Stück)?[Aa]ktien(?:\s+[A-Z])?\s+der\s+\w+",
+    re.IGNORECASE,
+)
+
 # Bidder / target labels — BaFin templates use either German or capitalised forms.
 _BIETER_RE = re.compile(
     r"Bieter(?:in)?\s*[:\-]?\s*(?P<name>[A-ZÄÖÜ][^\n]{2,120})",
@@ -224,10 +236,15 @@ def _extract_annahmefrist(text: str) -> tuple[date | None, date | None]:
 def _extract_offer(text: str) -> tuple[Decimal | None, str | None, str]:
     """Return (offer_price, currency, quality_flag).
 
-    A clean cash offer yields a price + 'verified_cash'. When no cash clause is
-    found the price is left NULL with 'suspect_low_unverified' — never the par
-    value, which was the Bug-1 behaviour.
+    Order matters. A mixed / share-exchange offer is detected FIRST and yields
+    NO scalar price ('suspect_mixed'): these offers also carry a cash leg
+    (ProSieben EUR 4,48 + 0,4 shares) that must not be stored as the price
+    (Bug 2). A clean cash offer yields a price + 'verified_cash'. Otherwise the
+    price stays NULL with 'suspect_low_unverified' — never the par value, which
+    was the Bug-1 behaviour.
     """
+    if _OFFER_MIXED_RE.search(text):
+        return (None, None, "suspect_mixed")
     price = _extract_cash_price(text)
     if price is not None:
         return (price, "EUR", "verified_cash")
