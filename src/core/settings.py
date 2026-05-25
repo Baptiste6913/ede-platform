@@ -10,7 +10,7 @@ from __future__ import annotations
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import Field, SecretStr
+from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -46,6 +46,28 @@ class Settings(BaseSettings):
     ibkr_port: int = 7497
     ibkr_client_id: int = 42
     ibkr_paper: bool = True
+
+    # ---- Trading (phase 8 — paper) ----
+    trading_min_spread_pct: float = 0.01  # skip deals with < 1% edge vs offer
+    trading_entry_offset_quoted: float = 0.001  # FR/DE limit = mid * (1 + 0.1%)
+    trading_entry_offset_last: float = 0.004  # IT limit = last * (1 + 0.4%) (no bid/ask)
+    trading_stop_loss_pct: float = 0.10  # stop = entry * (1 - 10%)
+    trading_min_score_stars: int = 3
+    trading_rampup_required: int = 5  # first N trades need manual approval
+    trading_daily_loss_limit_pct: float = 0.02  # auto-shutdown at -2% day
+    trading_order_cooldown_min: int = 60  # min minutes between orders
+    trading_heartbeat_hours: int = 4
+    trading_timezone: str = "Europe/Paris"  # DST-aware cron (decision #4)
+    # V1 scope: DE only (BaFin publishes ISIN ⇒ reliable ticker resolution).
+    # CSV env, e.g. TRADING_ALLOWED_JURISDICTIONS=DE,FR,IT (after Phase-9 ISIN extraction).
+    trading_allowed_jurisdictions: list[str] = Field(default_factory=lambda: ["DE"])
+
+    @field_validator("trading_allowed_jurisdictions", mode="before")
+    @classmethod
+    def _parse_csv_jurisdictions(cls, v: object) -> object:
+        if isinstance(v, str):
+            return [x.strip().upper() for x in v.split(",") if x.strip()]
+        return v
 
     # ---- Anthropic / Analyst (phase 8) ----
     anthropic_api_key: SecretStr = SecretStr("")
