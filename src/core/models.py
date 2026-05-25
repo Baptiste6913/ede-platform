@@ -25,6 +25,7 @@ from sqlalchemy import (
     Index,
     Integer,
     Numeric,
+    SmallInteger,
     String,
     Text,
     UniqueConstraint,
@@ -65,6 +66,11 @@ PositionStatusEnum = Enum(
 )
 CurrencyEnum = Enum(*enums.CURRENCIES, name="currency_enum", create_type=False)
 PriceSourceEnum = Enum(*enums.PRICE_SOURCES, name="price_source_enum", create_type=False)
+OfferPriceQualityFlagEnum = Enum(
+    *enums.OFFER_PRICE_QUALITY_FLAGS,
+    name="offer_price_quality_flag_enum",
+    create_type=False,
+)
 
 
 # =========================================================================
@@ -120,6 +126,19 @@ class Deal(Base):
 
     source_url: Mapped[str | None] = mapped_column(Text, nullable=True)
     pdf_path: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    # Phase 9.1a — provenance of offer_price after the BaFin parser fix
+    # (migration 0014). parser_version bumps to 2 on every P9.1a re-parse.
+    offer_price_quality_flag: Mapped[str] = mapped_column(
+        OfferPriceQualityFlagEnum,
+        nullable=False,
+        server_default="suspect_low_unverified",
+    )
+    parser_version: Mapped[int] = mapped_column(
+        SmallInteger,
+        nullable=False,
+        server_default="1",
+    )
 
     # Phase 6 scoring V1 ground-truth label (migration 0009).
     completion_label: Mapped[int | None] = mapped_column(
