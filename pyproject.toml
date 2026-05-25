@@ -35,6 +35,8 @@ dependencies = [
   # Dashboard (Phase 7 MVP)
   "streamlit==1.41.1",
   "plotly==5.24.1",
+  # Trading (Phase 8 — IBKR paper)
+  "ib_async==2.1.0",
 ]
 
 [project.optional-dependencies]
@@ -82,7 +84,8 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 # N806: tests use `X` for feature matrices (sklearn / pandas convention).
-"tests/**/*.py" = ["S101", "PLR2004", "N806"]
+# N802/N803: test fakes mirror external camelCase APIs (e.g. ib_async).
+"tests/**/*.py" = ["S101", "PLR2004", "N806", "N802", "N803"]
 # N803/N806: scoring module follows sklearn convention (X = features matrix).
 "src/scoring/**/*.py" = ["N803", "N806"]
 # Same convention for the scoring CLI runner.
@@ -92,6 +95,11 @@ ignore = [
 # thresholds; magic-value thresholds (e.g. p≥0.85 for 5-star UI tier) are
 # domain constants documented in docs/SCORING.md.
 "streamlit_app.py" = ["PLR0912", "PLR0915", "PLR2004", "RUF001"]
+# Step-0 diagnostic CLI: linear top-to-bottom script with prints, magic ports,
+# and ✓/✗/○ status glyphs.
+"scripts/ibkr_preflight.py" = ["PLR0915", "PLR2004", "RUF001"]
+# Entry-point script: sys.path bootstrap before src imports (E402 expected).
+"scripts/run_trading.py" = ["E402"]
 
 [tool.ruff.format]
 quote-style = "double"
@@ -126,6 +134,10 @@ module = ["bs4", "lxml.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
+module = ["ib_async", "ib_async.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
 module = ["sklearn.*", "joblib", "pandas", "pandas.*"]
 ignore_missing_imports = true
 
@@ -142,6 +154,13 @@ disable_error_code = ["type-arg", "no-any-return", "assignment"]
 # Dashboard module — same rationale (pandas / plotly heavy).
 [[tool.mypy.overrides]]
 module = ["src.dashboard.*"]
+warn_return_any = false
+disable_error_code = ["no-any-return", "type-arg"]
+
+# Trading module — ib_async is untyped (Any-leaning broker SDK); we keep our
+# own SDK-free dataclasses at the boundary and accept Any from the broker layer.
+[[tool.mypy.overrides]]
+module = ["src.trading.*"]
 warn_return_any = false
 disable_error_code = ["no-any-return", "type-arg"]
 

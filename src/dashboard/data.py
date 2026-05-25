@@ -364,3 +364,96 @@ def get_latest_model_metadata() -> dict[str, Any]:
             conn,
         )
     return df.iloc[0].to_dict() if not df.empty else {}
+
+
+# ----------------------------------------------------- Phase 8 trading (live)
+
+
+def get_live_positions() -> pd.DataFrame:
+    """Open paper positions joined to their deal (Phase 8)."""
+    with _get_engine().begin() as conn:
+        return pd.read_sql_query(
+            text(
+                """
+                SELECT p.deal_id, d.target_name, d.juridiction,
+                       p.entry_price, p.size_eur, p.side, p.open_ts
+                FROM paper_positions p
+                LEFT JOIN deals d ON d.id = p.deal_id
+                WHERE p.status = 'open'
+                ORDER BY p.open_ts DESC
+                """
+            ),
+            conn,
+        )
+
+
+def get_recent_trades(limit: int = 100) -> pd.DataFrame:
+    """Most recent trades (any status) joined to their deal (Phase 8)."""
+    with _get_engine().begin() as conn:
+        return pd.read_sql_query(
+            text(
+                """
+                SELECT t.trade_id, t.deal_id, d.target_name, t.side, t.quantity,
+                       t.status, t.limit_price, t.filled_price, t.pnl_realized,
+                       t.requires_approval, t.approved, t.created_at
+                FROM trades t
+                LEFT JOIN deals d ON d.id = t.deal_id
+                ORDER BY t.created_at DESC
+                LIMIT :limit
+                """
+            ),
+            conn,
+            params={"limit": limit},
+        )
+
+
+def get_rampup_status() -> dict[str, int]:
+    """Ramp-up progress: validated trades vs required-before-auto."""
+    from src.core.settings import get_settings
+
+    required = get_settings().trading_rampup_required
+    with _get_engine().begin() as conn:
+        df = pd.read_sql_query(
+            text("SELECT value FROM system_state WHERE key = 'rampup_trades_validated'"),
+            conn,
+        )
+    validated = int(df.iloc[0]["value"]) if not df.empty else 0
+    return {"validated": validated, "required": required}
+
+
+def get_trading_kpis() -> dict[str, Any]:
+    """Headline trading KPIs for the dashboard."""
+    with _get_engine().begin() as conn:
+        df = pd.read_sql_query(
+            text(
+                """
+                SELECT
+                  (SELECT COUNT(*) FROM paper_positions WHERE status = 'open') AS open_positions,
+                  (SELECT COUNT(*) FROM trades WHERE status = 'FILLED') AS filled,
+                  (SELECT COUNT(*) FROM trades WHERE status = 'SUBMITTED') AS submitted,
+                  (SELECT COALESCE(SUM(pnl_realized), 0) FROM trades) AS realized_pnl_eur
+                """
+            ),
+            conn,
+        )
+    return df.iloc[0].to_dict() if not df.empty else {}
+
+
+def get_realized_pnl_series() -> pd.DataFrame:
+    """Daily + cumulative realised P&L from closed paper positions (Phase 8)."""
+    with _get_engine().begin() as conn:
+        df = pd.read_sql_query(
+            text(
+                """
+                SELECT close_ts::date AS day, SUM(pnl_eur) AS realized
+                FROM paper_positions
+                WHERE status = 'closed' AND close_ts IS NOT NULL
+                GROUP BY day
+                ORDER BY day
+                """
+            ),
+            conn,
+        )
+    if not df.empty:
+        df["cumulative"] = df["realized"].cumsum()
+    return df

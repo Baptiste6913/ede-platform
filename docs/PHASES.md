@@ -18,7 +18,7 @@
 | 10 | API FastAPI | ⚪ pending | — | — | — |
 | 11 | Streamlit dashboard MVP | 🟢 done | `phase-07-dashboard-mvp` | (this PR) | 2026-05-21 |
 | 12 | Alerting Discord | ⚪ pending | — | — | — |
-| 13 | Paper trading engine + backtest | ⚪ pending | — | — | — |
+| 13 | Paper trading engine (IBKR) | 🟢 done | `phase-08-paper-trading-ibkr` | (this PR) | 2026-05-22 |
 | 14 | Deploy Oracle production + monitoring | ⚪ pending | — | — | — |
 
 Legend: 🟢 done · 🟡 in_progress · 🔴 blocked · ⚪ pending
@@ -242,3 +242,27 @@ During the failed first run, `httpx` INFO-level logging emitted the full request
 ### Validation
 
 (awaiting VALIDATE PHASE 4)
+
+---
+
+## Phase 8 — Paper trading engine (IBKR)
+
+Full pipeline: scored deals → decision engine (Kelly sizing on live NetLiq) →
+server-side OCA brackets → executor (idempotent) → safeguards (kill switch,
+daily loss, ramp-up, cooldown) → Discord. See `docs/TRADING.md`.
+
+### V1 scope
+
+DE only (`TRADING_ALLOWED_JURISDICTIONS=DE`) — BaFin publishes ISIN reliably.
+
+### Tech debt (P9)
+
+- **ISIN extraction from AMF/Consob PDFs** via NLP/regex (`^[A-Z]{2}[0-9A-Z]{10}$`)
+  → unlock FR + IT in `TRADING_ALLOWED_JURISDICTIONS`.
+- Market-data log severity downgrade (cosmetic Error-354 noise after hours).
+- 1 flaky DB-connection test under full-suite load (retry decorator).
+- `ticker_resolver` fuzzy match for cases like Sanofi/SAN (Error 200).
+
+### Validation
+
+(awaiting Step-11 live first trade + `VALIDATE PHASE 8`)
