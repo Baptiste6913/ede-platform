@@ -18,7 +18,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
-from typing import Any
+from typing import Any, Final
 from zoneinfo import ZoneInfo
 
 import structlog
@@ -187,6 +187,20 @@ class TradingScheduler:
         return int(result or 0)
 
 
+# Offer-price quality flags that must never reach the trade loop: a mixed /
+# share-exchange offer has no scalar price (P9.1a), and failed_validation /
+# manual_review are explicit do-not-trade states (P9.1c). verified_cash and
+# suspect_low_unverified stay tradable. Subset of
+# src.core.enums.OFFER_PRICE_QUALITY_FLAGS. Behaviour-preserving today
+# (suspect_mixed already has a NULL price the decision engine skips); this makes
+# the exclusion explicit and future-proofs the P9.1c flags.
+UNTRADEABLE_OFFER_PRICE_FLAGS: Final[tuple[str, ...]] = (
+    "suspect_mixed",
+    "failed_validation",
+    "manual_review",
+)
+
+
 async def load_candidates(
     session: object,
     resolver: object,
@@ -196,7 +210,8 @@ async def load_candidates(
     """Load pending, sufficiently-scored deals and resolve their IBKR tickers.
 
     ``allowed_jurisdictions`` scopes the pipeline (V1 = ``["DE"]``); ``None``
-    means no jurisdiction filter.
+    means no jurisdiction filter. Deals whose ``offer_price_quality_flag`` is in
+    ``UNTRADEABLE_OFFER_PRICE_FLAGS`` are excluded (no reliable scalar price).
     """
     from sqlalchemy import select
 
@@ -205,7 +220,11 @@ async def load_candidates(
     stmt = (
         select(Deal, Score)
         .join(Score, Score.deal_id == Deal.id)
-        .where(Score.score_stars >= min_stars, Deal.completion_label.is_(None))
+        .where(
+            Score.score_stars >= min_stars,
+            Deal.completion_label.is_(None),
+            Deal.offer_price_quality_flag.not_in(UNTRADEABLE_OFFER_PRICE_FLAGS),
+        )
     )
     if allowed_jurisdictions:
         stmt = stmt.where(Deal.juridiction.in_(allowed_jurisdictions))
