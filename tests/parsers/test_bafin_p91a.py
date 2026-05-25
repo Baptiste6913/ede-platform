@@ -48,6 +48,17 @@ def test_philomaxcap_extracts_geldleistung_1_00() -> None:
     assert flag == "verified_cash"
 
 
+def test_klassik_extracts_gegenleistung_3_70() -> None:
+    # Cash offer phrased "Gegenleistung in Höhe von EUR 3,70 je Aktie". The
+    # backfill first nulled this (Gegenleistung was missing from the cash
+    # anchor); singular "je Aktie" keeps it out of the mixed (plural "Aktien")
+    # path, so it is correctly a cash offer.
+    price, currency, flag = _extract_offer(_excerpt("klassik_1071_excerpt.txt"))
+    assert price == Decimal("3.70")
+    assert currency == "EUR"
+    assert flag == "verified_cash"
+
+
 # --- Bug 2: share-exchange / mixed offers carry no scalar price ------------
 
 
