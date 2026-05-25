@@ -100,6 +100,10 @@ ignore = [
 "scripts/ibkr_preflight.py" = ["PLR0915", "PLR2004", "RUF001"]
 # Entry-point script: sys.path bootstrap before src imports (E402 expected).
 "scripts/run_trading.py" = ["E402"]
+# Audit CLI: same sys.path bootstrap before src imports (E402 expected).
+"scripts/audit_offer_price.py" = ["E402"]
+# Backfill CLI: same sys.path bootstrap before src imports (E402 expected).
+"scripts/backfill_p91a.py" = ["E402"]
 
 [tool.ruff.format]
 quote-style = "double"
