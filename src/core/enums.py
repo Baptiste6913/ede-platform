@@ -161,3 +161,33 @@ CURRENCIES: Final[tuple[Currency, ...]] = ("EUR", "CHF", "GBP", "USD")
 
 PriceSource = Literal["ibkr", "stooq"]
 PRICE_SOURCES: Final[tuple[PriceSource, ...]] = ("ibkr", "stooq")
+
+# ---- Offer-price quality flag (Phase 9.1a — BaFin parser fix) -----------
+#
+# Provenance / confidence of `deals.offer_price` after the P9.1a parser
+# refactor (migration 0014):
+#   verified_cash          — anchored on a cash clause
+#                            ("Geldleistung/Geldbetrag … EUR X je Aktie"),
+#                            not the share par value (Grundkapital EUR 1,00).
+#   suspect_mixed          — share-exchange or cash+share offer detected
+#                            ("Gewährung/Gegenleistung … Aktien der …"); the
+#                            price is NOT stored — needs the P9.1b
+#                            consideration structuring + external pricing.
+#   suspect_low_unverified — legacy / not yet re-parsed; the default.
+#   failed_validation      — failed an external price cross-check (P9.1b).
+#   manual_review          — escalated to a human.
+
+OfferPriceQualityFlag = Literal[
+    "verified_cash",
+    "suspect_mixed",
+    "suspect_low_unverified",
+    "failed_validation",
+    "manual_review",
+]
+OFFER_PRICE_QUALITY_FLAGS: Final[tuple[OfferPriceQualityFlag, ...]] = (
+    "verified_cash",
+    "suspect_mixed",
+    "suspect_low_unverified",
+    "failed_validation",
+    "manual_review",
+)
