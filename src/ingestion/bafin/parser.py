@@ -97,8 +97,14 @@ _AMOUNT = r"\d{1,3}(?:[ .]\d{3})*[,.]\d{2,4}"
 # the top, and a first-match search recorded that instead of the real price.
 # Handles both "EUR 6,80" and "12,00 EUR" orders and the line breaks BaFin
 # inserts between the clause and the amount.
+#
+# "Gegenleistung" is included: some BaFin offers phrase the cash price as
+# "Gegenleistung in Höhe von EUR X je Aktie" (e.g. Klassik Radio). This does not
+# clash with the share-exchange use of the same word ("Gegenleistung von X
+# Aktien der ...") because the mixed check runs FIRST and keys on plural
+# "Aktien der", whereas a cash clause ends in singular "je Aktie".
 _OFFER_CASH_RE = re.compile(
-    r"(?:Angebotspreis|Angebotsgegenleistung|Barangebot|Geldleistung|Geldbetrag)\w*"
+    r"(?:Angebotspreis|Angebotsgegenleistung|Gegenleistung|Barangebot|Geldleistung|Geldbetrag)\w*"
     r"[\s:]+(?:in\s+Höhe\s+von\s+|von\s+)?"
     r"(?:EUR\s*(?P<a1>" + _AMOUNT + r")|(?P<a2>" + _AMOUNT + r")\s*EUR)",
     re.IGNORECASE,
