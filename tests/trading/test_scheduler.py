@@ -240,7 +240,7 @@ async def test_baseline_persists_when_zero_trades_submitted(db_session, db_engin
     assert float(val) == 1_000_000.0
 
 
-async def _seed_scored_deal(session, juridiction, ref):
+async def _seed_scored_deal(session, juridiction, ref, quality_flag=None):
     from datetime import UTC, date, datetime
     from decimal import Decimal
 
@@ -255,6 +255,8 @@ async def _seed_scored_deal(session, juridiction, ref):
         deal_type="opa",
         status="announced",
     )
+    if quality_flag is not None:
+        deal.offer_price_quality_flag = quality_flag
     session.add(deal)
     await session.flush()
     session.add(
@@ -301,3 +303,21 @@ async def test_load_candidates_returns_empty_when_no_matching_jurisdiction(db_se
         db_session, TickerResolver({}), min_stars=3, allowed_jurisdictions=["FR"]
     )
     assert cands == []
+
+
+@pytest.mark.integration
+async def test_load_candidates_excludes_untradeable_offer_price_flag(db_session):
+    from src.trading.scheduler import load_candidates
+    from src.trading.ticker_resolver import TickerResolver
+
+    # A verified_cash deal is tradable; a suspect_mixed deal (no scalar price)
+    # must be excluded at the query level, not just skipped later on NULL price.
+    keep = await _seed_scored_deal(db_session, "DE", "BAFIN-KEEP", quality_flag="verified_cash")
+    mixed = await _seed_scored_deal(db_session, "DE", "BAFIN-MIXED", quality_flag="suspect_mixed")
+
+    cands = await load_candidates(
+        db_session, TickerResolver({}), min_stars=3, allowed_jurisdictions=["DE"]
+    )
+    ids = {c.deal_id for c in cands}
+    assert keep in ids
+    assert mixed not in ids
