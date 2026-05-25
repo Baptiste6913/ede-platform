@@ -1,0 +1,3 @@
+# BaFin Angebotsunterlagen are public but large (~18 MB total). Keep them out of
+# git — they are reproducible from the URLs in README.md (or from data/pdfs/).
+*.pdf
