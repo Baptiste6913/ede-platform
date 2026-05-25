@@ -132,6 +132,37 @@ Config lives in `.env` / `Settings`: `IBKR_HOST/PORT/CLIENT_ID/PAPER`,
 Market data is **delayed (free, type 3)** for V1 (decision #2) — sufficient for a
 daily cron. Real-time Euronext/Borsa/Xetra subscriptions are deferred (Phase 10+).
 
+## Known Limitations (V1)
+
+The Step-11 end-to-end flow (generate → approve → submit) is validated, but **no
+live paper trade has reached FILLED yet** — the blocker is market-data access on
+the demo account, not the engine.
+
+- **Demo paper account (`DUP…`) cannot activate market-data subscriptions.** IBKR
+  ties subscriptions to a *funded live* account; a standalone demo paper account
+  has no entitlements to share, so Xetra/Borsa/Euronext return Error 354 *"market
+  data not subscribed"* (hence the frozen-price fallback above).
+- **Production deals require a live IBKR account.** Real, tradeable deals can only
+  be priced once a live account shares its delayed subscriptions with the paper
+  account.
+
+A **first live paper trade FILLED** is gated on three conditions, in order:
+
+1. **Live IBKR account activation** (1–3 business days).
+2. **Xetra / Borsa / Euronext delayed subscriptions** enabled on the live account
+   **and shared with the paper account**.
+3. A **production deal** with a **positive spread** *and* a **clean `offer_price`**
+   (see Phase-9 tech debt below).
+
+### Phase-9 tech debt (unblocks the above)
+
+- **Parse BaFin `offer_price` correctly.** The parser misreads some BaFin offers
+  (e.g. Commerzbank → a false €1.00), corrupting the spread and disqualifying
+  otherwise-valid DE deals.
+- **ISIN extraction from FR/IT PDFs.** AMF/Consob don't publish ISIN in
+  `regulator_ref`; extracting it from the offer PDFs would unlock **200+ FR+IT
+  deals** (Step-11: 203/209 FR/IT candidates were unresolved).
+
 ## Relationship: `trades` vs `paper_positions`
 
 - **`trades`** (migration 0012) — the order-execution ledger: one row per
