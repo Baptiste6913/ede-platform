@@ -66,13 +66,22 @@ cleared by the first (buggy) backfill run; harmless — all re-scored in P9.1b.
 `SELECT count(*) FROM deals WHERE parser_version = 2` ⇒ **17** (exactly the
 backfilled set; no stray re-parses).
 
-## Synonym sweep (false-null class closed)
+## Coverage (post-fix baseline)
 
-The fixed parser was run over **all 42 DE PDFs**: 40 `verified_cash` +
-2 `suspect_mixed` + **0 `suspect_low_unverified`**. No deal falls through, so no
-further cash synonyms (Abfindung, Kaufpreis, Erwerbspreis, …) are needed for the
-current DE population. (Note: there is no `prospectus_text` column — text is read
-from the PDF at parse time, so the sweep runs the parser, not SQL.)
+The fixed parser was run over **all 42 DE PDFs** (not just the 17 outliers) — the
+extraction-coverage baseline for the DE corpus. Use this as the reference when
+P9.2 extends the fix to AMF (FR) and Consob (IT).
+
+| outcome | count | share |
+|---|--:|--:|
+| `verified_cash` | 40/42 | 95.2% |
+| `suspect_mixed` | 2/42 | 4.8% |
+| `suspect_low_unverified` (parser found nothing) | **0/42** | **0%** |
+
+**Zero deals fall through** ⇒ the false-null class is closed: no further cash
+synonyms (Abfindung, Kaufpreis, Erwerbspreis, …) are needed for the current DE
+population. (There is no `prospectus_text` column — text is read from the PDF at
+parse time, so the sweep runs the parser, not SQL.)
 
 ## Gotcha — alembic revision-ID reuse (`0014`)
 
