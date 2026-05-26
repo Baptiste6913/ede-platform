@@ -134,6 +134,20 @@ _OFFER_MIXED_RE = re.compile(
     re.IGNORECASE,
 )
 
+# Structured-consideration extraction (P9.1c): same scope as _OFFER_MIXED_RE
+# but additionally captures the acquirer name (lazy up to 5 trailing tokens),
+# terminated by "für"/"je" which BaFin templates use to introduce the per-share
+# clause ("… der UniCredit S.p.A. für jeweils eine Aktie der …", "… der MFE
+# … N.V. je einer Aktie der …"). The acquirer string feeds acquirer_registry.
+_CONSIDERATION_SHARE_RE = re.compile(
+    r"(?:Gewährung|Gegenleistung)\s+(?:\w+\s+){0,4}?von\s+"
+    r"(?P<ratio>\d{1,3}(?:[.,]\d+)?)\s+"
+    r"(?:Stück)?[Aa]ktien(?:\s+[A-Z])?\s+der\s+"
+    r"(?P<acquirer>[\w.\-]+(?:[ \-][\w.]+){0,5}?)"
+    r"\s+(?:für|je)\b",
+    re.IGNORECASE,
+)
+
 # Bidder / target labels — BaFin templates use either German or capitalised forms.
 _BIETER_RE = re.compile(
     r"Bieter(?:in)?\s*[:\-]?\s*(?P<name>[A-ZÄÖÜ][^\n]{2,120})",
@@ -171,6 +185,18 @@ class ParsedBafinMetadata:
 
     def has_minimum(self) -> bool:
         return any((self.opening_date, self.offer_price, self.bieter_name_from_pdf))
+
+
+@dataclass(frozen=True, slots=True)
+class ConsiderationStructured:
+    """Phase 9.1c — structured cash + share legs of a mixed-offer
+    consideration. Returned by :func:`_extract_consideration` for offers whose
+    share leg matches :data:`_CONSIDERATION_SHARE_RE`; ``None`` otherwise."""
+
+    cash_eur: Decimal | None
+    share_ratio: Decimal | None
+    acquirer_name_raw: str | None
+    source_excerpt: str = ""
 
 
 def extract_pdf_metadata(pdf_path: Path, *, max_pages: int = 10) -> ParsedBafinMetadata:
@@ -276,6 +302,35 @@ def _extract_cash_price(text: str) -> Decimal | None:
     return None
 
 
+def _extract_consideration(text: str) -> ConsiderationStructured | None:
+    """Structured cash + share legs of a mixed-offer consideration. Returns
+    ``None`` for a pure cash offer or when no share clause is found.
+
+    Reuses :func:`_extract_cash_price` for the cash leg (None on share-only
+    swaps like Commerzbank), captures ``share_ratio`` + ``acquirer_name_raw``
+    from :data:`_CONSIDERATION_SHARE_RE`, and keeps a ~200-char excerpt around
+    the match for the audit trail.
+    """
+    m = _CONSIDERATION_SHARE_RE.search(text)
+    if m is None:
+        return None
+    try:
+        share_ratio = Decimal(m.group("ratio").replace(",", "."))
+    except InvalidOperation:
+        return None
+    acquirer = re.sub(r"\s+", " ", m.group("acquirer").strip()).rstrip(".,;:")
+    cash_eur = _extract_cash_price(text)
+    start = max(0, m.start() - 60)
+    end = min(len(text), m.end() + 140)
+    excerpt = re.sub(r"\s+", " ", text[start:end]).strip()
+    return ConsiderationStructured(
+        cash_eur=cash_eur,
+        share_ratio=share_ratio,
+        acquirer_name_raw=acquirer or None,
+        source_excerpt=excerpt,
+    )
+
+
 def _extract_first(pattern: re.Pattern[str], text: str) -> str | None:
     m = pattern.search(text)
     if not m:
@@ -295,6 +350,7 @@ def _extract_offer_type(text: str) -> str | None:
 
 __all__ = [
     "PARSER_VERSION",
+    "ConsiderationStructured",
     "ParsedBafinMetadata",
     "extract_pdf_metadata",
 ]
