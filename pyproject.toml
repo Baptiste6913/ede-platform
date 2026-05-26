@@ -37,6 +37,7 @@ dependencies = [
   "plotly==5.24.1",
   # Trading (Phase 8 — IBKR paper)
   "ib_async==2.1.0",
+  "yfinance==1.4.0",
 ]
 
 [project.optional-dependencies]
@@ -104,6 +105,8 @@ ignore = [
 "scripts/audit_offer_price.py" = ["E402"]
 # Backfill CLI: same sys.path bootstrap before src imports (E402 expected).
 "scripts/backfill_p91a.py" = ["E402"]
+# yfinance live probe: sys.path bootstrap (E402) + magic weekday number (PLR2004).
+"scripts/probe_yfinance_live.py" = ["E402", "PLR2004"]
 
 [tool.ruff.format]
 quote-style = "double"
@@ -130,7 +133,7 @@ module = ["tests.*"]
 disallow_untyped_defs = false
 
 [[tool.mypy.overrides]]
-module = ["fitz", "feedparser", "apscheduler.*"]
+module = ["fitz", "feedparser", "apscheduler.*", "yfinance"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
