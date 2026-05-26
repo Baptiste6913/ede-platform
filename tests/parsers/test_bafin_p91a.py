@@ -106,3 +106,37 @@ def test_no_offer_clause_falls_back_to_unverified() -> None:
     assert price is None
     assert currency is None
     assert flag == "suspect_low_unverified"
+
+
+# --- P9.1c structured consideration (cash + share legs + acquirer) ---------
+
+
+def test_consideration_commerzbank_share_only() -> None:
+    from src.ingestion.bafin.parser import _extract_consideration
+
+    c = _extract_consideration(_excerpt("commerzbank_348_excerpt.txt"))
+    assert c is not None
+    assert c.cash_eur is None  # pure share swap, no cash leg
+    assert c.share_ratio == Decimal("0.485")
+    assert c.acquirer_name_raw is not None
+    assert "UniCredit" in c.acquirer_name_raw
+    assert c.source_excerpt  # non-empty audit excerpt
+
+
+def test_consideration_prosieben_cash_and_share() -> None:
+    from src.ingestion.bafin.parser import _extract_consideration
+
+    c = _extract_consideration(_excerpt("prosieben_1059_excerpt.txt"))
+    assert c is not None
+    assert c.cash_eur == Decimal("4.48")
+    assert c.share_ratio == Decimal("0.4")
+    assert c.acquirer_name_raw is not None
+    assert "MFE" in c.acquirer_name_raw
+
+
+def test_consideration_pure_cash_offer_returns_none() -> None:
+    # Klassik is a clean cash offer ("Gegenleistung in Höhe von EUR 3,70 je
+    # Aktie") — no share clause, so _extract_consideration must return None.
+    from src.ingestion.bafin.parser import _extract_consideration
+
+    assert _extract_consideration(_excerpt("klassik_1071_excerpt.txt")) is None
