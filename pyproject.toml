@@ -107,6 +107,8 @@ ignore = [
 "scripts/backfill_p91a.py" = ["E402"]
 # yfinance live probe: sys.path bootstrap (E402) + magic weekday number (PLR2004).
 "scripts/probe_yfinance_live.py" = ["E402", "PLR2004"]
+# Populate CLI: sys.path bootstrap before src imports (E402 expected).
+"scripts/populate_deal_consideration.py" = ["E402"]
 
 [tool.ruff.format]
 quote-style = "double"
