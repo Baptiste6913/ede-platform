@@ -81,7 +81,7 @@ Branch: `phase-09c-yfinance-enrichment` · 23 commits · ready for review.
   asymmetry within the source.
 
 ### [G] Phase-6 re-scoring (commits `8ae7709`, `3d2e017`, `98d9a3e`,
-`ec3ef14`, `e47f304`)
+`ec3ef14`, `e47f304`, `1d8d520`)
 - **[G-2] feature audit**: confirmed `src/scoring/features.py` consumes
   ZERO P9.1c-touched columns (offer_price / offer_price_total_eur /
   offer_price_quality_flag / pricing_source). Effective live signal
@@ -239,5 +239,5 @@ validated each run.
 ## 7. Next step — [H] PR + CI
 
 Out of [G-4] scope: per the [G] brief, operator merges the PR manually.
-Branch `phase-09c-yfinance-enrichment` is at HEAD `e47f304`, ready for
+Branch `phase-09c-yfinance-enrichment` is at HEAD `1d8d520`, ready for
 review. CI must be green before merge; no auto-merge is configured.
