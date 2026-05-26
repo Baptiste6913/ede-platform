@@ -115,6 +115,11 @@ ignore = [
 "scripts/validate_small_caps.py" = ["E402"]
 # Re-parse non-outlier BaFin (P9.1c-bis): same sys.path bootstrap (E402 expected).
 "scripts/reparse_p91cbis.py" = ["E402"]
+# Token re-fit (P9.1c-[G-3]): sys.path bootstrap (E402), sklearn X uppercase (N806),
+# linear orchestration script (PLR0915 — main() is intentionally a top-to-bottom flow).
+"scripts/refit_p91c.py" = ["E402", "N806", "PLR0915"]
+# Variance probe (P9.1c-[G-3.5a]): same shape as refit_p91c.py.
+"scripts/variance_check_p91c.py" = ["E402", "PLR0915"]
 
 [tool.ruff.format]
 quote-style = "double"
