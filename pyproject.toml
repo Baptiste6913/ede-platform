@@ -111,6 +111,8 @@ ignore = [
 "scripts/populate_deal_consideration.py" = ["E402"]
 # Recalc CLI: same sys.path bootstrap before src imports (E402 expected).
 "scripts/recalc_offer_price_total.py" = ["E402"]
+# Validate small caps CLI: same sys.path bootstrap before src imports (E402 expected).
+"scripts/validate_small_caps.py" = ["E402"]
 
 [tool.ruff.format]
 quote-style = "double"
