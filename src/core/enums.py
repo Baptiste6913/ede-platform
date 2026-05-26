@@ -162,23 +162,27 @@ CURRENCIES: Final[tuple[Currency, ...]] = ("EUR", "CHF", "GBP", "USD")
 PriceSource = Literal["ibkr", "stooq"]
 PRICE_SOURCES: Final[tuple[PriceSource, ...]] = ("ibkr", "stooq")
 
-# ---- Offer-price quality flag (Phase 9.1a — BaFin parser fix) -----------
+# ---- Offer-price quality flag (Phase 9.1a/c — BaFin parser + pricing) ----
 #
-# Provenance / confidence of `deals.offer_price` after the P9.1a parser
-# refactor (migration 0014):
+# Provenance / confidence of the deal's offer price. Stored as TEXT + CHECK
+# (migration 0015 converted it from the 0014 Postgres ENUM — TEXT is cheaper to
+# evolve; this tuple is the canonical value list for the CHECK + validation).
 #   verified_cash          — anchored on a cash clause
 #                            ("Geldleistung/Geldbetrag … EUR X je Aktie"),
 #                            not the share par value (Grundkapital EUR 1,00).
+#   verified_mixed         — share/cash+share offer whose economic value was
+#                            recomputed (cash_eur + share_ratio x acquirer quote)
+#                            into offer_price_total_eur (P9.1c).
 #   suspect_mixed          — share-exchange or cash+share offer detected
-#                            ("Gewährung/Gegenleistung … Aktien der …"); the
-#                            price is NOT stored — needs the P9.1b
-#                            consideration structuring + external pricing.
+#                            ("Gewährung/Gegenleistung … Aktien der …"); not yet
+#                            priced — awaiting the P9.1c recalc.
 #   suspect_low_unverified — legacy / not yet re-parsed; the default.
-#   failed_validation      — failed an external price cross-check (P9.1b).
+#   failed_validation      — failed an external price cross-check (P9.1c).
 #   manual_review          — escalated to a human.
 
 OfferPriceQualityFlag = Literal[
     "verified_cash",
+    "verified_mixed",
     "suspect_mixed",
     "suspect_low_unverified",
     "failed_validation",
@@ -186,8 +190,23 @@ OfferPriceQualityFlag = Literal[
 ]
 OFFER_PRICE_QUALITY_FLAGS: Final[tuple[OfferPriceQualityFlag, ...]] = (
     "verified_cash",
+    "verified_mixed",
     "suspect_mixed",
     "suspect_low_unverified",
     "failed_validation",
     "manual_review",
+)
+
+# ---- Pricing source (Phase 9.1c) ----------------------------------------
+#
+# How offer_price_total_eur was obtained. TEXT + CHECK (not a Postgres ENUM):
+#   parser_only        — only the parser's cash leg; no external enrichment.
+#   yfinance_enriched  — total recomputed via a yfinance acquirer/spot quote.
+#   manual_override    — set by hand (operator).
+
+PricingSource = Literal["parser_only", "yfinance_enriched", "manual_override"]
+PRICING_SOURCES: Final[tuple[PricingSource, ...]] = (
+    "parser_only",
+    "yfinance_enriched",
+    "manual_override",
 )

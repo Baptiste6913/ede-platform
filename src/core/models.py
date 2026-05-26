@@ -66,11 +66,11 @@ PositionStatusEnum = Enum(
 )
 CurrencyEnum = Enum(*enums.CURRENCIES, name="currency_enum", create_type=False)
 PriceSourceEnum = Enum(*enums.PRICE_SOURCES, name="price_source_enum", create_type=False)
-OfferPriceQualityFlagEnum = Enum(
-    *enums.OFFER_PRICE_QUALITY_FLAGS,
-    name="offer_price_quality_flag_enum",
-    create_type=False,
-)
+# offer_price_quality_flag + pricing_source are TEXT + CHECK (migration 0015),
+# not Postgres ENUMs — cheaper to evolve. Canonical value lists live in
+# src.core.enums (OFFER_PRICE_QUALITY_FLAGS / PRICING_SOURCES).
+_FLAG_VALUES_SQL = ", ".join(f"'{_v}'" for _v in enums.OFFER_PRICE_QUALITY_FLAGS)
+_PRICING_SOURCE_VALUES_SQL = ", ".join(f"'{_v}'" for _v in enums.PRICING_SOURCES)
 
 
 # =========================================================================
@@ -88,6 +88,14 @@ class Deal(Base):
         ),
         Index("ix_deals_juridiction_status", "juridiction", "status"),
         Index("ix_deals_ticker_target", "ticker_target"),
+        CheckConstraint(
+            f"offer_price_quality_flag IN ({_FLAG_VALUES_SQL})",
+            name="ck_deals_offer_price_quality_flag",
+        ),
+        CheckConstraint(
+            f"pricing_source IN ({_PRICING_SOURCE_VALUES_SQL})",
+            name="ck_deals_pricing_source",
+        ),
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -127,10 +135,10 @@ class Deal(Base):
     source_url: Mapped[str | None] = mapped_column(Text, nullable=True)
     pdf_path: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    # Phase 9.1a — provenance of offer_price after the BaFin parser fix
-    # (migration 0014). parser_version bumps to 2 on every P9.1a re-parse.
+    # Phase 9.1a — provenance of offer_price; TEXT + CHECK since migration 0015
+    # (was a Postgres ENUM in 0014). parser_version bumps on every re-parse.
     offer_price_quality_flag: Mapped[str] = mapped_column(
-        OfferPriceQualityFlagEnum,
+        Text,
         nullable=False,
         server_default="suspect_low_unverified",
     )
@@ -138,6 +146,14 @@ class Deal(Base):
         SmallInteger,
         nullable=False,
         server_default="1",
+    )
+    # Phase 9.1c — economic value of mixed offers (cash + share legs) and how it
+    # was sourced (migration 0015). offer_price stays the parser's cash scalar.
+    offer_price_total_eur: Mapped[Decimal | None] = mapped_column(Numeric(12, 4), nullable=True)
+    pricing_source: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+        server_default="parser_only",
     )
 
     # Phase 6 scoring V1 ground-truth label (migration 0009).
@@ -183,6 +199,49 @@ class Deal(Base):
         cascade="all, delete-orphan",
         passive_deletes=True,
     )
+    consideration: Mapped[DealConsideration | None] = relationship(
+        back_populates="deal",
+        uselist=False,
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
+
+
+# =========================================================================
+# deal_consideration (Phase 9.1c — structured cash + share legs)
+# =========================================================================
+
+
+class DealConsideration(Base):
+    """Structured consideration for a (mixed) offer: a cash leg and/or a share
+    leg (ratio x acquirer share), 1:1 with a deal. `deals.offer_price_total_eur`
+    is recomputed from this via a yfinance acquirer quote (P9.1c)."""
+
+    __tablename__ = "deal_consideration"
+
+    deal_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("deals.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+    cash_eur: Mapped[Decimal | None] = mapped_column(Numeric(12, 4), nullable=True)
+    share_ratio: Mapped[Decimal | None] = mapped_column(Numeric(12, 6), nullable=True)
+    acquirer_isin: Mapped[str | None] = mapped_column(Text, nullable=True)
+    acquirer_ticker_yf: Mapped[str | None] = mapped_column(Text, nullable=True)
+    source_clause_excerpt: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    deal: Mapped[Deal] = relationship(back_populates="consideration")
 
 
 # =========================================================================
@@ -458,6 +517,7 @@ class SystemState(Base):
 __all__ = [
     "Analysis",
     "Deal",
+    "DealConsideration",
     "Event",
     "PaperPosition",
     "Price",
