@@ -113,6 +113,8 @@ ignore = [
 "scripts/recalc_offer_price_total.py" = ["E402"]
 # Validate small caps CLI: same sys.path bootstrap before src imports (E402 expected).
 "scripts/validate_small_caps.py" = ["E402"]
+# Re-parse non-outlier BaFin (P9.1c-bis): same sys.path bootstrap (E402 expected).
+"scripts/reparse_p91cbis.py" = ["E402"]
 
 [tool.ruff.format]
 quote-style = "double"
