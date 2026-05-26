@@ -109,6 +109,8 @@ ignore = [
 "scripts/probe_yfinance_live.py" = ["E402", "PLR2004"]
 # Populate CLI: sys.path bootstrap before src imports (E402 expected).
 "scripts/populate_deal_consideration.py" = ["E402"]
+# Recalc CLI: same sys.path bootstrap before src imports (E402 expected).
+"scripts/recalc_offer_price_total.py" = ["E402"]
 
 [tool.ruff.format]
 quote-style = "double"
