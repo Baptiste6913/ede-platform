@@ -175,10 +175,7 @@ async def main() -> int:
     print("=" * 78)
     print(f"[G-3.5a] Variance: {N_REFITS} consecutive refits + baseline (eval 120 clusters)")
     print("=" * 78)
-    header = (
-        f"{'run':<10} {'brier':>10} {'auc':>10} "
-        f"{'dAUC_base':>12} {'dAUC_run1':>12}"
-    )
+    header = f"{'run':<10} {'brier':>10} {'auc':>10} " f"{'dAUC_base':>12} {'dAUC_run1':>12}"
     print(header)
     print("-" * 78)
     for r in rows:
