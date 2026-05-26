@@ -340,9 +340,9 @@ async def main() -> int:
 
     # Save model only if non-regression passes.
     new_model.save(NEW_PKL)
-    print(f"✓ model saved: {NEW_PKL}")
-    print(f"✓ metrics CSV: {METRICS_CSV}")
-    print(f"✓ split CSV:   {SPLIT_CSV}")
+    print(f"[OK] model saved: {NEW_PKL}")
+    print(f"[OK] metrics CSV: {METRICS_CSV}")
+    print(f"[OK] split CSV:   {SPLIT_CSV}")
 
     await dispose_engine()
     return 0
