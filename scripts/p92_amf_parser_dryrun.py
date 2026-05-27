@@ -99,7 +99,10 @@ def main() -> None:
         status = classify(s["expected_price"], parsed)  # type: ignore[arg-type]
         exp_str = str(s["expected_price"]) if s["expected_price"] is not None else "(none)"
         parsed_str = str(parsed) if parsed is not None else "(none)"
-        print(f"{s['ref']:<10} {str(s['target'])[:35]:<35} {exp_str:>10} {parsed_str:>10}  {status}")
+        print(
+            f"{s['ref']:<10} {str(s['target'])[:35]:<35} "
+            f"{exp_str:>10} {parsed_str:>10}  {status}"
+        )
         rows.append({"ref": str(s["ref"]), "target": str(s["target"]),
                      "doc_type": str(s["doc_type"]),
                      "expected": exp_str, "parsed": parsed_str,
