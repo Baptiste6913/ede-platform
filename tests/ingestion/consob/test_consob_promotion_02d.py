@@ -46,7 +46,7 @@ def test_promotable_cash_in_bounds() -> None:
 
 def test_health_italia_high_price_promoted_with_outlier_flag() -> None:
     # Real corpus case: id 334 Health Italia, offer_price 300 EUR, opa_obligatoire.
-    # p95 × 3 = 107.19; 300 > 107.19 ⇒ statistical_outlier=True. Still PROMOTABLE.
+    # p95 x 3 = 107.19; 300 > 107.19 => statistical_outlier=True. Still PROMOTABLE.
     flag, outlier = categorize(
         _view(
             deal_type="opa_obligatoire",
@@ -72,18 +72,15 @@ def test_pending_parse_to_manual_review() -> None:
     # Even with a valid in-bounds price, the [pending parse] marker on
     # target_name signals that the ingestion was partial and the price
     # extraction integrity on the same PDF is not guaranteed.
-    flag, outlier = categorize(
-        _view(offer_price=Decimal("0.68"), target_name="[pending parse]")
-    )
+    flag, outlier = categorize(_view(offer_price=Decimal("0.68"), target_name="[pending parse]"))
     assert flag == "manual_review"
     assert outlier is False
 
 
-def test_banco_bpm_outlier() -> None:
-    # Real corpus case: id 1034 Banco BPM, parser captured the
-    # controvalore complessivo (3.828B EUR) instead of the unit price.
-    # NB: deal_type='opas' would route to MIXED before bounds — test
-    # uses an opa_* deal_type to isolate the bounds path.
+def test_banco_bpm_outlier_on_cash_type() -> None:
+    # Isolates the OUTLIER bounds path on a cash-typed deal. The
+    # opas variant of the same scenario (real Banco BPM) is covered
+    # by test_banco_bpm_opas_outlier_to_failed_not_mixed below.
     flag, outlier = categorize(
         _view(
             deal_type="opa_volontaire_totalitaria",
@@ -107,10 +104,11 @@ def test_opas_routed_to_mixed() -> None:
     assert outlier is False
 
 
-def test_opas_priority_over_bounds() -> None:
-    # OPAS routing wins even if the price happens to be in the cash-bounds
-    # envelope (Banca Sistema 1.80 €). Proves first-match order: MIXED
-    # runs before the bounds check.
+def test_opas_in_bounds_routes_to_mixed_not_promoted() -> None:
+    # OPAS routes to suspect_mixed even when the price is well within
+    # the cash bounds envelope (Banca Sistema-class 1.80 EUR). 02e
+    # will split cash + share legs; 02d must NOT promote opas to
+    # verified_cash on the basis of an in-bounds price alone.
     flag, outlier = categorize(_view(deal_type="opas", offer_price=Decimal("5.00")))
     assert flag == "suspect_mixed"
     assert outlier is False
@@ -132,9 +130,7 @@ def test_banco_bpm_opas_outlier_to_failed_not_mixed() -> None:
     # — NOT suspect_mixed — to prevent the broken value from
     # propagating into 02e's cash+share split. Defends the rule
     # ordering against regression.
-    flag, outlier = categorize(
-        _view(deal_type="opas", offer_price=Decimal("3828060000"))
-    )
+    flag, outlier = categorize(_view(deal_type="opas", offer_price=Decimal("3828060000")))
     assert flag == "failed_validation"
     assert outlier is False
 

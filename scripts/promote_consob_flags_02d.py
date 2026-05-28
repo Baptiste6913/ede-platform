@@ -61,7 +61,7 @@ PARSER_VERSION_02D = 2
 
 PRICE_LOWER = Decimal("0.01")
 PRICE_UPPER = Decimal("10000")
-OUTLIER_TRACE_THRESHOLD = Decimal("107.19")  # p95 × 3 of the live IT corpus
+OUTLIER_TRACE_THRESHOLD = Decimal("107.19")  # p95 x 3 of the live IT corpus
 
 PENDING_PARSE_MARKER = "[pending parse]"
 
