@@ -9,21 +9,32 @@ target `offer_price_quality_flag` deterministically.
 field set). DB at alembic HEAD `0015`. Per-deal detail in
 `docs/phase-09/p92_02d_categorization.md`.
 
-## a) Décompte par catégorie
+## a) Décompte par catégorie (post user-decisions 2026-05-28)
 
-| Category | Source rule | Target flag | Count |
+| Category | Source rule (first-match order) | Target flag | Count |
 |---|---|---|---|
-| **PROMOTABLE** | `offer_price` in `[0.01, 10 000]` AND `deal_type ∈ {opa_*}` | `verified_cash` | **37** |
-| **MIXED** | `deal_type = opas` (any price state) | `suspect_mixed` | 6 (4 priced + 2 NULL) |
-| **OUTLIER** | `offer_price` outside `[0.01, 10 000]` | `failed_validation` | 1 (Banco BPM) |
-| **MANUAL_REVIEW** | `offer_price IS NULL` AND `deal_type ∈ {opa_*}` | `manual_review` | 3 (Piovan, morif, Comal) |
+| **MIXED** | `deal_type = opas` (any price state) | `suspect_mixed` | 6 (4 priced + 2 NULL OPS-prefixed) |
+| **MANUAL_REVIEW** | `offer_price IS NULL` OR `target_name = '[pending parse]'` | `manual_review` | 5 (3 NULL + 2 partial-ingestion) |
+| **OUTLIER** | `offer_price ∉ [0.01, 10 000]` | `failed_validation` | 1 (Banco BPM 3.8B) |
+| **PROMOTABLE** | else | `verified_cash` | **35** (incl. 1 with `statistical_outlier=True`) |
 | **Total** | | | **47 / 47** ✓ |
 
-The user pre-audit estimate "0 → ~38/47 verified" was within 1
-deal of the empirical answer (37). The slight downward revision
-comes from classifying OPAS-typed deals as `suspect_mixed`
-(routing through 02e) rather than counting them in the promotion
-target.
+Delta vs pre-decision draft (37/6/1/3):
+- −2 from PROMOTABLE (the two `[pending parse]` rows: id 327 CIR
+  2026, id 333 Antares).
+- +2 to MANUAL_REVIEW for the same reason — if the target name
+  parsing failed on the PDF, the price extraction integrity on
+  the same PDF is not guaranteed; re-ingestion required before
+  the deal becomes tradable.
+- Health Italia (id 334) stays in PROMOTABLE but receives a
+  `statistical_outlier=True` annotation in the audit CSV (price
+  300 € > p95 × 3 = 107.19 €) — informational only, doesn't hold
+  back the trade signal.
+
+Net **35 deals promoted to `verified_cash`**, vs the original
+pre-audit guess "~38". The audit + decision pass shaved 3 off the
+estimate (1 from the OPAS-vs-cash distinction, 2 from the partial-
+ingestion guard).
 
 ## b) Bounds final (validated)
 
@@ -49,20 +60,24 @@ distribution of the 42 non-NULL Consob prices:
 
 **No adjustment to bounds proposed in the brief. Validated.**
 
-## c) Estimation `verified_cash` — confirmed at 37 (vs ~38 pre-audit)
+## c) Estimation `verified_cash` — confirmed at 35 post user-decisions
 
 The 02d promotion script will produce, deterministically:
-- **37 deals** moved from `suspect_low_unverified` →
-  `verified_cash`
+- **35 deals** moved from `suspect_low_unverified` →
+  `verified_cash` (1 with `statistical_outlier=True` trace =
+  Health Italia 300 €)
 - **6 deals** moved from `suspect_low_unverified` →
   `suspect_mixed` (the 7 opas-typed deals minus the Banco BPM
   outlier)
 - **1 deal** (Banco BPM, id 1034) moved to `failed_validation`
-- **3 deals** moved to `manual_review` (Piovan id 1039, morif id
-  1035, Comal id 1040)
+- **5 deals** moved to `manual_review`:
+  - 3 NULL-price (Piovan id 1039, morif id 1035, Comal id 1040)
+  - 2 `[pending parse]` upstream (CIR 2026 id 327, Antares id
+    333) — price was extracted but target_name parsing failed
+    on the same PDF, integrity not guaranteed
 
-Net Phase-8 trading flow impact: +37 candidates immediately, +6
-`suspect_mixed` candidates exposed to 02e for proper cash+share
+Net Phase-8 trading flow impact: **+35 candidates immediately**,
++6 `suspect_mixed` candidates exposed to 02e for proper cash+share
 split.
 
 ## d) Edge cases borderline (manual call needed before code)
@@ -130,23 +145,31 @@ Optional flag additions (deferred):
   Comal cases. Currently routed to `manual_review`. Add in 02f
   if OCR fallback is greenlit.
 
-## f) Open questions for the user (CHECKPOINT)
+## f) Decisions log (validated by user 2026-05-28)
 
-1. **Health Italia 300 €/share (id 334)** — keep in PROMOTABLE
-   per the bounds rule, or visual-verify the PDF and route to
-   MANUAL_REVIEW if unconfirmed?
-2. **`[pending parse]` target_names (id 327, 333)** — promote
-   anyway (price is in bounds, deal_type clean), or hold until
-   `target_name` is backfilled?
-3. **Migration of new flags** — confirm "no migration in 02d"
-   (use existing `manual_review` + `suspect_mixed`)?
-4. **02e scope** — should 02e attempt to **re-classify** the OPS-
-   prefixed deals (id 342, 344) into a dedicated `share_swap_pure`
-   type, or just split the cash + share legs for the four genuine
-   OPAS?
+1. **Health Italia (id 334, 300 €)** → PROMOTABLE with audit-trail
+   trace `statistical_outlier=True` (gate at `price > p95 × 3 =
+   107.19 €`). Promotion proceeds; downstream Phase-8 / scoring
+   can surface for review without holding back the signal.
+2. **`[pending parse]` rows (id 327 CIR, id 333 Antares)** →
+   MANUAL_REVIEW, NOT PROMOTABLE. Rationale: if `target_name`
+   parsing failed on the PDF, the price extraction integrity on
+   the same PDF is suspect. Re-ingest before promotion.
+3. **OPS-prefixed-but-opas-typed (id 342 Mediobanca, id 344 Banca
+   Pop Sondrio)** → stay `suspect_mixed` in 02d. Reclassification
+   to a dedicated `share_swap_pure` enum value = **02e scope**
+   (will require an enum migration in 02e).
+4. **Banca Sistema duplicate (id 335 / id 326)** → `suspect_mixed`
+   in 02d. 02e decides which is the representative row /
+   `verified_mixed`.
+5. **No migration in 02d**. Confirmed. All 4 target flags exist
+   in the current enum + CHECK constraint (migration 0015).
 
-## STOP — checkpoint
+## Implementation gate
 
-End of 02d Step 0 per brief. No promotion script written. No
-migration drafted. Awaiting user validation on the 4 open
-questions and the categorization table before implementing.
+Step 0 closed. Proceeding to:
+- 02d-B: `scripts/promote_consob_flags_02d.py` + tests
+- 02d-C: dry-run → `data/audits/p92_02d_promotion_results.csv`
+  for per-deal validation
+- Post-validation: apply mode + score invalidation + atomic
+  commits + PR.
