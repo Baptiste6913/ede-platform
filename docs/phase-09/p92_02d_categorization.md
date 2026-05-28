@@ -3,14 +3,23 @@
 Source: `data/audits/p92_02d_consob_full.csv` (snapshot 2026-05-28),
 HEAD migration `0015`.
 
-Categorization rules (per 02d Step 0 brief):
+Categorization rules (per 02d Step 0 brief, **updated 2026-05-28
+with user decisions**):
 
-| Category | Source criterion | Target flag |
-|---|---|---|
-| PROMOTABLE | `offer_price` in bounds `[0.01, 10 000]` AND `deal_type ∈ {opa_*}` (cash-type) | `verified_cash` |
-| MIXED | `deal_type = opas` (mixed cash + share leg) — regardless of NULL/non-NULL price | `suspect_mixed` (final treatment in 02e) |
-| OUTLIER | `offer_price` outside bounds | `failed_validation` |
-| MANUAL_REVIEW | `offer_price IS NULL` AND `deal_type ∈ {opa_*}` (extraction failed) | `manual_review` |
+| # | Rule order (first match wins) | Source criterion | Target flag |
+|---|---|---|---|
+| 1 | MIXED first | `deal_type = opas` (any price state) | `suspect_mixed` (final split in 02e) |
+| 2 | MANUAL_REVIEW (NULL) | `offer_price IS NULL` AND `deal_type ∈ {opa_*}` | `manual_review` |
+| 3 | MANUAL_REVIEW (broken upstream) | `target_name = '[pending parse]'` (ingestion partial — price integrity not guaranteed) | `manual_review` |
+| 4 | OUTLIER | `offer_price` outside `[0.01, 10 000]` | `failed_validation` |
+| 5 | PROMOTABLE (default) | else | `verified_cash` |
+
+**`statistical_outlier` trace column**: marked `True` on PROMOTABLE
+deals where `offer_price > p95 × 3 = 35.73 × 3 ≈ 107.19 €`. Only
+Health Italia (id 334, 300 €) hits this in the current corpus.
+The flag is informational only; promotion still occurs. Lets
+Phase-8 / scoring downstream surface the row for review without
+holding back the trade signal.
 
 All four target flags already exist in
 `src.core.enums.OFFER_PRICE_QUALITY_FLAGS`. **No migration required for
@@ -23,7 +32,7 @@ All four target flags already exist in
 | 1037 | Beghelli Spa | opa_Beghelli_20250314 | 0.3375 | opa_obligatoire | PROMOTABLE | verified_cash |
 | 343 | Bialetti Spa | opa_bialetti_20250707 | 0.467 | opa_obligatoire | PROMOTABLE | verified_cash |
 | 1044 | CIR Spa | opa_cir_20241125 | 0.61 | opa_volontaire_parziale | PROMOTABLE | verified_cash |
-| 327 | [pending parse] | opa_cir_20260427 | 0.68 | opa_volontaire_parziale | PROMOTABLE | verified_cash ⚠ tgt_name |
+| 327 | [pending parse] | opa_cir_20260427 | 0.68 | opa_volontaire_parziale | MANUAL_REVIEW | manual_review (tgt_name broken) |
 | 1054 | Capitolium Srl | opa_vianini_20240708 | 0.86 | opa_volontaire_totalitaria | PROMOTABLE | verified_cash |
 | 346 | Il Sole 24 Ore Spa | Opa_IlSole24Ore_20250603 | 1.10 | opa_volontaire_totalitaria | PROMOTABLE | verified_cash |
 | 347 | Illimity Bank Spa | opa_illimity_20250519 | 1.414 | **opas** | MIXED | suspect_mixed |
@@ -44,7 +53,7 @@ All four target flags already exist in
 | 1041 | NVP Spa | Opa_NPV_20250210 | 3.90 | opa_volontaire_totalitaria | PROMOTABLE | verified_cash |
 | 340 | Almawave Spa | opa_almawave_20251117 | 4.30 | opa_volontaire_totalitaria | PROMOTABLE | verified_cash |
 | 330 | Solutions Capital Management Sim Spa | opa_banco_desio_20260330 | 4.61 | opa_volontaire_totalitaria | PROMOTABLE | verified_cash |
-| 333 | [pending parse] | opa_antares_20260216 | 5.00 | opa_obligatoire | PROMOTABLE | verified_cash ⚠ tgt_name |
+| 333 | [pending parse] | opa_antares_20260216 | 5.00 | opa_obligatoire | MANUAL_REVIEW | manual_review (tgt_name broken) |
 | 341 | Palingeo | opa_palingeo_20251027 | 6.00 | opa_obligatoire | PROMOTABLE | verified_cash |
 | 1057 | Civitanavi Systems Spa | opa_Civitanavi_Systems_20240527 | 6.17 | opa_volontaire_totalitaria | PROMOTABLE | verified_cash |
 | 1038 | Anima Holding Spa | opa_anima_20250317 | 7.00 | opa_volontaire_totalitaria | PROMOTABLE | verified_cash |
@@ -60,7 +69,7 @@ All four target flags already exist in
 | 1055 | Medica Spa | opa_medica_20240701 | 27.00 | opa_volontaire_totalitaria | PROMOTABLE | verified_cash |
 | 328 | Digital Value Spa | opa_danzic_20260424 | 29.00 | opa_obligatoire | PROMOTABLE | verified_cash |
 | 339 | Ala Spa | opa_ala_20251201 | 36.08 | opa_obligatoire | PROMOTABLE | verified_cash |
-| 334 | Health Italia Spa | opa_health_italia_20260409 | 300.00 | opa_obligatoire | PROMOTABLE | verified_cash ⚠ edge |
+| 334 | Health Italia Spa | opa_health_italia_20260409 | 300.00 | opa_obligatoire | PROMOTABLE | verified_cash + `statistical_outlier=True` |
 | 1034 | Banco BPM Spa | ops_Banco_BPM_20250428 | **3 828 060 000** | **opas** | OUTLIER | failed_validation |
 | 342 | Mediobanca-Banca di Credito Finanziario Spa | ops_montepaschi_20250714 | NULL | **opas** | MIXED | suspect_mixed ⚠ ops |
 | 344 | Banca Popolare di Sondrio S | ops_Banca_Popolare_Sondrio_20250616 | NULL | **opas** | MIXED | suspect_mixed ⚠ ops |
@@ -70,15 +79,20 @@ All four target flags already exist in
 
 Total: 47 / 47 categorized.
 
-## Category counts
+## Category counts (post user-decisions 2026-05-28)
 
-| Category | Target flag | Count |
-|---|---|---|
-| PROMOTABLE | `verified_cash` | **37** |
-| MIXED | `suspect_mixed` | 6 (4 with price in bounds + 2 NULL OPAS/OPS) |
-| OUTLIER | `failed_validation` | 1 (Banco BPM 3.8B €/share) |
-| MANUAL_REVIEW | `manual_review` | 3 (Piovan + morif + Comal) |
-| **Total** | | **47** ✓ |
+| Category | Target flag | Count | Composition |
+|---|---|---|---|
+| PROMOTABLE | `verified_cash` | **35** | 34 normal + 1 with `statistical_outlier=True` (Health Italia 300 €) |
+| MIXED | `suspect_mixed` | 6 | 4 OPAS priced in bounds + 2 OPS-prefixed NULL |
+| OUTLIER | `failed_validation` | 1 | Banco BPM 3.828 B €/share (controvalore mis-parsed) |
+| MANUAL_REVIEW | `manual_review` | 5 | 3 NULL extraction (Piovan, morif, Comal) + 2 `[pending parse]` upstream (id 327 CIR, id 333 Antares) |
+| **Total** | | **47 ✓** | |
+
+Net delta vs the pre-decision count (37/6/1/3 = 47):
+- −2 from PROMOTABLE (the two `[pending parse]` rows)
+- +2 to MANUAL_REVIEW (same two)
+- `statistical_outlier=True` annotation added to Health Italia (still PROMOTABLE).
 
 ## Edge cases identified
 
