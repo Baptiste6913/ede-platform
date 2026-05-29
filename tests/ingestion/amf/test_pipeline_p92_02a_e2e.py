@@ -1,12 +1,18 @@
 """P9.2 02a end-to-end pipeline integration — parser → service → DB.
 
-These tests exercise the full chain `extract_pdf_metadata` ->
-`upsert_deal_from_bdif` the way `BdifPoller.run_once` does (poller.py:113-127),
-so the wiring shipped in commit #2 cannot break silently for the live poll.
-Unlike the per-method tests in test_service_p92_02a.py, the first two cases
-parse real PDFs from the sample (TIPIAK + BALYO) to prove the integration
-end-to-end. The remaining cases inject a fabricated `ParsedMetadata` to drive
-paths (outlier / pre-existing flag) that have no naturally-occurring fixture.
+These tests exercise the full chain `_extract_first_price` →
+`ParsedMetadata` → `upsert_deal_from_bdif` → DB the way
+`BdifPoller.run_once` does (poller.py:113-127), so the wiring shipped in
+commit #2 cannot break silently for the live poll.
+
+Cases (a) and (b) read REAL corpus text from
+``tests/fixtures/p92_02a/*_excerpt.txt`` (TIPIAK 224C0830 cover-clause + BALYO
+226C0020 cover page) and run the production parser on it. The source PDFs are
+gitignored — the fixtures are the minimal text chunks needed to reproduce the
+parser output on CI. Pattern mirrors ``tests/fixtures/p91a/*_excerpt.txt``
+(BaFin P9.1a). The remaining cases inject a fabricated `ParsedMetadata`
+directly to drive paths (outlier, pre-existing flag) that have no
+naturally-occurring fixture.
 """
 
 from __future__ import annotations
@@ -25,7 +31,7 @@ from src.ingestion.amf.bdif_api import (
     BdifItem,
     BdifSociete,
 )
-from src.ingestion.amf.parser import ParsedMetadata, extract_pdf_metadata
+from src.ingestion.amf.parser import ParsedMetadata, _extract_first_price
 from src.ingestion.amf.service import (
     PARSER_VERSION_02A,
     upsert_deal_from_bdif,
@@ -36,9 +42,27 @@ if TYPE_CHECKING:
 
 pytestmark = pytest.mark.integration
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
-FIXTURE_TIPIAK_PDF = REPO_ROOT / "data" / "pdfs" / "fr" / "2024" / "224C0830.pdf"
-FIXTURE_BALYO_PDF = REPO_ROOT / "data" / "pdfs" / "fr" / "2026" / "226C0020.pdf"
+FIXTURES_DIR = Path(__file__).resolve().parents[2] / "fixtures" / "p92_02a"
+
+
+def _md_from_excerpt(name: str) -> ParsedMetadata:
+    """Read a tracked excerpt and run the production parser on it, returning
+    a `ParsedMetadata` shaped exactly like `extract_pdf_metadata` would. The
+    test then feeds that into `upsert_deal_from_bdif`, so the parser →
+    service → DB chain is exercised end-to-end on real corpus text without
+    shipping the binary PDFs to CI.
+    """
+    text = (FIXTURES_DIR / name).read_text(encoding="utf-8")
+    price, currency = _extract_first_price(text)
+    return ParsedMetadata(
+        deal_type="opa",
+        target_name=None,
+        acquirer_name=None,
+        announcement_date=date(2026, 5, 12),
+        offer_price=price,
+        currency=currency,
+        raw_text_sample=text[:1024],
+    )
 
 
 def _bdif(numero: str, target: str = "TARGET") -> BdifItem:
@@ -74,22 +98,20 @@ def _md(price: Decimal | None, *, currency: str | None = "EUR") -> ParsedMetadat
     )
 
 
-# ---------------- (a) real PDF, extractable price ----------------
+# ---------------- (a) real corpus text, extractable price ----------------
 
 
 async def test_e2e_new_deal_with_pdf_extractable_price(db_session: AsyncSession) -> None:
-    """TIPIAK 224C0830 — real PDF, 'prix unitaire de 82 €'. End-to-end:
-    parser extracts 82, service classifies verified_cash, deal lands at
-    parser_version=2."""
-    assert FIXTURE_TIPIAK_PDF.is_file(), "fixture missing: TIPIAK 224C0830.pdf"
-
-    pdf_md = extract_pdf_metadata(FIXTURE_TIPIAK_PDF)
+    """TIPIAK 224C0830 — real corpus text containing 'prix unitaire de 82 €'.
+    End-to-end: parser extracts 82, service classifies verified_cash, deal
+    lands at parser_version=2."""
+    pdf_md = _md_from_excerpt("tipiak_224C0830_excerpt.txt")
     assert pdf_md.offer_price == Decimal("82")  # sanity on the parser leg
 
     result = await upsert_deal_from_bdif(
         db_session,
         _bdif("224C0830", "TIPIAK"),
-        pdf_path=FIXTURE_TIPIAK_PDF,
+        pdf_path=None,
         pdf_metadata=pdf_md,
     )
     assert result.created is True
@@ -99,27 +121,23 @@ async def test_e2e_new_deal_with_pdf_extractable_price(db_session: AsyncSession)
     assert deal.currency == "EUR"
     assert deal.offer_price_quality_flag == "verified_cash"
     assert deal.parser_version == PARSER_VERSION_02A
-    assert deal.pdf_path == str(FIXTURE_TIPIAK_PDF)
 
 
-# ---------------- (b) real PDF, parser silent ----------------
+# ---------------- (b) real corpus text, parser silent ----------------
 
 
 async def test_e2e_new_deal_with_pdf_no_price(db_session: AsyncSession) -> None:
-    """BALYO 226C0020 — real PDF without an extractable price (a 'complement
-    a D&I' with no offer clause in the first 5 pages). End-to-end:
-    parser returns None, service classifies suspect_low_unverified, deal
-    still lands at parser_version=2 so the backfill query excludes it next
-    run."""
-    assert FIXTURE_BALYO_PDF.is_file(), "fixture missing: BALYO 226C0020.pdf"
-
-    pdf_md = extract_pdf_metadata(FIXTURE_BALYO_PDF)
+    """BALYO 226C0020 — real corpus text (cover page of a 'complement à D&I'
+    without an offer clause). End-to-end: parser returns None, service
+    classifies suspect_low_unverified, deal still lands at parser_version=2
+    so the backfill query excludes it next run."""
+    pdf_md = _md_from_excerpt("balyo_226C0020_excerpt.txt")
     assert pdf_md.offer_price is None  # sanity on the parser leg
 
     result = await upsert_deal_from_bdif(
         db_session,
         _bdif("226C0020", "BALYO"),
-        pdf_path=FIXTURE_BALYO_PDF,
+        pdf_path=None,
         pdf_metadata=pdf_md,
     )
     assert result.created is True
