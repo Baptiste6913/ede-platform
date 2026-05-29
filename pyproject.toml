@@ -120,6 +120,11 @@ ignore = [
 "scripts/refit_p91c.py" = ["E402", "N806", "PLR0915"]
 # Variance probe (P9.1c-[G-3.5a]): same shape as refit_p91c.py.
 "scripts/variance_check_p91c.py" = ["E402", "PLR0915"]
+# P9.2 02a Step 0 extended dry-run: sys.path bootstrap (E402), typographic
+# apostrophes in normalisation literals (RUF001), audit-classifier branch
+# count exceeds the default 6 (PLR0911), deterministic-seeded random.Random
+# for sampling reproducibility (S311 false positive — non-cryptographic use).
+"scripts/p92_02a_dryrun_extended.py" = ["E402", "PLR0911", "RUF001", "S311"]
 
 [tool.ruff.format]
 quote-style = "double"

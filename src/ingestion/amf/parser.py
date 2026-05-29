@@ -61,9 +61,21 @@ TITLE_TO_DEAL_TYPE: Final[dict[str, str]] = {
 # "OPA visant les actions… (offre obligatoire)" or "Note d'information OPRO".
 _MANDATORY_HINT = re.compile(r"\b(obligatoire|mandatory)\b", re.IGNORECASE)
 
-# French monetary literal: "28,50 €", "12,10 EUR", "5.20 €" (with dot).
+# French monetary literal. P9.2 02a: decimals are optional (integer prices like
+# "28 €" or "10 000 €" must match) and the thousands separator now accepts any
+# whitespace incl. NBSP (was a broken `[ \\xa0\.]` char class that matched the
+# literal chars `\`, `x`, `a`, `0`, not the U+00A0 non-breaking space).
 _PRICE_REGEX = re.compile(
-    r"(?P<amount>\d{1,3}(?:[ \\xa0\.]\d{3})*[,\.]\d{2,4})\s*" r"(?P<currency>€|EUR|CHF|GBP|USD)",
+    r"(?P<amount>\d{1,3}(?:[\s.]\d{3})*(?:[,\.]\d{1,4})?)\s*" r"(?P<currency>€|EUR|CHF|GBP|USD)",
+    re.IGNORECASE,
+)
+
+# P9.2 02a: par-value / nominal-value exclusion. Mirror of the BaFin
+# Grundkapital guard (P9.1a): a price preceded within ~80 chars by "valeur
+# nominale" / "nominale unitaire" / "nominal" is the OCEANE par value, not the
+# offer price (SELECTIRENTE 218C2043 case). Skip the match and continue.
+_NOMINAL_VALUE_RE = re.compile(
+    r"valeur\s+nominale|nominale?\s+unitaire|nominal",
     re.IGNORECASE,
 )
 
@@ -271,22 +283,31 @@ def _extract_first_date(text: str) -> date | None:
 
 
 def _extract_first_price(text: str) -> tuple[Decimal | None, str | None]:
-    """First (amount, currency) pair in the text."""
-    m = _PRICE_REGEX.search(text)
-    if not m:
-        return (None, None)
-    raw = m.group("amount").replace("\\xa0", "").replace(" ", "").replace(",", ".")
-    # If there are >1 dots, treat the last one as decimal separator.
-    if raw.count(".") > 1:
-        head, _, tail = raw.rpartition(".")
-        raw = head.replace(".", "") + "." + tail
-    try:
-        amount = Decimal(raw)
-    except InvalidOperation:
-        return (None, None)
-    cur_raw = m.group("currency").upper()
-    currency = "EUR" if cur_raw == "€" else cur_raw
-    return (amount, currency)
+    """First (amount, currency) pair in the text, skipping nominal-value matches.
+
+    P9.2 02a: iterates instead of single-search so a match preceded within ~80
+    chars by 'valeur nominale' / 'nominale unitaire' (OCEANE par value, not the
+    offer price) is skipped and the next candidate is considered. Mirrors the
+    BaFin Grundkapital exclusion (P9.1a).
+    """
+    for m in _PRICE_REGEX.finditer(text):
+        amount_start = m.start("amount")
+        preceding = text[max(0, amount_start - 80) : amount_start]
+        if _NOMINAL_VALUE_RE.search(preceding):
+            continue
+        raw = re.sub(r"\s", "", m.group("amount")).replace(",", ".")
+        # If there are >1 dots, treat the last one as decimal separator.
+        if raw.count(".") > 1:
+            head, _, tail = raw.rpartition(".")
+            raw = head.replace(".", "") + "." + tail
+        try:
+            amount = Decimal(raw)
+        except InvalidOperation:
+            continue
+        cur_raw = m.group("currency").upper()
+        currency = "EUR" if cur_raw == "€" else cur_raw
+        return (amount, currency)
+    return (None, None)
 
 
 __all__ = [

@@ -27,6 +27,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from src.core.db import get_sessionmaker
 from src.core.settings import get_settings
+from src.ingestion.amf import parser as amf_parser
 from src.ingestion.amf.bdif_api import BdifApiClient, BdifItem
 from src.ingestion.amf.rate_limiter import RateLimiter, retry_with_backoff
 from src.ingestion.amf.service import upsert_deal_from_bdif
@@ -109,7 +110,17 @@ class BdifPoller:
                 elif item.first_pdf is not None:
                     pdf_fail += 1
 
-                result = await upsert_deal_from_bdif(session, item, pdf_path=pdf_path)
+                # P9.2 02a: parse the PDF when present so the service can
+                # populate offer_price / quality flag on insert. Mirrors the
+                # Consob poller (poller.py:165) and BaFin poller patterns.
+                pdf_md = amf_parser.extract_pdf_metadata(pdf_path) if pdf_path is not None else None
+
+                result = await upsert_deal_from_bdif(
+                    session,
+                    item,
+                    pdf_path=pdf_path,
+                    pdf_metadata=pdf_md,
+                )
                 if result.created:
                     created += 1
                 else:
