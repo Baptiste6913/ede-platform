@@ -31,9 +31,24 @@ if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
 
     from src.ingestion.amf.bdif_api import BdifItem
+    from src.ingestion.amf.parser import ParsedMetadata
     from src.ingestion.amf.rss_watcher import RssItem
 
 _log = structlog.get_logger(__name__)
+
+# Phase 9.2 02a — AMF-specific offer-price bound.
+# Lower 0.01: matches Consob (sub-unit prices like SOCIETE DE TAYNINH 0,11 €
+# stay verified). Upper 100_000: accommodates retraits on radiated small-caps
+# (LV GROUP 222C0375 at 10 000 € / share, Finexsi-validated) while still
+# rejecting OCEANE controvalore artefacts (101 382 €, NBSP-bug class). The
+# 80-deal audit sample shows 0 legitimate deals above this ceiling.
+PRICE_LOWER_AMF = Decimal("0.01")
+PRICE_UPPER_AMF = Decimal("100000")
+
+# Parser revision stamped on every deal whose offer_price is set by this
+# pipeline. Mirrors the BaFin PARSER_VERSION pattern (P9.1a) — bump on every
+# parser change so backfills can target stale rows.
+PARSER_VERSION_02A = 2
 
 
 @dataclass(frozen=True, slots=True)
@@ -53,13 +68,47 @@ class EventResult:
     reason: Literal["created", "duplicate", "unmatched", "no_ref"] = "unmatched"
 
 
+def _derive_quality_flag(md: ParsedMetadata | None) -> str:
+    """Map a parsed metadata to the canonical offer_price_quality_flag.
+
+    P9.2 02a (Option A — helper lives in the service, parser untouched):
+
+    - ``md.offer_price is None`` → ``suspect_low_unverified`` (parser silent;
+      the default flag, same value as the migration-0015 server default so
+      backfills can detect "never re-parsed" rows).
+    - ``md.offer_price`` outside the AMF bound → ``failed_validation`` (the
+      extraction caught an OCEANE controvalore, a dividend, or a similar
+      artefact — the value is real but does not represent the offer price).
+    - ``md.offer_price`` inside the bound → ``verified_cash``.
+    """
+    if md is None or md.offer_price is None:
+        return "suspect_low_unverified"
+    if md.offer_price < PRICE_LOWER_AMF or md.offer_price > PRICE_UPPER_AMF:
+        return "failed_validation"
+    return "verified_cash"
+
+
 async def upsert_deal_from_bdif(
     session: AsyncSession,
     bdif_item: BdifItem,
     *,
     pdf_path: Path | None,
+    pdf_metadata: ParsedMetadata | None = None,
 ) -> UpsertResult:
-    """Create or refresh the `Deal` corresponding to a BDIF item."""
+    """Create or refresh the `Deal` corresponding to a BDIF item.
+
+    P9.2 02a wiring:
+
+    - **New deals** populate ``offer_price``, ``currency``,
+      ``offer_price_quality_flag`` (via :func:`_derive_quality_flag`) and
+      ``parser_version`` from ``pdf_metadata`` when available.
+    - **Existing deals** are back-filled **only** when their current
+      ``offer_price_quality_flag`` is still ``suspect_low_unverified`` (the
+      migration-0015 default — meaning "never re-parsed"). Already-promoted
+      flags (``verified_cash``, ``failed_validation``, etc.) are never
+      overwritten — idempotence guard. ``pdf_path`` continues to be promoted
+      independently when it was missing.
+    """
     if not bdif_item.numero:
         raise ValueError("BdifItem.numero is required (canonical regulator_ref)")
 
@@ -71,13 +120,32 @@ async def upsert_deal_from_bdif(
     ).scalar_one_or_none()
 
     if existing is not None:
+        mutated = False
         # Promote pdf_path if we just downloaded the PDF for an existing
         # rss-only event-shell or a previous BDIF run that failed mid-way.
         if pdf_path is not None and not existing.pdf_path:
             existing.pdf_path = str(pdf_path)
+            mutated = True
+        # Idempotent back-fill: only touch rows still at the default flag so
+        # a re-run never overwrites a previously-promoted price (verified_cash,
+        # failed_validation, etc.).
+        if (
+            pdf_metadata is not None
+            and existing.offer_price_quality_flag == "suspect_low_unverified"
+        ):
+            existing.offer_price = pdf_metadata.offer_price
+            existing.currency = pdf_metadata.currency or existing.currency or "EUR"
+            existing.offer_price_quality_flag = _derive_quality_flag(pdf_metadata)
+            existing.parser_version = PARSER_VERSION_02A
+            mutated = True
+        if mutated:
             await session.commit()
         _log.info("amf.bdif.upsert.skipped", ref=ref, deal_id=existing.id)
         return UpsertResult(deal_id=existing.id, created=False)
+
+    offer_price = pdf_metadata.offer_price if pdf_metadata is not None else None
+    currency = (pdf_metadata.currency if pdf_metadata is not None else None) or "EUR"
+    quality_flag = _derive_quality_flag(pdf_metadata)
 
     deal = Deal(
         juridiction="FR",
@@ -87,7 +155,10 @@ async def upsert_deal_from_bdif(
         announcement_date=bdif_item.announcement_date or date.today(),
         deal_type=bdif_item.deal_type or "opa",
         status="announced",
-        currency="EUR",
+        offer_price=offer_price,
+        currency=currency,
+        offer_price_quality_flag=quality_flag,
+        parser_version=PARSER_VERSION_02A,
         source_url=_make_bdif_source_url(bdif_item),
         pdf_path=str(pdf_path) if pdf_path else None,
     )
@@ -217,6 +288,9 @@ def _bdif_event_payload(bdif_item: BdifItem, *, has_document: bool) -> dict[str,
 # longer used since BDIF doesn't expose price in the API; price is extracted
 # from the PDF by the analyst/parser layer later (phase 6).
 __all__ = [
+    "PARSER_VERSION_02A",
+    "PRICE_LOWER_AMF",
+    "PRICE_UPPER_AMF",
     "Decimal",
     "EventResult",
     "UpsertResult",

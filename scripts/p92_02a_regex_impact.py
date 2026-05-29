@@ -45,8 +45,7 @@ OUT_CSV = REPO / "data" / "audits" / "p92_02a_regex_impact_before_after.csv"
 # 4 literal characters `\`, `x`, `a`, `0` — that is the documented bug. The
 # `[,\.]\d{2,4}` decimal portion is mandatory — the second documented bug.
 _REGEX_OLD = re.compile(
-    r"(?P<amount>\d{1,3}(?:[ \\xa0\.]\d{3})*[,\.]\d{2,4})\s*"
-    r"(?P<currency>€|EUR|CHF|GBP|USD)",
+    r"(?P<amount>\d{1,3}(?:[ \\xa0\.]\d{3})*[,\.]\d{2,4})\s*" r"(?P<currency>€|EUR|CHF|GBP|USD)",
     re.IGNORECASE,
 )
 
@@ -58,8 +57,7 @@ _REGEX_OLD = re.compile(
 #   matches integer prices ("88 EUR") and decimal prices with 1-4 fractional
 #   digits.
 _REGEX_NEW = re.compile(
-    r"(?P<amount>\d{1,3}(?:[\s .]\d{3})*(?:[,\.]\d{1,4})?)\s*"
-    r"(?P<currency>€|EUR|CHF|GBP|USD)",
+    r"(?P<amount>\d{1,3}(?:[\s .]\d{3})*(?:[,\.]\d{1,4})?)\s*" r"(?P<currency>€|EUR|CHF|GBP|USD)",
     re.IGNORECASE,
 )
 
@@ -138,7 +136,7 @@ def main() -> None:
             continue
         try:
             text = _read_pdf_text(pdf, max_pages=5)
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             rows.append(
                 {
                     "deal_id": s["deal_id"],
