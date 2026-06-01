@@ -139,10 +139,24 @@ def _build_excerpt_for_case(
     true_decimal = Decimal(true_price.replace(",", "."))
     target_legacy = stored_decimal if kind == "fp" else true_decimal
 
+    # For FP cases the excerpt must EXTRACT the stored wrong value with the
+    # legacy parser AND CONTAIN the engagement-clause "s'engage" verb anywhere
+    # before the true_price location — otherwise no fix can ever flip the test
+    # to green on the excerpt alone. False-alarm cases need only the legacy to
+    # return the true value.
+    needs_engage_verb = kind == "fp"
     for half_window in (400, 600, 900, 1300, 2000, 3000, 5000):
         excerpt = _excerpt(text, center, half_window)
         got = _legacy_extracts(excerpt)
-        if got == target_legacy:
+        if got != target_legacy:
+            continue
+        if not needs_engage_verb:
+            return excerpt, half_window * 2
+        # Need an engagement verb somewhere in the excerpt for the Step 1b fix
+        # to have anything to anchor on. Accept either "s'engage" (any
+        # conjugation) or the bare "s'engag" stem.
+        has_engage = re.search(r"s['\u2019]\s*engag", excerpt, re.IGNORECASE) is not None
+        if has_engage:
             return excerpt, half_window * 2
     # Last resort: ship the largest excerpt and let the test reveal the gap.
     excerpt = _excerpt(text, center, 5000)
