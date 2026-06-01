@@ -132,6 +132,31 @@ _ENGAGEMENT_CLAUSE = re.compile(
     re.IGNORECASE,
 )
 
+# P9.2 02b Step 1c — pure surenchère anchor. Targets the AMF filings that
+# announce a raised price WITHOUT restating the "s'engage à acquérir" clause
+# (so the engagement-clause anchor above doesn't fire). Canonical
+# formulations observed on MEDIA 6 226C0661 / 226C0645:
+#   "le prix d'offre libellé initialement au prix de 9,69 € par action
+#    était rehaussé au prix de 9,89 € par action"
+# and NHOA 224C1861:
+#   "les actions sont visées dorénavant au prix unitaire de 1,25 €
+#    au lieu de 1,10 €"
+#
+# The keyword (rehaussé / relevé / modifié / "visées dorénavant") MUST be
+# followed by "au prix [unitaire ][de ]X €" within 100 chars. The "au prix"
+# anchor prevents matches in unrelated occurrences of the keyword (e.g.
+# "le seuil relevé est de 30 %") and lets us pick the NEW price even when
+# the OLD price (introduced by "au lieu de" / "initialement") appears
+# earlier in the same sentence.
+_SURENCHERE_RAISED = re.compile(
+    "(?:rehauss[ée]|relev[ée]|modifi[ée]|vis[ée]es?\\s+dor[ée]navant)"
+    "[\\s\\S]{0,100}?"
+    "au\\s+prix\\s+(?:unitaire\\s+)?(?:de\\s+)?"
+    "(?P<amount>\\d{1,3}(?:[\\s.\\xa0]\\d{3})*(?:[,.]\\d{1,4})?)"
+    "\\s*(?:€|euros?)",
+    re.IGNORECASE,
+)
+
 # Date: "12 septembre 2024" or "12/09/2024" or "2024-09-12".
 _FR_MONTHS: Final[dict[str, int]] = {
     "janvier": 1,
@@ -372,16 +397,24 @@ def _extract_offer_price(text: str) -> tuple[Decimal | None, str | None, OfferPr
        template restates the cum-div price in the principal clause and the
        ex-div alternate sits in a footnote.
 
-    2. ``FALLBACK_FIRST_MATCH`` — legacy path. First ``X €`` match in the
+    2. ``SURENCHERE_RAISED`` — pure-surenchère filings without an engagement
+       clause (`rehaussé au prix de X €`, `visées dorénavant au prix de X €`).
+       Triggers only when step 1 misses (CFI / NHOA 224C2193 / TRAVEL TECH
+       restate `s'engage à acquérir au prix relevé/modifié de X €` and are
+       handled by step 1 ahead of this anchor — so this step never overrides
+       a valid engagement clause).
+
+    3. ``FALLBACK_FIRST_MATCH`` — legacy path. First ``X €`` match in the
        text, skipping anything preceded within 80 chars by a nominal-value
        marker (P9.1a BaFin Grundkapital guard, ported in P9.2 02a for the
        OCEANE par-value case SELECTIRENTE 218C2043).
 
-    3. ``NO_MATCH`` — no euro amount in the text.
+    4. ``NO_MATCH`` — no euro amount in the text.
 
-    Steps 1c/1d/1e/1f will plug additional anchors for SURENCHERE,
-    DIVIDEND_TRAP, OCEANE/BSA and the multi-bullet formulation; each new
-    anchor is inserted ahead of the legacy fallback in priority order.
+    Steps 1d/1e/1f (DIVIDEND_TRAP / OCEANE_BSA / multi-bullet) turned out
+    to be redundant with the engagement-clause anchor on the 02b corpus
+    and were not implemented — every case in those classes carries a
+    clean engagement clause that step 1 picks up correctly.
     """
     # Step 1: engagement clause anchor.
     ec_match = _ENGAGEMENT_CLAUSE.search(text)
@@ -390,7 +423,14 @@ def _extract_offer_price(text: str) -> tuple[Decimal | None, str | None, OfferPr
         if amount is not None:
             return amount, "EUR", OfferPriceSource.ENGAGEMENT_CLAUSE
 
-    # Step 2: legacy first-match fallback, with the P9.2 02a nominal-value guard.
+    # Step 2: surenchère anchor (no engagement verb in the PDF).
+    sur_match = _SURENCHERE_RAISED.search(text)
+    if sur_match is not None:
+        amount = _normalise_amount(sur_match.group("amount"))
+        if amount is not None:
+            return amount, "EUR", OfferPriceSource.SURENCHERE_RAISED
+
+    # Step 3: legacy first-match fallback, with the P9.2 02a nominal-value guard.
     for m in _PRICE_REGEX.finditer(text):
         amount_start = m.start("amount")
         preceding = text[max(0, amount_start - 80) : amount_start]
