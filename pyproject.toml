@@ -131,6 +131,9 @@ ignore = [
 # P11 Step 3 backfill: sys.path bootstrap (E402), linear md writer + main()
 # orchestration (PLR0915), broad except in the per-deal audit loop (BLE001).
 "scripts/p11_full_backfill.py" = ["E402", "PLR0915", "BLE001"]
+# P12 V2 retrain: sys.path bootstrap (E402), linear md writer (PLR0915), sklearn
+# X uppercase convention (N806).
+"scripts/p12_retrain_v2.py" = ["E402", "PLR0915", "N806", "PLR2004"]
 
 [tool.ruff.format]
 quote-style = "double"
