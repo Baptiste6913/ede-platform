@@ -134,6 +134,9 @@ ignore = [
 # P12 V2 retrain: sys.path bootstrap (E402), linear md writer (PLR0915), sklearn
 # X uppercase convention (N806).
 "scripts/p12_retrain_v2.py" = ["E402", "PLR0915", "N806", "PLR2004"]
+# P12b Growth cross-check: sys.path bootstrap (E402), broad except around
+# yfinance .info (BLE001), ✅/❌ status glyphs in the audit md (RUF001).
+"scripts/p12b_growth_crosscheck_preflight.py" = ["E402", "BLE001", "RUF001"]
 
 [tool.ruff.format]
 quote-style = "double"
