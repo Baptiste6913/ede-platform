@@ -47,6 +47,8 @@ data/*.sqlite
 # directory and the negations below can re-include the per-phase folders.
 artifacts/*
 !artifacts/phase-*/
+# Resolver disk cache lives under a tracked phase folder — re-ignore the blob.
+artifacts/phase-*/openfigi_cache.json
 
 # --- Notebooks intermediates ---
 *.ipynb_checkpoints/

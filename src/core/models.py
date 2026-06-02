@@ -156,6 +156,20 @@ class Deal(Base):
         server_default="parser_only",
     )
 
+    # Phase 11 — reference-price provenance for the premium_pct backfill
+    # (migration 0016). premium_pct itself is the pre-existing Numeric(7,4)
+    # column above, stored as a fraction. ticker_resolution_flag records the
+    # OpenFIGI resolution / backfill outcome (home_venue, home_venue_growth,
+    # venue_fallback, no_match, unknown_exch, no_price_data,
+    # premium_out_of_bounds, manual_review).
+    reference_price_at_announcement: Mapped[Decimal | None] = mapped_column(
+        Numeric(12, 4), nullable=True
+    )
+    reference_price_source: Mapped[str | None] = mapped_column(Text, nullable=True)
+    reference_price_target_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    reference_price_effective_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    ticker_resolution_flag: Mapped[str | None] = mapped_column(Text, nullable=True)
+
     # Phase 6 scoring V1 ground-truth label (migration 0009).
     completion_label: Mapped[int | None] = mapped_column(
         Integer,  # SMALLINT in SQL; ORM uses Integer.

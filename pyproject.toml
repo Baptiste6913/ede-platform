@@ -125,6 +125,12 @@ ignore = [
 # count exceeds the default 6 (PLR0911), deterministic-seeded random.Random
 # for sampling reproducibility (S311 false positive — non-cryptographic use).
 "scripts/p92_02a_dryrun_extended.py" = ["E402", "PLR0911", "RUF001", "S311"]
+# P11 Step 2 OpenFIGI sample test: sys.path bootstrap (E402), linear narrative
+# markdown writer (PLR0915).
+"scripts/p11_sample_openfigi_test.py" = ["E402", "PLR0915"]
+# P11 Step 3 backfill: sys.path bootstrap (E402), linear md writer + main()
+# orchestration (PLR0915), broad except in the per-deal audit loop (BLE001).
+"scripts/p11_full_backfill.py" = ["E402", "PLR0915", "BLE001"]
 
 [tool.ruff.format]
 quote-style = "double"
