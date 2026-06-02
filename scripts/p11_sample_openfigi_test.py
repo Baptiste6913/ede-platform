@@ -62,13 +62,16 @@ P10_WRONG_TICKER_FPS = 2
 # The two wrong-ticker false positives Phase 10 produced via bare-ISIN yfinance.
 P10_FP_REFS = {"224C2186": "CLASQUIN +10405%", "224C0763": "COVIVIO HOTELS -77%"}
 # Phase-11 outcome per FP, after manual verification of the resolved security
-# (the resolver cannot self-certify ticker identity). Neither emitted a
-# wrong-security ticker → WRONG_TICKER_FPS_P11 = 0.
+# (the resolver cannot self-certify ticker identity). Post-Step-2.5 the Growth
+# heuristic reintroduced one gate-caught FP (CLASQUIN → ALCLA.PA = Claranova).
 P11_FP_OUTCOME: dict[str, str] = {
     "224C2186": (
-        "REFUSED (no ticker emitted). CLASQUIN lists on Euronext Growth (ALCLA), "
-        "an exchCode class (XS) not yet mapped, so the resolver returned "
-        "`unknown_exch` rather than a wrong ticker — the +10405 % garbage is gone."
+        "STILL WRONG (post-Step-2.5, gate-caught). The Growth mapping now emits "
+        "`ALCLA.PA` (XS, currency-stripped from ALCLAEUR) — but `ALCLA.PA` is "
+        "*Claranova* on Yahoo, not Clasquin (verified). yfinance returns 1.352 "
+        "EUR → +10405 % again. The premium sanity gate (>200 %) flags it, so it "
+        "would NOT enter a backfill, but it is a reintroduced wrong-ticker FP: "
+        "Bloomberg's Euronext-Growth ticker != the Yahoo symbol."
     ),
     "224C0763": (
         "FIXED. Resolved to the correct security `COVH.PA` (ref 13.14 EUR is "
@@ -76,7 +79,18 @@ P11_FP_OUTCOME: dict[str, str] = {
         "upstream data-quality issue, NOT a wrong ticker."
     ),
 }
-WRONG_TICKER_FPS_P11 = 0
+# Post-Step-2.5: the Growth EUR-strip heuristic reintroduced 1 gate-caught FP.
+WRONG_TICKER_FPS_P11 = 1
+# yfinance identity spot-check of the Step-2.5 Growth-resolved tickers
+# (manual verification via yf.Ticker(...).info shortName).
+GROWTH_SPOT_CHECK: list[tuple[str, str, str]] = [
+    ("CLASQUIN", "ALCLA.PA", "WRONG → resolves to CLARANOVA (0.76 EUR), not Clasquin"),
+    ("COMPAGNIE DU CAMBODGE", "CBDG.PA", "CORRECT → CAMBODGE NOM. (104 EUR)"),
+    ("AMPLITUDE SURGICAL", "AMPLI.PA", "no Yahoo listing → no_price (safe skip)"),
+    ("MONTAGNE ET NEIGE", "MND1.PA", "no Yahoo listing (BBG digit disambiguator) → no_price"),
+    ("IDSUD", "ALIDS.PA", "no Yahoo data this run → no_price"),
+    ("GALIMMO", "CIEM.PA", "no Yahoo data this run → no_price"),
+]
 
 
 def _dec(value: str) -> Decimal | None:
@@ -269,7 +283,7 @@ def _write_md(rows: list[dict[str, object]]) -> None:
     lines.append("## Wrong-ticker FPs check (Phase 10 culprits)\n")
     lines.append(
         f"**Wrong-ticker FPs in Phase 11: {WRONG_TICKER_FPS_P11}** "
-        "(neither resolved to a wrong security — verified manually).\n"
+        "(gate-caught; the Growth heuristic reintroduced one — see below).\n"
     )
     for ref, outcome in P11_FP_OUTCOME.items():
         lines.append(f"- **{P10_FP_REFS[ref]}** → {outcome}")
@@ -302,19 +316,22 @@ def _write_md(rows: list[dict[str, object]]) -> None:
         lines.append("- no priced deals with an offer_price to compute premium.")
     lines.append("")
 
-    unknown_refs = [str(r["regulator_ref"]) for r in rows if r["status"] == "unknown_exch"]
+    growth_refs = [
+        str(r["regulator_ref"])
+        for r in rows
+        if r["source_flag"] == str(OpenFIGISource.HOME_VENUE_GROWTH)
+    ]
     lines.append("## Root-cause diagnosis (why priced rate is gated)\n")
     lines.append(
-        "The priced rate decomposes into one resolver gap and several causes "
-        "outside the resolver:\n"
+        "The priced rate decomposes into one resolver-confidence gap and several "
+        "causes outside the resolver:\n"
     )
     lines.append(
-        f"1. **FR Euronext Growth small caps ({len(unknown_refs)}) — FIXABLE resolver "
-        "gap.** These have no `FP` row; their home listing sits on Bloomberg "
-        "exchCodes `XS`/`XH`/`EO` with currency-suffixed tickers "
-        "(`ALCLAEUR`, `AMPLIEUR`, `ALIDS`). Mapping those venues to `.PA` (and "
-        "stripping the `EUR` currency suffix) would resolve `ALCLA.PA`, "
-        f"`AMPLI.PA`, `ALIDS.PA`, etc. Affected: {', '.join(unknown_refs)}."
+        f"1. **FR Euronext Growth small caps ({len(growth_refs)}) — LOW-confidence "
+        "resolutions (post-Step-2.5).** These have no `FP` row; they resolve via "
+        "the XS/XH/EO venues, but the Bloomberg ticker != the Yahoo symbol "
+        "(ALCLA.PA→Claranova). Flagged `home_venue_growth`; see the Post-Step-2.5 "
+        f"section. Affected: {', '.join(growth_refs)}."
     )
     lines.append(
         "2. **IT/Consob no_isin (3) — upstream gap.** ISIN was never extracted "
@@ -337,34 +354,61 @@ def _write_md(rows: list[dict[str, object]]) -> None:
     )
     lines.append("")
     lines.append(
-        "**Resolution quality where it matters:** of the 10 deals that resolved, "
-        "**10/10 are the correct security** (manually verified), and "
-        "**0 wrong-ticker false positives** (vs 2 in Phase 10). OpenFIGI's "
-        "identity correctness — the Phase-10 failure mode — is fully validated."
+        "**Resolution quality where it matters:** every main-market resolution "
+        "(`home_venue`: FP/GR/IM) is the correct security — **0 wrong-ticker FPs**. "
+        "The only FP (CLASQUIN) comes from the low-confidence Growth heuristic and "
+        "is gate-caught. OpenFIGI's identity correctness on main-market listings — "
+        "the Phase-10 failure mode — is validated; Growth needs a safer strategy."
     )
     lines.append("")
 
+    lines.append("## Post-Step-2.5 re-run (Euronext Growth mapping)\n")
+    lines.append(
+        "Step 2.5 added FR Growth venues (XS/XH/EO → .PA) + a defensive "
+        "currency-suffix strip. Resolution jumped **10/17 → 17/17 (100 %)**. But "
+        "a yfinance identity spot-check of the newly-resolved Growth tickers "
+        "shows the mapping is **not safe to trust blindly**:\n"
+    )
+    lines.append("| Deal | Growth ticker | yfinance identity check |")
+    lines.append("|---|---|---|")
+    for name, ticker, verdict in GROWTH_SPOT_CHECK:
+        lines.append(f"| {name} | `{ticker}` | {verdict} |")
+    lines.append("")
+    lines.append(
+        "**Key finding:** Bloomberg's Euronext-Growth local ticker is NOT the "
+        "Yahoo symbol. Currency-stripping `ALCLAEUR` → `ALCLA` collides with an "
+        "unrelated security (`ALCLA.PA` = Claranova), reproducing the exact "
+        "Phase-10 +10405 % garbage — caught by the premium gate, but a "
+        "reintroduced wrong-ticker FP. Of the 7 Growth resolutions, only CBDG.PA "
+        "is verified correct; the rest are wrong (1) or have no Yahoo data (5). "
+        "These are now flagged `home_venue_growth` (low confidence) so the "
+        "backfill can route them to manual_review instead of trusting them.\n"
+    )
+
     lines.append("## Verdict\n")
     lines.append(
-        f"- GO/NO-GO thresholds (priced rate): ≥{GO_THRESHOLD * 100:.0f} % GO · "
-        f"{INVESTIGATE_THRESHOLD * 100:.0f}-{GO_THRESHOLD * 100:.0f} % GO+investigate · "
-        f"<{INVESTIGATE_THRESHOLD * 100:.0f} % scope back."
+        f"- Resolution rate = **{resolution_rate * 100:.0f} %** "
+        f"({resolved}/{with_isin}) · priced rate = {priced_rate * 100:.0f} %."
     )
     lines.append(
-        f"- Priced rate = {priced_rate * 100:.0f} % · resolution rate = "
-        f"{resolution_rate * 100:.0f} % of the {with_isin} ISIN-bearing deals."
+        "- **Main-market venues (FP/GR/IM): GO.** Every large/mid cap resolved to "
+        "the correct security (TRACT.PA, COVH.PA, EDI.PA, ARTO.PA, 2HRA.DE, "
+        "COP.DE, FPH.DE) — 0 wrong-ticker FPs. This is the validated core."
     )
     lines.append(
-        "- **NO-GO for immediate full backfill** on the raw priced rate. But the "
-        "gap is dominated by a single fixable resolver class (FR Euronext Growth) "
-        "plus upstream/delisting causes — not by OpenFIGI unreliability (0 FPs, "
-        "10/10 resolved tickers correct)."
+        "- **Euronext Growth venues (XS/XH/EO): NO-GO as auto-resolve.** The "
+        "currency-strip heuristic emits structurally-plausible but unreliable "
+        "tickers (ALCLA.PA→Claranova). Flagged `home_venue_growth`; route to "
+        "manual_review or require an identity/deviation check before use."
     )
     lines.append(
-        "- **Recommended: Step 2.5** — extend the venue map + suffix table for "
-        "Euronext Growth/Access (XS/XH/EO → .PA, currency-suffix strip), then "
-        "re-run this sample. Projected resolution ≈ 15-17/17; priced rate then "
-        "bounded mainly by genuine delisting + the IT ISIN gap."
+        "- **IT/Consob: blocked upstream** (no ISIN extracted) — independent of " "the resolver."
+    )
+    lines.append(
+        "- **Recommendation:** GO full backfill on `home_venue` (main-market) "
+        "resolutions with the premium sanity gate enforced; exclude "
+        "`home_venue_growth` from auto-backfill pending a safe Growth strategy "
+        "(e.g. yfinance identity cross-check, or an ISIN→Euronext-mnemonic map)."
     )
     lines.append("")
     OUT_MD.parent.mkdir(parents=True, exist_ok=True)
