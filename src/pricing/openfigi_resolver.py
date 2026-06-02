@@ -73,9 +73,11 @@ EQUITY_SECURITY_TYPES: frozenset[str] = frozenset({"Common Stock", "REIT"})
 
 # ISIN country prefix → Bloomberg exchCode(s) of the home listing, priority
 # order first. DE lists on both GR (composite/Xetra) and GY (Xetra segment);
-# GR is preferred. Extensible — add jurisdictions as the corpus grows.
+# GR is preferred. FR adds Euronext Growth/Access venues (XS/XH/EO) after the
+# main market (FP) — small caps (Phase 11 Step 2.5) have no FP row and list on
+# those EUR-composite venues. All FR venues map to .PA. Extensible.
 COUNTRY_TO_BBG_EXCH: dict[str, tuple[str, ...]] = {
-    "FR": ("FP",),  # Euronext Paris
+    "FR": ("FP", "XS", "XH", "EO"),  # Euronext Paris main, then Growth/Access
     "IT": ("IM",),  # Borsa Italiana Milano
     "DE": ("GR", "GY"),  # Xetra composite, then Xetra segment
     "NL": ("NA",),  # Euronext Amsterdam
@@ -87,7 +89,10 @@ COUNTRY_TO_BBG_EXCH: dict[str, tuple[str, ...]] = {
 # Bloomberg exchCode → Yahoo Finance suffix. Unknown codes return None and the
 # orchestrator emits ``OPENFIGI_UNKNOWN_EXCH`` rather than guessing a suffix.
 BBG_TO_YAHOO_SUFFIX: dict[str, str] = {
-    "FP": ".PA",  # Euronext Paris
+    "FP": ".PA",  # Euronext Paris (main market)
+    "XS": ".PA",  # Euronext Growth Paris (EUR composite)
+    "XH": ".PA",  # Euronext Access / Growth Paris (variant)
+    "EO": ".PA",  # Euronext Growth Paris (variant)
     "IM": ".MI",  # Borsa Italiana Milano
     "GR": ".DE",  # Xetra (composite)
     "GY": ".DE",  # Xetra (segment) — same Yahoo suffix as GR
@@ -97,13 +102,47 @@ BBG_TO_YAHOO_SUFFIX: dict[str, str] = {
     "LN": ".L",  # London Stock Exchange
 }
 
+# Bloomberg appends a currency code to the local ticker on its EUR-composite
+# venues (e.g. ALCLAEUR, AMPLIEUR). Strip a KNOWN trailing currency code to
+# recover the Euronext mnemonic (ALCLA, AMPLI) → Yahoo symbol. Defensive: strip
+# only recognised currency codes, only when a non-trivial stem remains, and
+# NEVER a numeric disambiguator (Bloomberg's MND1EUR → MND1, intentionally left
+# as-is beyond the EUR — such tickers may not resolve on Yahoo and are caught by
+# the downstream price/deviation gate rather than silently fabricated).
+CURRENCY_SUFFIXES: frozenset[str] = frozenset({"EUR", "USD", "GBP", "CHF"})
+_MIN_TICKER_STEM: int = 2
+
+
+def strip_currency_suffix(ticker: str) -> str:
+    """Drop a known trailing currency code from a Bloomberg local ticker."""
+    for cur in CURRENCY_SUFFIXES:
+        if ticker.endswith(cur) and len(ticker) - len(cur) >= _MIN_TICKER_STEM:
+            return ticker[: -len(cur)]
+    return ticker
+
+
+def compose_yahoo_ticker(ticker: str, suffix: str) -> str:
+    """Compose a Yahoo symbol = currency-stripped ticker + venue suffix."""
+    return f"{strip_currency_suffix(ticker)}{suffix}"
+
+
 _ISIN_LENGTH: int = 12
+
+
+# Euronext Growth/Access EUR-composite venues. Resolutions on these are
+# LOW-CONFIDENCE: Bloomberg's local ticker (e.g. ALCLAEUR) is NOT the Yahoo
+# symbol, and currency-stripping can collide with an unrelated security
+# (verified: Clasquin's stem ALCLA → ALCLA.PA is actually *Claranova* on
+# Yahoo). The downstream price/deviation gate catches the garbage, but callers
+# must route HOME_VENUE_GROWTH to manual_review rather than trust it blindly.
+GROWTH_VENUES: frozenset[str] = frozenset({"XS", "XH", "EO"})
 
 
 class OpenFIGISource(StrEnum):
     """Provenance / confidence label for a resolved ticker."""
 
-    HOME_VENUE = "openfigi_home_venue"  # matched the expected home exchCode
+    HOME_VENUE = "openfigi_home_venue"  # matched the expected main-market exchCode
+    HOME_VENUE_GROWTH = "openfigi_home_venue_growth"  # Euronext Growth — LOW confidence
     VENUE_FALLBACK = "openfigi_venue_fallback"  # right issuer, secondary venue
     NO_MATCH = "openfigi_no_match"  # no equity row for this ISIN
     UNKNOWN_EXCH = "openfigi_unknown_exch"  # exchCode absent from suffix table
@@ -160,10 +199,11 @@ def select_home_venue(
     """Pick the venue to price against from an ISIN's equity rows.
 
     Returns ``(ticker, exch_code_bbg, composite_figi, source)`` where ``source``
-    is :attr:`OpenFIGISource.HOME_VENUE` when a row matched the expected home
-    exchCode, or :attr:`OpenFIGISource.VENUE_FALLBACK` when no home row existed
-    and we fell back to the dominant ``compositeFIGI`` (still the right issuer,
-    just a secondary listing). Returns ``None`` when there are no equity rows.
+    is :attr:`OpenFIGISource.HOME_VENUE` for a main-market match,
+    :attr:`OpenFIGISource.HOME_VENUE_GROWTH` for an Euronext Growth/Access match
+    (low confidence — see :data:`GROWTH_VENUES`), or
+    :attr:`OpenFIGISource.VENUE_FALLBACK` when no home row existed and we fell
+    back to the dominant ``compositeFIGI``. Returns ``None`` for no equity rows.
     """
     if not rows:
         return None
@@ -172,7 +212,12 @@ def select_home_venue(
     for exch in COUNTRY_TO_BBG_EXCH.get(country, ()):
         for row in rows:
             if row.exch_code == exch:
-                return (row.ticker, row.exch_code, row.composite_figi, OpenFIGISource.HOME_VENUE)
+                source = (
+                    OpenFIGISource.HOME_VENUE_GROWTH
+                    if exch in GROWTH_VENUES
+                    else OpenFIGISource.HOME_VENUE
+                )
+                return (row.ticker, row.exch_code, row.composite_figi, source)
 
     # No home-venue row: fall back to the most common compositeFIGI (the issuer
     # with the most listings — robust against a stray secondary security), then
@@ -326,7 +371,7 @@ class OpenFIGIResolver:
         if suffix is None:
             log.warning("openfigi.unknown_exch", isin=isin, exch_code=exch)
             return YahooTickerResult(isin, None, exch, figi, OpenFIGISource.UNKNOWN_EXCH)
-        return YahooTickerResult(isin, f"{ticker}{suffix}", exch, figi, source)
+        return YahooTickerResult(isin, compose_yahoo_ticker(ticker, suffix), exch, figi, source)
 
     def resolve_batch(self, isins: Sequence[str]) -> dict[str, YahooTickerResult]:
         """Resolve many ISINs, batching up to 100 jobs per HTTP request.
@@ -368,7 +413,7 @@ class OpenFIGIResolver:
         suffix = bbg_to_yahoo_suffix(exch)
         if suffix is None:
             return YahooTickerResult(isin, None, exch, figi, OpenFIGISource.UNKNOWN_EXCH)
-        return YahooTickerResult(isin, f"{ticker}{suffix}", exch, figi, source)
+        return YahooTickerResult(isin, compose_yahoo_ticker(ticker, suffix), exch, figi, source)
 
     # --------------------------------------------------------------- cache
 

@@ -22,6 +22,7 @@ from src.pricing.openfigi_resolver import (
     OpenFIGISource,
     bbg_to_yahoo_suffix,
     select_home_venue,
+    strip_currency_suffix,
 )
 
 # --------------------------------------------------------------- fakes/helpers
@@ -250,6 +251,9 @@ def test_resolve_to_yahoo_unknown_exch(tmp_path: Any) -> None:
     ("exch", "suffix"),
     [
         ("FP", ".PA"),
+        ("XS", ".PA"),
+        ("XH", ".PA"),
+        ("EO", ".PA"),
         ("IM", ".MI"),
         ("GR", ".DE"),
         ("GY", ".DE"),
@@ -322,6 +326,58 @@ def test_post_retries_then_succeeds(tmp_path: Any) -> None:
     out = res.resolve_isin_to_yahoo_ticker("FR0000120578")
     assert out.yahoo_ticker == "SAN.PA"
     assert len(session.calls) == 2
+
+
+# ------------------------------------------- Euronext Growth (Step 2.5)
+
+
+@pytest.mark.parametrize(
+    ("ticker", "expected"),
+    [
+        ("ALCLAEUR", "ALCLA"),  # currency suffix stripped
+        ("AMPLIEUR", "AMPLI"),  # currency suffix stripped
+        ("ALIDS", "ALIDS"),  # "IDS" is not a currency → kept
+        ("MND1EUR", "MND1"),  # only EUR stripped; numeric disambiguator kept
+        ("CBDG", "CBDG"),  # no currency suffix → kept
+        ("COPCHF", "COP"),  # CHF stripped
+        ("EUR", "EUR"),  # stem < 2 chars → not stripped (guard)
+        ("ABEUR", "AB"),  # 2-char stem → stripped
+    ],
+)
+def test_strip_currency_suffix(ticker: str, expected: str) -> None:
+    assert strip_currency_suffix(ticker) == expected
+
+
+def test_fr_growth_xs_resolves_to_pa(tmp_path: Any) -> None:
+    # CLASQUIN: no FP row, only the XS EUR-composite row → ALCLA.PA.
+    payload = _match([_row("ALCLAEUR", "XS", composite="BBG0058LYQG1")])
+    res, _ = _resolver([FakeResponse(payload)], tmp_path)
+    out = res.resolve_isin_to_yahoo_ticker("FR0004152882")
+    assert out.yahoo_ticker == "ALCLA.PA"
+    assert out.exch_code_bbg == "XS"
+    # Growth venues are flagged LOW-confidence (BBG ticker != Yahoo symbol).
+    assert out.source is OpenFIGISource.HOME_VENUE_GROWTH
+
+
+def test_fr_growth_no_currency_suffix(tmp_path: Any) -> None:
+    # CAMBODGE: EO/XS rows, ticker CBDG (no currency suffix) → CBDG.PA.
+    payload = _match([_row("CBDG", "EO", composite="C1"), _row("CBDG", "XS", composite="C1")])
+    res, _ = _resolver([FakeResponse(payload)], tmp_path)
+    out = res.resolve_isin_to_yahoo_ticker("FR0000079659")
+    assert out.yahoo_ticker == "CBDG.PA"
+    assert out.source is OpenFIGISource.HOME_VENUE_GROWTH
+
+
+def test_fr_prefers_fp_over_growth_venues() -> None:
+    # When both a main-market (FP) and a Growth (XS) row exist, FP wins.
+    rows = [
+        OpenFIGIRow("ALCLAEUR", "XS", "Common Stock", "Equity", "C1", "S1", "X"),
+        OpenFIGIRow("COVH", "FP", "REIT", "Equity", "C1", "S1", "X"),
+    ]
+    sel = select_home_venue(rows, "FR0000060303")
+    assert sel is not None
+    assert sel[1] == "FP"
+    assert sel[3] is OpenFIGISource.HOME_VENUE
 
 
 def test_post_raises_after_exhaustion(tmp_path: Any) -> None:
