@@ -31,5 +31,6 @@ repos:
           - "sqlalchemy[asyncio]>=2.0"
           - "structlog>=24.4"
           - "fastapi>=0.115"
+          - "httpx>=0.28"
           - "types-redis"
         files: ^src/
