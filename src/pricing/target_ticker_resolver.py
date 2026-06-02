@@ -51,15 +51,29 @@ REJECTED_TICKER_MAPPINGS: dict[str, tuple[str, str]] = {
 }
 
 
-def resolve_target_ticker(isin: str | None) -> str | None:
+def resolve_target_ticker(isin: str | None, *, allow_bare_isin: bool = False) -> str | None:
     """Return the Yahoo ticker for ``isin``, or ``None`` if unknown.
 
     Returns ``None`` for ISINs explicitly listed in ``REJECTED_TICKER_MAPPINGS``
     even though a guess existed — those mappings are known wrong.
+
+    ``allow_bare_isin`` (Phase 10) — when ``True``, ISINs that are neither in
+    ``TARGET_TICKER_MAP`` nor in ``REJECTED_TICKER_MAPPINGS`` are returned
+    as-is so yfinance can attempt a direct ISIN lookup. Off by default for
+    backward compatibility (Phase 9 callers expected strict-map semantics).
+    Phase 10 reference-price fetcher uses the bare-ISIN fallback to cover
+    the ~30 DE labelled deals not yet in the curated map.
     """
     if not isin:
         return None
-    return TARGET_TICKER_MAP.get(isin)
+    if isin in REJECTED_TICKER_MAPPINGS:
+        return None
+    mapped = TARGET_TICKER_MAP.get(isin)
+    if mapped is not None:
+        return mapped
+    if allow_bare_isin:
+        return isin
+    return None
 
 
 def isin_from_regulator_ref(regulator_ref: str | None) -> str | None:
