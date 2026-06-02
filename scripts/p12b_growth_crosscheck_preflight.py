@@ -6,9 +6,9 @@ currency-strip heuristic, but Bloomberg's Growth ticker != the Yahoo symbol
 ticker's yfinance company name against the deal ``target_name``. A match
 CONFIRMS the ticker; a mismatch REJECTS the collision.
 
-This pre-flight: inventory the 72, resolve their candidate Yahoo tickers (from
-the OpenFIGI cache), and run the cross-check on a 10-deal sample to size the
-recoverable set and pick a threshold. No DB writes, no new dependency
+This pre-flight: inventory all 72, resolve their candidate Yahoo tickers (from
+the OpenFIGI cache), aggregate to distinct (target, jurisdiction) clusters, and
+run the identity cross-check on each. No DB writes, no new dependency
 (``difflib`` instead of rapidfuzz).
 
 Output: ``artifacts/phase-12b/growth_crosscheck_preflight.md``.
@@ -36,7 +36,6 @@ from src.pricing.openfigi_resolver import CACHE_PATH, OpenFIGIResolver
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 OUT_MD = REPO_ROOT / "artifacts" / "phase-12b" / "growth_crosscheck_preflight.md"
-SAMPLE_N = 10
 
 # Legal forms / generic tokens stripped before fuzzy comparison.
 _STOP = {
@@ -95,6 +94,7 @@ def _score(target: str, name: str) -> tuple[float, bool]:
 class GrowthRow:
     deal_id: int
     target_name: str
+    jurisdiction: str
     isin: str
     yahoo_ticker: str | None
 
@@ -105,7 +105,7 @@ async def _growth_deals() -> list[GrowthRow]:
     async with sf() as session:
         rows = (
             await session.execute(
-                select(Deal.id, Deal.target_name, Deal.ticker_target)
+                select(Deal.id, Deal.target_name, Deal.juridiction, Deal.ticker_target)
                 .where(Deal.ticker_resolution_flag == "home_venue_growth")
                 .order_by(Deal.id)
             )
@@ -114,10 +114,12 @@ async def _growth_deals() -> list[GrowthRow]:
     key = get_settings().openfigi_api_key.get_secret_value()
     resolver = OpenFIGIResolver(key, cache_path=CACHE_PATH, use_cache=True)
     out: list[GrowthRow] = []
-    for did, name, isin in rows:
+    for did, name, jur, isin in rows:
         res = resolver.resolve_isin_to_yahoo_ticker(isin) if isin else None
         out.append(
-            GrowthRow(int(did), str(name), str(isin or ""), res.yahoo_ticker if res else None)
+            GrowthRow(
+                int(did), str(name), str(jur), str(isin or ""), res.yahoo_ticker if res else None
+            )
         )
     return out
 
@@ -130,59 +132,105 @@ def _yf_names(ticker: str) -> tuple[str, str]:
         return "", ""
 
 
+@dataclass
+class ClusterVerdict:
+    target_name: str
+    jurisdiction: str
+    ticker: str | None
+    yf_name: str
+    ratio: float
+    verdict: str  # CONFIRM | REJECT | no_data | no_ticker
+
+
+def _classify(
+    target: str, ticker: str | None, name_cache: dict[str, tuple[str, str]]
+) -> ClusterVerdict:
+    if not ticker:
+        return ClusterVerdict(target, "", None, "", 0.0, "no_ticker")
+    if ticker not in name_cache:
+        name_cache[ticker] = _yf_names(ticker)
+    short, long = name_cache[ticker]
+    best = short or long
+    if not best:
+        return ClusterVerdict(target, "", ticker, "", 0.0, "no_data")
+    ratio, hit = _score(target, best)
+    verdict = "CONFIRM" if (ratio >= 0.6 or hit) else "REJECT"  # noqa: PLR2004
+    return ClusterVerdict(target, "", ticker, best, ratio, verdict)
+
+
 def main() -> None:
     rows = asyncio.run(_growth_deals())
-    sample = rows[:SAMPLE_N]
-    results = []
-    for r in sample:
-        short, long = _yf_names(r.yahoo_ticker) if r.yahoo_ticker else ("", "")
-        best_name = short or long
-        ratio, hit = _score(r.target_name, best_name) if best_name else (0.0, False)
-        confirmed = bool(best_name) and (ratio >= 0.6 or hit)  # noqa: PLR2004
-        results.append((r, short, long, ratio, hit, confirmed))
+    # Aggregate to distinct (target, jurisdiction) clusters — premium is per cluster.
+    by_cluster: dict[tuple[str, str], GrowthRow] = {}
+    for r in rows:
+        by_cluster.setdefault((r.target_name, r.jurisdiction), r)
 
-    n_conf = sum(1 for *_, c in results if c)
-    n_named = sum(1 for _, s, lo, *_ in results if s or lo)
-    rate = n_conf / len(results) if results else 0.0
-    projected = round(rate * len(rows))
+    name_cache: dict[str, tuple[str, str]] = {}
+    verdicts: list[ClusterVerdict] = []
+    for (target, jur), r in by_cluster.items():
+        cv = _classify(target, r.yahoo_ticker, name_cache)
+        cv.jurisdiction = jur
+        verdicts.append(cv)
+
+    n_clusters = len(verdicts)
+    counts = {
+        k: sum(1 for v in verdicts if v.verdict == k)
+        for k in ("CONFIRM", "REJECT", "no_data", "no_ticker")
+    }
+    confirmed = counts["CONFIRM"]
 
     lines: list[str] = []
-    lines.append("# P12b Step 0 — Euronext Growth identity cross-check pre-flight\n")
+    lines.append("# P12b Step 0 — Euronext Growth identity cross-check (FULL inventory)\n")
     lines.append(
-        f"{len(rows)} deals flagged `home_venue_growth`. Cross-check = fuzzy-match "
-        "the candidate Yahoo ticker's company name (yfinance shortName/longName) "
-        "against `target_name`; CONFIRM on match, REJECT collisions "
-        "(ALCLA.PA=Claranova). difflib token-sort ratio + distinctive-token "
-        "containment (token >=5 chars present), threshold ratio >= 0.6 OR hit.\n"
+        f"All {len(rows)} `home_venue_growth` deals → **{n_clusters} distinct "
+        "(target, jurisdiction) clusters** (premium is per cluster). Cross-check = "
+        "fuzzy-match the candidate Yahoo ticker's yfinance company name vs "
+        "`target_name` (difflib token-sort ratio + distinctive-token, threshold "
+        ">= 0.6 OR token hit). CONFIRM = identity matches; REJECT = collision "
+        "(e.g. ALCLA.PA=Claranova); no_data = yfinance has no name (delisted "
+        "micro-cap, also un-priceable).\n"
     )
-    lines.append(f"## Sample ({len(sample)} deals)\n")
-    lines.append("| Deal | target_name | ticker | yfinance name | ratio | tok-hit | verdict |")
-    lines.append("|---|---|---|---|---:|:--:|:--:|")
-    for r, short, long, ratio, hit, confirmed in results:
-        nm = (short or long or "—")[:28]
-        v = "✅ CONFIRM" if confirmed else ("❌ REJECT" if (short or long) else "· no-data")
+    lines.append("## Cluster verdicts\n")
+    lines.append("| Target | Jur | ticker | yfinance name | ratio | verdict |")
+    lines.append("|---|---|---|---|---:|:--:|")
+    for v in sorted(verdicts, key=lambda x: (x.verdict, x.target_name)):
+        mark = {"CONFIRM": "✅", "REJECT": "❌", "no_data": "·", "no_ticker": "·"}[v.verdict]
         lines.append(
-            f"| {r.deal_id} | {r.target_name[:22]} | {r.yahoo_ticker or '-'} | {nm} | "
-            f"{ratio:.2f} | {'Y' if hit else 'n'} | {v} |"
+            f"| {v.target_name[:24]} | {v.jurisdiction} | {v.ticker or '-'} | "
+            f"{(v.yf_name or '—')[:24]} | {v.ratio:.2f} | {mark} {v.verdict} |"
         )
     lines.append("")
-    lines.append("## Estimate\n")
-    lines.append(f"- Sample CONFIRMED: **{n_conf}/{len(sample)}** ({rate * 100:.0f} %).")
-    lines.append(f"- Sample with a yfinance name (resolvable): {n_named}/{len(sample)}.")
-    lines.append(f"- Projected over {len(rows)} Growth deals: **~{projected}** recoverable.")
+    lines.append("## Counts (cluster level)\n")
+    lines.append(f"- Distinct Growth clusters: **{n_clusters}**")
+    lines.append(f"- ✅ CONFIRM (identity matches, recoverable): **{confirmed}**")
+    lines.append(f"- ❌ REJECT (collision, correctly excluded): {counts['REJECT']}")
+    lines.append(f"- · no_data (delisted, un-priceable regardless): {counts['no_data']}")
+    lines.append(f"- · no_ticker: {counts['no_ticker']}")
     lines.append("")
+    lines.append(
+        "**Note:** CONFIRM is the *identity* ceiling. Usable premium also needs a "
+        "T-1 yfinance price + passing the premium gate — a further haircut on the "
+        f"{confirmed} confirmed.\n"
+    )
     lines.append("## Go/no-go\n")
-    if projected >= 30:  # noqa: PLR2004
-        lines.append(f"- **GO Step 1** — projected ~{projected} ≥ 30. Run the full cross-check.")
+    if confirmed >= 15:  # noqa: PLR2004
+        lines.append(
+            f"- **GO Step 1** — {confirmed} confirmed clusters materially lift "
+            f"coverage (25 → up to ~{25 + confirmed})."
+        )
     else:
         lines.append(
-            f"- **<30 projected (~{projected})** — fuzzy cross-check alone is thin; "
-            "manual ISIN→Euronext-mnemonic curation likely needed. Re-discuss."
+            f"- **Thin ({confirmed} confirmed clusters).** Growth recovery is "
+            "data-limited (no_data dominates); the ~80-100 target is not reachable "
+            "from Growth. Re-scope: offer_price fixes only, or accept the ceiling."
         )
     lines.append("")
     OUT_MD.parent.mkdir(parents=True, exist_ok=True)
     OUT_MD.write_text("\n".join(lines), encoding="utf-8")
-    print(f"[P12b-0] sample CONFIRMED {n_conf}/{len(sample)} | projected ~{projected}/{len(rows)}")
+    print(
+        f"[P12b-0] clusters={n_clusters} CONFIRM={confirmed} REJECT={counts['REJECT']} "
+        f"no_data={counts['no_data']} no_ticker={counts['no_ticker']}"
+    )
     print(f"[P12b-0] MD: {OUT_MD}")
 
 
