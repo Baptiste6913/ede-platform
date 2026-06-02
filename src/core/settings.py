@@ -69,6 +69,10 @@ class Settings(BaseSettings):
             return [x.strip().upper() for x in v.split(",") if x.strip()]
         return v
 
+    # ---- OpenFIGI (phase 11 — ISIN→ticker resolver) ----
+    # Free tier with key: 25 req/min, 1000 req/day, 100 jobs/request. No KYC.
+    openfigi_api_key: SecretStr = SecretStr("")
+
     # ---- Anthropic / Analyst (phase 8) ----
     anthropic_api_key: SecretStr = SecretStr("")
     anthropic_model: str = "claude-opus-4-7"
