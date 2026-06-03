@@ -81,6 +81,16 @@ class MockEngine:
         return self._req
 
 
+class MockSink:
+    """Records emitted decisions (req, deal) instead of writing files."""
+
+    def __init__(self):
+        self.calls = []
+
+    async def emit(self, req, deal):
+        self.calls.append((req, deal))
+
+
 class MockExecutor:
     def __init__(self, status):
         self._status = status
@@ -255,6 +265,36 @@ async def test_cycle_without_ibkr_produces_decision_skips_execution(db_session, 
     assert summary.submitted == [] and summary.pending_approval == []  # not executed
     assert summary.execution_skipped == 1
     assert discord.events == []  # no execution-side alerts
+
+
+@pytest.mark.integration
+async def test_decision_sink_emitted_per_decision(db_session, tmp_path):
+    """Each produced decision is surfaced via the sink (with the ORM deal),
+    independent of paper execution (ibkr=None)."""
+    import dataclasses
+
+    from src.core.settings import get_settings
+
+    deal_id = await _seed_scored_deal(db_session, "FR", "FR-EMIT", resolution_flag="home_venue")
+    req = dataclasses.replace(_req(), deal_id=deal_id)
+    cand = dataclasses.replace(_candidate(), deal_id=deal_id, juridiction="FR")
+    sink = MockSink()
+    sched = TradingScheduler(
+        ibkr=None,
+        executor=None,
+        engine=MockEngine(req),
+        discord=MockDiscord(),
+        kill_switch=KillSwitch(tmp_path / "k.flag"),
+        settings=get_settings(),
+        price_provider=MockPriceProvider(),
+        decision_sink=sink,
+    )
+    summary = await sched.run_daily_cycle(db_session, [cand], 100_000)
+    assert summary.decisions == [req.trade_id]
+    assert len(sink.calls) == 1
+    emitted_req, emitted_deal = sink.calls[0]
+    assert emitted_req.deal_id == deal_id
+    assert emitted_deal.id == deal_id  # the ORM deal was fetched and passed
 
 
 @pytest.mark.integration

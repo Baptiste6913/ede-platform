@@ -87,6 +87,7 @@ class TradeRequest:
     rationale: str
     requires_approval: bool
     price_source: str = "delayed_live"  # "delayed_live" | "frozen"
+    score_stars: int = 0  # carried for the decision record / MD surface
 
 
 def reference_price(snapshot: PriceSnapshot, juridiction: str) -> float | None:
@@ -176,6 +177,7 @@ def evaluate_candidate(
         rationale=rationale,
         requires_approval=requires_approval,
         price_source=snapshot.price_source,
+        score_stars=candidate.score_stars,
     )
 
 
