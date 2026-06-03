@@ -16,12 +16,16 @@ scheduler (Step 8).
 from __future__ import annotations
 
 from collections.abc import Awaitable, Callable
-from typing import Any
+from datetime import date
+from typing import TYPE_CHECKING, Any
 
 import httpx
 import structlog
 
 from src.core.settings import Settings
+
+if TYPE_CHECKING:
+    from src.trading.decision_engine import TradeRequest
 
 log = structlog.get_logger()
 
@@ -55,10 +59,9 @@ class DiscordAlerts:
     def enabled(self) -> bool:
         return bool(self._alerts)
 
-    async def _post(self, url: str, content: str) -> None:
+    async def _post_payload(self, url: str, payload: dict[str, Any]) -> None:
         if not url:
             return
-        payload = {"content": content}
         if self._post_fn is not None:
             await self._post_fn(url, payload)
             return
@@ -69,6 +72,44 @@ class DiscordAlerts:
                     log.warning("discord_http_error", status=resp.status_code)
         except Exception as exc:
             log.warning("discord_send_error", error=str(exc))
+
+    async def _post(self, url: str, content: str) -> None:
+        await self._post_payload(url, {"content": content})
+
+    # ------------------------------------------------------------- decision
+    async def decision_alert(
+        self, req: TradeRequest, deal: Any, *, today: date | None = None
+    ) -> None:
+        """Rich embed for a produced decision — the scannable real-time alert;
+        the MD file (footer reference) holds the full detail. Never raises;
+        independent of paper execution. Missing fields render as N/A."""
+        from src.output.decision_md import decision_view
+
+        v = decision_view(req, deal, today=today or date.today())
+        cur = v["currency"]
+        embed = {
+            "title": f"🟢 ACHAT — {v['target']} ({v['juridiction']})",
+            "color": 0x2ECC71,
+            "fields": [
+                {"name": "Ticker IBKR", "value": v["ticker_ibkr"], "inline": True},
+                {"name": "Ticker yfinance", "value": v["ticker_yf"], "inline": True},
+                {
+                    "name": "Entry / Stop / TP",
+                    "value": f"{v['entry']} / {v['stop']} / {v['tp']} {cur}",
+                    "inline": False,
+                },
+                {
+                    "name": "Sizing",
+                    "value": f"{v['qty']} actions (~{v['notional']} {cur}, {v['pct_capital']})",
+                    "inline": False,
+                },
+                {"name": "Score", "value": f"{v['score']} (p={v['proba']})", "inline": True},
+                {"name": "Premium", "value": v["premium"], "inline": True},
+                {"name": "Stratégie", "value": v["strategy"], "inline": False},
+            ],
+            "footer": {"text": f"Filing {v['filing']} · annonce {v['announce']} · {v['md_name']}"},
+        }
+        await self._post_payload(self._alerts, {"embeds": [embed]})
 
     # ------------------------------------------------------------- lifecycle
     async def trade_generated(

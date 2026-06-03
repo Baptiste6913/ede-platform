@@ -18,7 +18,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
-from typing import Any, Final
+from typing import TYPE_CHECKING, Any, Final
 from zoneinfo import ZoneInfo
 
 import structlog
@@ -27,6 +27,10 @@ from src.core.settings import Settings, get_settings
 from src.trading.decision_engine import DealCandidate, DecisionEngine, TradeRequest
 from src.trading.discord_alerts import DiscordAlerts
 from src.trading.executor import TradeExecutor
+from src.trading.price_provider import PriceProvider, YFinancePriceProvider
+
+if TYPE_CHECKING:
+    from src.output.decision_md import DecisionSink
 from src.trading.safeguards import (
     KillSwitch,
     SystemStateStore,
@@ -49,12 +53,19 @@ def next_paris_time(now_utc: datetime, hour: int, tz: str = "Europe/Paris") -> d
 
 @dataclass(slots=True)
 class CycleSummary:
-    """Outcome of one daily cycle."""
+    """Outcome of one daily cycle.
+
+    ``decisions`` lists every TradeRequest produced this cycle, **independent of
+    execution** (Phase 13: decisions are computed without IBKR). ``submitted`` /
+    ``pending_approval`` track the downstream, optional paper-execution step.
+    """
 
     halted: str | None = None
+    decisions: list[str] = field(default_factory=list)
     submitted: list[str] = field(default_factory=list)
     pending_approval: list[str] = field(default_factory=list)
     skipped: int = 0
+    execution_skipped: int = 0
 
 
 class TradingScheduler:
@@ -63,11 +74,13 @@ class TradingScheduler:
     def __init__(
         self,
         ibkr: Any,
-        executor: TradeExecutor,
+        executor: TradeExecutor | None,
         engine: DecisionEngine,
         discord: DiscordAlerts,
         kill_switch: KillSwitch | None = None,
         settings: Settings | None = None,
+        price_provider: PriceProvider | None = None,
+        decision_sink: DecisionSink | None = None,
     ) -> None:
         self.ibkr: Any = ibkr
         self.executor = executor
@@ -75,18 +88,45 @@ class TradingScheduler:
         self.discord = discord
         self.kill_switch = kill_switch or KillSwitch()
         self.settings = settings or get_settings()
+        # Decision-time price source — non-broker by default (Phase 13). The
+        # decision calculation never touches IBKR; pricing comes from here.
+        self.price_provider: PriceProvider = price_provider or YFinancePriceProvider()
+        # Decision surface — writes the actionable MD + index per decision,
+        # independent of paper execution (Phase 13).
+        if decision_sink is None:
+            from src.output.decision_md import MarkdownDecisionSink
+
+            decision_sink = MarkdownDecisionSink()
+        self.decision_sink: DecisionSink = decision_sink
+
+    def _broker_available(self) -> bool:
+        """True when a paper-execution path exists (executor + connected IBKR)."""
+        if self.executor is None or self.ibkr is None:
+            return False
+        return bool(getattr(self.ibkr, "is_connected", True))
 
     async def _snapshot(self, cand: DealCandidate) -> Any | None:
-        """Resolve+qualify the candidate's contract and fetch a price snapshot."""
-        if cand.symbol and cand.exchange:
-            contract = await self.ibkr.qualify_contract(cand.symbol, cand.exchange, cand.currency)
-        elif cand.isin:
-            contract = await self.ibkr.qualify_by_isin(cand.isin, cand.exchange or "SMART")
-        else:
-            return None
-        if contract is None:
-            return None
-        return await self.ibkr.get_current_price(contract)
+        """Decision-time reference price — from the price provider, not IBKR."""
+        return await self.price_provider.get_snapshot(cand)
+
+    async def _emit_decision(self, session: object, req: TradeRequest) -> None:
+        """Surface a produced decision (MD + index). Best-effort: a sink/IO
+        failure must not abort the cycle nor block paper execution."""
+        if session is None:
+            return
+        from src.core.models import Deal
+
+        deal = await session.get(Deal, req.deal_id)  # type: ignore[attr-defined]
+        if deal is None:
+            return
+        try:
+            await self.decision_sink.emit(req, deal)
+        except Exception as exc:
+            log.warning("decision_sink_failed", trade_id=req.trade_id, error=str(exc))
+        try:
+            await self.discord.decision_alert(req, deal)
+        except Exception as exc:
+            log.warning("discord_decision_failed", trade_id=req.trade_id, error=str(exc))
 
     async def run_daily_cycle(
         self,
@@ -117,11 +157,6 @@ class TradingScheduler:
             rampup = await store.rampup_validated()
 
             for cand in candidates:
-                if cooldown_active(
-                    await store.last_order_ts(), now, self.settings.trading_order_cooldown_min
-                ):
-                    summary.skipped += 1
-                    continue
                 snapshot = await self._snapshot(cand)
                 if snapshot is None:
                     summary.skipped += 1
@@ -130,9 +165,30 @@ class TradingScheduler:
                 if req is None:
                     summary.skipped += 1
                     continue
-                trade = await self.executor.submit(session, req)  # type: ignore[arg-type]
+                # Decision is produced regardless of execution (Phase 13):
+                # surface it (MD + index) before any broker interaction.
+                summary.decisions.append(req.trade_id)
+                await self._emit_decision(session, req)
+
+                # Downstream, optional paper execution — skip gracefully when the
+                # broker is unavailable; the decision still stands.
+                if not self._broker_available():
+                    summary.execution_skipped += 1
+                    log.info(
+                        "paper_execution_skipped",
+                        reason="ibkr_unavailable",
+                        trade_id=req.trade_id,
+                        deal_id=req.deal_id,
+                    )
+                    continue
+                if cooldown_active(
+                    await store.last_order_ts(), now, self.settings.trading_order_cooldown_min
+                ):
+                    summary.execution_skipped += 1
+                    continue
+                trade = await self.executor.submit(session, req)  # type: ignore[union-attr,arg-type]
                 if trade is None:
-                    summary.skipped += 1
+                    summary.execution_skipped += 1
                     continue
                 open_positions = await self._handle_trade(
                     trade, req, store, summary, open_positions, rampup, now
@@ -206,17 +262,38 @@ async def load_candidates(
     resolver: object,
     min_stars: int = 3,
     allowed_jurisdictions: list[str] | None = None,
+    openfigi: object | None = None,
+    home_venue_strict_jurisdictions: list[str] | None = None,
 ) -> list[DealCandidate]:
-    """Load pending, sufficiently-scored deals and resolve their IBKR tickers.
+    """Load pending, sufficiently-scored deals and resolve their tickers.
 
-    ``allowed_jurisdictions`` scopes the pipeline (V1 = ``["DE"]``); ``None``
-    means no jurisdiction filter. Deals whose ``offer_price_quality_flag`` is in
-    ``UNTRADEABLE_OFFER_PRICE_FLAGS`` are excluded (no reliable scalar price).
+    ``allowed_jurisdictions`` scopes the pipeline (Phase 13 = ``["DE", "FR"]``);
+    ``None`` means no jurisdiction filter. Deals whose ``offer_price_quality_flag``
+    is in ``UNTRADEABLE_OFFER_PRICE_FLAGS`` are excluded (no reliable scalar price).
+
+    When ``openfigi`` is provided, a deal that has never been resolved
+    (``ticker_resolution_flag IS NULL``) is resolved once and its ticker
+    persisted (Phase 13 live wiring); the mutation is committed by the caller's
+    cycle. The candidate's ``yahoo_ticker`` is read from the persisted
+    ``trading_ticker_yf`` — the decision-time price provider keys on it.
+
+    Confidence gate (Phase 13): in a jurisdiction listed in
+    ``home_venue_strict_jurisdictions`` (FR), a deal is auto-tradable ONLY when
+    it resolved to ``home_venue``; growth / venue_fallback / no_match / corrupt
+    flags fall to manual_review (excluded here). The gate runs AFTER live
+    resolution so a fresh deal is resolved first, then gated on its outcome.
+    Non-gated jurisdictions (DE) keep their existing ISIN-path behaviour.
     """
     from sqlalchemy import select
 
     from src.core.models import Deal, Score
+    from src.pricing.ticker_resolution import (
+        HOME_VENUE_FLAG,
+        needs_resolution,
+        resolve_and_persist,
+    )
 
+    strict = {j.upper() for j in (home_venue_strict_jurisdictions or [])}
     stmt = (
         select(Deal, Score)
         .join(Score, Score.deal_id == Deal.id)
@@ -231,6 +308,16 @@ async def load_candidates(
     rows = (await session.execute(stmt)).all()  # type: ignore[attr-defined]
     out: list[DealCandidate] = []
     for deal, score in rows:
+        if openfigi is not None and needs_resolution(deal):
+            await resolve_and_persist(deal, openfigi)  # type: ignore[arg-type]
+        if deal.juridiction in strict and deal.ticker_resolution_flag != HOME_VENUE_FLAG:
+            log.info(
+                "candidate_manual_review",
+                deal_id=deal.id,
+                juridiction=deal.juridiction,
+                flag=deal.ticker_resolution_flag,
+            )
+            continue
         resolved = resolver.resolve(  # type: ignore[attr-defined]
             deal.target_name,
             deal.juridiction,
@@ -252,6 +339,7 @@ async def load_candidates(
                 exchange=resolved.exchange if resolved else None,
                 isin=resolved.isin if resolved else None,
                 currency=resolved.currency if resolved else "EUR",
+                yahoo_ticker=deal.trading_ticker_yf,
             )
         )
     return out

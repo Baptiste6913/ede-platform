@@ -58,6 +58,9 @@ class DealCandidate:
     exchange: str | None
     isin: str | None
     currency: str = "EUR"
+    # Yahoo ticker (e.g. "COVH.PA") for the non-broker decision-time price
+    # provider (Phase 13). Distinct from the IBKR (symbol, exchange) pair.
+    yahoo_ticker: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -84,6 +87,7 @@ class TradeRequest:
     rationale: str
     requires_approval: bool
     price_source: str = "delayed_live"  # "delayed_live" | "frozen"
+    score_stars: int = 0  # carried for the decision record / MD surface
 
 
 def reference_price(snapshot: PriceSnapshot, juridiction: str) -> float | None:
@@ -173,6 +177,7 @@ def evaluate_candidate(
         rationale=rationale,
         requires_approval=requires_approval,
         price_source=snapshot.price_source,
+        score_stars=candidate.score_stars,
     )
 
 

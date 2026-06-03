@@ -59,12 +59,36 @@ class MockIbkr:
         return PriceSnapshot(bid=10.0, ask=10.1, last=10.05, close=9.9, market_data_type=3)
 
 
+class MockPriceProvider:
+    """Decision-time price source returning a fixed snapshot (no broker)."""
+
+    async def get_snapshot(self, candidate):
+        return PriceSnapshot(bid=10.0, ask=10.1, last=10.05, close=9.9, market_data_type=3)
+
+
+class MockNoPriceProvider:
+    """Price source that finds no price ⇒ candidate skipped, zero decisions."""
+
+    async def get_snapshot(self, candidate):
+        return None
+
+
 class MockEngine:
     def __init__(self, req):
         self._req = req
 
     def evaluate(self, cand, snapshot, net_liq, open_positions, rampup):
         return self._req
+
+
+class MockSink:
+    """Records emitted decisions (req, deal) instead of writing files."""
+
+    def __init__(self):
+        self.calls = []
+
+    async def emit(self, req, deal):
+        self.calls.append((req, deal))
 
 
 class MockExecutor:
@@ -94,6 +118,9 @@ class MockDiscord:
 
     async def trade_generated(self, *a):
         self.events.append("generated")
+
+    async def decision_alert(self, req, deal, **k):
+        self.events.append("decision")
 
 
 def _candidate():
@@ -143,6 +170,7 @@ def _scheduler(req, status, kill_path, discord, settings):
         discord=discord,
         kill_switch=KillSwitch(kill_path),
         settings=settings,
+        price_provider=MockPriceProvider(),
     )
 
 
@@ -201,21 +229,115 @@ async def test_rampup_cycle_pends_for_approval(db_session, tmp_path):
     assert "generated" in discord.events
 
 
-class _NoQualifyIbkr:
-    async def qualify_contract(self, *a, **k):
-        return None
+async def test_snapshot_uses_price_provider_not_ibkr():
+    """Decision-time pricing comes from the injected provider, never IBKR —
+    proves the calculation runs with no broker (ibkr=None, executor=None)."""
+    from src.core.settings import get_settings
 
-    async def qualify_by_isin(self, *a, **k):
-        return None
+    sched = TradingScheduler(
+        ibkr=None,
+        executor=None,
+        engine=MockEngine(_req()),
+        discord=MockDiscord(),
+        settings=get_settings(),
+        price_provider=MockPriceProvider(),
+    )
+    snap = await sched._snapshot(_candidate())
+    assert snap is not None
+    assert snap.last == 10.05  # from the provider — ibkr is None
 
-    async def get_current_price(self, contract):
-        raise AssertionError("should not price an unqualified contract")
+
+@pytest.mark.integration
+async def test_cycle_without_ibkr_produces_decision_skips_execution(db_session, tmp_path):
+    """No broker: the decision is still produced; paper execution is skipped
+    gracefully (not an error)."""
+    from src.core.settings import get_settings
+
+    discord = MockDiscord()
+    sched = TradingScheduler(
+        ibkr=None,
+        executor=None,
+        engine=MockEngine(_req()),
+        discord=discord,
+        kill_switch=KillSwitch(tmp_path / "k.flag"),
+        settings=get_settings(),
+        price_provider=MockPriceProvider(),
+    )
+    summary = await sched.run_daily_cycle(db_session, [_candidate()], 100_000)
+    assert summary.decisions == ["t1"]  # decision produced
+    assert summary.submitted == [] and summary.pending_approval == []  # not executed
+    assert summary.execution_skipped == 1
+    assert discord.events == []  # no execution-side alerts
+
+
+@pytest.mark.integration
+async def test_decision_sink_emitted_per_decision(db_session, tmp_path):
+    """Each produced decision is surfaced via the sink (with the ORM deal),
+    independent of paper execution (ibkr=None)."""
+    import dataclasses
+
+    from src.core.settings import get_settings
+
+    deal_id = await _seed_scored_deal(db_session, "FR", "FR-EMIT", resolution_flag="home_venue")
+    req = dataclasses.replace(_req(), deal_id=deal_id)
+    cand = dataclasses.replace(_candidate(), deal_id=deal_id, juridiction="FR")
+    sink = MockSink()
+    sched = TradingScheduler(
+        ibkr=None,
+        executor=None,
+        engine=MockEngine(req),
+        discord=MockDiscord(),
+        kill_switch=KillSwitch(tmp_path / "k.flag"),
+        settings=get_settings(),
+        price_provider=MockPriceProvider(),
+        decision_sink=sink,
+    )
+    summary = await sched.run_daily_cycle(db_session, [cand], 100_000)
+    assert summary.decisions == [req.trade_id]
+    assert len(sink.calls) == 1
+    emitted_req, emitted_deal = sink.calls[0]
+    assert emitted_req.deal_id == deal_id
+    assert emitted_deal.id == deal_id  # the ORM deal was fetched and passed
+
+
+@pytest.mark.integration
+async def test_decision_surface_failure_does_not_break_cycle(db_session, tmp_path):
+    """A sink or Discord failure is best-effort: the decision is still produced
+    and the cycle completes."""
+    import dataclasses
+
+    from src.core.settings import get_settings
+
+    class RaisingSink:
+        async def emit(self, req, deal):
+            raise RuntimeError("disk full")
+
+    class RaisingDiscord(MockDiscord):
+        async def decision_alert(self, req, deal, **k):
+            raise RuntimeError("discord 500")
+
+    deal_id = await _seed_scored_deal(db_session, "FR", "FR-FAIL", resolution_flag="home_venue")
+    req = dataclasses.replace(_req(), deal_id=deal_id)
+    cand = dataclasses.replace(_candidate(), deal_id=deal_id, juridiction="FR")
+    sched = TradingScheduler(
+        ibkr=None,
+        executor=None,
+        engine=MockEngine(req),
+        discord=RaisingDiscord(),
+        kill_switch=KillSwitch(tmp_path / "k.flag"),
+        settings=get_settings(),
+        price_provider=MockPriceProvider(),
+        decision_sink=RaisingSink(),
+    )
+    summary = await sched.run_daily_cycle(db_session, [cand], 100_000)
+    assert summary.decisions == [req.trade_id]  # cycle survived both failures
 
 
 @pytest.mark.integration
 async def test_baseline_persists_when_zero_trades_submitted(db_session, db_engine, tmp_path):
     """Daily baseline must be committed even when no trade is submitted, so the
-    daily-loss safeguard survives across cycles (Step-11 dry-run bug)."""
+    daily-loss safeguard survives across cycles (Step-11 dry-run bug). Here the
+    price provider finds no price ⇒ the candidate is skipped, zero decisions."""
     from sqlalchemy.ext.asyncio import AsyncSession
 
     from src.core.settings import get_settings
@@ -223,15 +345,17 @@ async def test_baseline_persists_when_zero_trades_submitted(db_session, db_engin
 
     discord = MockDiscord()
     sched = TradingScheduler(
-        ibkr=_NoQualifyIbkr(),
+        ibkr=MockIbkr(),
         executor=MockExecutor("SUBMITTED"),
         engine=MockEngine(_req()),
         discord=discord,
         kill_switch=KillSwitch(tmp_path / "k.flag"),
         settings=get_settings(),
+        price_provider=MockNoPriceProvider(),
     )
     summary = await sched.run_daily_cycle(db_session, [_candidate()], 1_000_000)
     assert summary.submitted == [] and summary.pending_approval == []  # nothing traded
+    assert summary.decisions == []  # no price ⇒ no decision
 
     # A FRESH session must see the committed baseline.
     async with AsyncSession(db_engine, expire_on_commit=False) as fresh:
@@ -240,7 +364,7 @@ async def test_baseline_persists_when_zero_trades_submitted(db_session, db_engin
     assert float(val) == 1_000_000.0
 
 
-async def _seed_scored_deal(session, juridiction, ref, quality_flag=None):
+async def _seed_scored_deal(session, juridiction, ref, quality_flag=None, resolution_flag=None):
     from datetime import UTC, date, datetime
     from decimal import Decimal
 
@@ -257,6 +381,8 @@ async def _seed_scored_deal(session, juridiction, ref, quality_flag=None):
     )
     if quality_flag is not None:
         deal.offer_price_quality_flag = quality_flag
+    if resolution_flag is not None:
+        deal.ticker_resolution_flag = resolution_flag
     session.add(deal)
     await session.flush()
     session.add(
@@ -301,6 +427,106 @@ async def test_load_candidates_returns_empty_when_no_matching_jurisdiction(db_se
     await _seed_scored_deal(db_session, "DE", "BAFIN-DE000CBK1001-20260505")
     cands = await load_candidates(
         db_session, TickerResolver({}), min_stars=3, allowed_jurisdictions=["FR"]
+    )
+    assert cands == []
+
+
+class _FakeOpenFIGI:
+    """Resolves any ISIN to a fixed home_venue result (no HTTP)."""
+
+    def __init__(self):
+        self.calls = []
+
+    def resolve_isin_to_yahoo_ticker(self, isin):
+        from src.pricing.openfigi_resolver import OpenFIGISource, YahooTickerResult
+
+        self.calls.append(isin)
+        return YahooTickerResult(
+            isin=isin,
+            yahoo_ticker="COVH.PA",
+            exch_code_bbg="FP",
+            figi="FIGI",
+            source=OpenFIGISource.HOME_VENUE,
+        )
+
+
+@pytest.mark.integration
+async def test_load_candidates_resolves_and_persists_ticker(db_session):
+    """A fresh deal with an ISIN is resolved via OpenFIGI, the ticker persisted,
+    and the candidate's yahoo_ticker is read back from the DB column."""
+    from src.core.models import Deal
+    from src.trading.scheduler import load_candidates
+    from src.trading.ticker_resolver import TickerResolver
+
+    deal_id = await _seed_scored_deal(db_session, "FR", "226C0900")
+    deal = await db_session.get(Deal, deal_id)
+    deal.ticker_target = "FR0000060303"  # ISIN
+    await db_session.flush()
+
+    figi = _FakeOpenFIGI()
+    cands = await load_candidates(
+        db_session, TickerResolver({}), min_stars=3, allowed_jurisdictions=["FR"], openfigi=figi
+    )
+    assert len(cands) == 1
+    assert cands[0].yahoo_ticker == "COVH.PA"  # from persisted trading_ticker_yf
+    assert figi.calls == ["FR0000060303"]
+
+    # Persisted on the row + cache hit (no re-resolution) on a second pass.
+    refreshed = await db_session.get(Deal, deal_id)
+    assert refreshed.trading_ticker_yf == "COVH.PA"
+    assert refreshed.ibkr_ticker == "COVH"
+    assert refreshed.ibkr_exchange == "SBF"
+    assert refreshed.ticker_resolution_flag == "home_venue"
+    await load_candidates(
+        db_session, TickerResolver({}), min_stars=3, allowed_jurisdictions=["FR"], openfigi=figi
+    )
+    assert figi.calls == ["FR0000060303"]  # still one call — already resolved
+
+
+@pytest.mark.integration
+async def test_confidence_gate_home_venue_strict_for_fr(db_session):
+    """FR is gated: only home_venue is auto-tradable; growth / venue_fallback /
+    premium_out_of_bounds → manual_review. DE is NOT gated (BaFin ISIN path)."""
+    from src.trading.scheduler import load_candidates
+    from src.trading.ticker_resolver import TickerResolver
+
+    fr_home = await _seed_scored_deal(db_session, "FR", "FR-HOME", resolution_flag="home_venue")
+    await _seed_scored_deal(db_session, "FR", "FR-GROWTH", resolution_flag="home_venue_growth")
+    await _seed_scored_deal(db_session, "FR", "FR-FALLBACK", resolution_flag="venue_fallback")
+    await _seed_scored_deal(db_session, "FR", "FR-PREMOOB", resolution_flag="premium_out_of_bounds")
+    await _seed_scored_deal(db_session, "FR", "FR-NOMATCH", resolution_flag="no_match")
+    de_home = await _seed_scored_deal(db_session, "DE", "DE-HOME", resolution_flag="home_venue")
+    de_null = await _seed_scored_deal(db_session, "DE", "DE-NULL")  # flag NULL — DE not gated
+
+    cands = await load_candidates(
+        db_session,
+        TickerResolver({}),
+        min_stars=3,
+        allowed_jurisdictions=["DE", "FR"],
+        home_venue_strict_jurisdictions=["FR"],
+    )
+    ids = {c.deal_id for c in cands}
+    assert fr_home in ids  # FR home_venue → tradable
+    assert de_home in ids and de_null in ids  # DE unchanged (gated set excludes DE)
+    # The only non-DE candidate left is the FR home_venue deal.
+    assert {c.juridiction for c in cands if c.deal_id not in (de_home, de_null)} == {"FR"}
+    assert len(ids) == 3  # FR-HOME + DE-HOME + DE-NULL only
+
+
+@pytest.mark.integration
+async def test_confidence_gate_excludes_it_via_allowed_jurisdictions(db_session):
+    """IT (no ISIN ⇒ no_match) is excluded upstream by allowed_jurisdictions —
+    it never reaches the FR-specific confidence gate."""
+    from src.trading.scheduler import load_candidates
+    from src.trading.ticker_resolver import TickerResolver
+
+    await _seed_scored_deal(db_session, "IT", "IT-1", resolution_flag="no_match")
+    cands = await load_candidates(
+        db_session,
+        TickerResolver({}),
+        min_stars=3,
+        allowed_jurisdictions=["DE", "FR"],
+        home_venue_strict_jurisdictions=["FR"],
     )
     assert cands == []
 
