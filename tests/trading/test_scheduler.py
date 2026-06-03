@@ -288,7 +288,7 @@ async def test_baseline_persists_when_zero_trades_submitted(db_session, db_engin
     assert float(val) == 1_000_000.0
 
 
-async def _seed_scored_deal(session, juridiction, ref, quality_flag=None):
+async def _seed_scored_deal(session, juridiction, ref, quality_flag=None, resolution_flag=None):
     from datetime import UTC, date, datetime
     from decimal import Decimal
 
@@ -305,6 +305,8 @@ async def _seed_scored_deal(session, juridiction, ref, quality_flag=None):
     )
     if quality_flag is not None:
         deal.offer_price_quality_flag = quality_flag
+    if resolution_flag is not None:
+        deal.ticker_resolution_flag = resolution_flag
     session.add(deal)
     await session.flush()
     session.add(
@@ -403,6 +405,54 @@ async def test_load_candidates_resolves_and_persists_ticker(db_session):
         db_session, TickerResolver({}), min_stars=3, allowed_jurisdictions=["FR"], openfigi=figi
     )
     assert figi.calls == ["FR0000060303"]  # still one call — already resolved
+
+
+@pytest.mark.integration
+async def test_confidence_gate_home_venue_strict_for_fr(db_session):
+    """FR is gated: only home_venue is auto-tradable; growth / venue_fallback /
+    premium_out_of_bounds → manual_review. DE is NOT gated (BaFin ISIN path)."""
+    from src.trading.scheduler import load_candidates
+    from src.trading.ticker_resolver import TickerResolver
+
+    fr_home = await _seed_scored_deal(db_session, "FR", "FR-HOME", resolution_flag="home_venue")
+    await _seed_scored_deal(db_session, "FR", "FR-GROWTH", resolution_flag="home_venue_growth")
+    await _seed_scored_deal(db_session, "FR", "FR-FALLBACK", resolution_flag="venue_fallback")
+    await _seed_scored_deal(db_session, "FR", "FR-PREMOOB", resolution_flag="premium_out_of_bounds")
+    await _seed_scored_deal(db_session, "FR", "FR-NOMATCH", resolution_flag="no_match")
+    de_home = await _seed_scored_deal(db_session, "DE", "DE-HOME", resolution_flag="home_venue")
+    de_null = await _seed_scored_deal(db_session, "DE", "DE-NULL")  # flag NULL — DE not gated
+
+    cands = await load_candidates(
+        db_session,
+        TickerResolver({}),
+        min_stars=3,
+        allowed_jurisdictions=["DE", "FR"],
+        home_venue_strict_jurisdictions=["FR"],
+    )
+    ids = {c.deal_id for c in cands}
+    assert fr_home in ids  # FR home_venue → tradable
+    assert de_home in ids and de_null in ids  # DE unchanged (gated set excludes DE)
+    # The only non-DE candidate left is the FR home_venue deal.
+    assert {c.juridiction for c in cands if c.deal_id not in (de_home, de_null)} == {"FR"}
+    assert len(ids) == 3  # FR-HOME + DE-HOME + DE-NULL only
+
+
+@pytest.mark.integration
+async def test_confidence_gate_excludes_it_via_allowed_jurisdictions(db_session):
+    """IT (no ISIN ⇒ no_match) is excluded upstream by allowed_jurisdictions —
+    it never reaches the FR-specific confidence gate."""
+    from src.trading.scheduler import load_candidates
+    from src.trading.ticker_resolver import TickerResolver
+
+    await _seed_scored_deal(db_session, "IT", "IT-1", resolution_flag="no_match")
+    cands = await load_candidates(
+        db_session,
+        TickerResolver({}),
+        min_stars=3,
+        allowed_jurisdictions=["DE", "FR"],
+        home_venue_strict_jurisdictions=["FR"],
+    )
+    assert cands == []
 
 
 @pytest.mark.integration

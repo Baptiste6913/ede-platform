@@ -80,6 +80,7 @@ async def _run_once() -> None:
                 settings.trading_min_score_stars,
                 allowed_jurisdictions=settings.trading_allowed_jurisdictions,
                 openfigi=openfigi,
+                home_venue_strict_jurisdictions=settings.trading_home_venue_strict_jurisdictions,
             )
             summary = await scheduler.run_daily_cycle(session, candidates, net_liq)
         log.info(
