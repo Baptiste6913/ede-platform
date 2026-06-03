@@ -59,6 +59,20 @@ class MockIbkr:
         return PriceSnapshot(bid=10.0, ask=10.1, last=10.05, close=9.9, market_data_type=3)
 
 
+class MockPriceProvider:
+    """Decision-time price source returning a fixed snapshot (no broker)."""
+
+    async def get_snapshot(self, candidate):
+        return PriceSnapshot(bid=10.0, ask=10.1, last=10.05, close=9.9, market_data_type=3)
+
+
+class MockNoPriceProvider:
+    """Price source that finds no price ⇒ candidate skipped, zero decisions."""
+
+    async def get_snapshot(self, candidate):
+        return None
+
+
 class MockEngine:
     def __init__(self, req):
         self._req = req
@@ -143,6 +157,7 @@ def _scheduler(req, status, kill_path, discord, settings):
         discord=discord,
         kill_switch=KillSwitch(kill_path),
         settings=settings,
+        price_provider=MockPriceProvider(),
     )
 
 
@@ -201,21 +216,52 @@ async def test_rampup_cycle_pends_for_approval(db_session, tmp_path):
     assert "generated" in discord.events
 
 
-class _NoQualifyIbkr:
-    async def qualify_contract(self, *a, **k):
-        return None
+async def test_snapshot_uses_price_provider_not_ibkr():
+    """Decision-time pricing comes from the injected provider, never IBKR —
+    proves the calculation runs with no broker (ibkr=None, executor=None)."""
+    from src.core.settings import get_settings
 
-    async def qualify_by_isin(self, *a, **k):
-        return None
+    sched = TradingScheduler(
+        ibkr=None,
+        executor=None,
+        engine=MockEngine(_req()),
+        discord=MockDiscord(),
+        settings=get_settings(),
+        price_provider=MockPriceProvider(),
+    )
+    snap = await sched._snapshot(_candidate())
+    assert snap is not None
+    assert snap.last == 10.05  # from the provider — ibkr is None
 
-    async def get_current_price(self, contract):
-        raise AssertionError("should not price an unqualified contract")
+
+@pytest.mark.integration
+async def test_cycle_without_ibkr_produces_decision_skips_execution(db_session, tmp_path):
+    """No broker: the decision is still produced; paper execution is skipped
+    gracefully (not an error)."""
+    from src.core.settings import get_settings
+
+    discord = MockDiscord()
+    sched = TradingScheduler(
+        ibkr=None,
+        executor=None,
+        engine=MockEngine(_req()),
+        discord=discord,
+        kill_switch=KillSwitch(tmp_path / "k.flag"),
+        settings=get_settings(),
+        price_provider=MockPriceProvider(),
+    )
+    summary = await sched.run_daily_cycle(db_session, [_candidate()], 100_000)
+    assert summary.decisions == ["t1"]  # decision produced
+    assert summary.submitted == [] and summary.pending_approval == []  # not executed
+    assert summary.execution_skipped == 1
+    assert discord.events == []  # no execution-side alerts
 
 
 @pytest.mark.integration
 async def test_baseline_persists_when_zero_trades_submitted(db_session, db_engine, tmp_path):
     """Daily baseline must be committed even when no trade is submitted, so the
-    daily-loss safeguard survives across cycles (Step-11 dry-run bug)."""
+    daily-loss safeguard survives across cycles (Step-11 dry-run bug). Here the
+    price provider finds no price ⇒ the candidate is skipped, zero decisions."""
     from sqlalchemy.ext.asyncio import AsyncSession
 
     from src.core.settings import get_settings
@@ -223,15 +269,17 @@ async def test_baseline_persists_when_zero_trades_submitted(db_session, db_engin
 
     discord = MockDiscord()
     sched = TradingScheduler(
-        ibkr=_NoQualifyIbkr(),
+        ibkr=MockIbkr(),
         executor=MockExecutor("SUBMITTED"),
         engine=MockEngine(_req()),
         discord=discord,
         kill_switch=KillSwitch(tmp_path / "k.flag"),
         settings=get_settings(),
+        price_provider=MockNoPriceProvider(),
     )
     summary = await sched.run_daily_cycle(db_session, [_candidate()], 1_000_000)
     assert summary.submitted == [] and summary.pending_approval == []  # nothing traded
+    assert summary.decisions == []  # no price ⇒ no decision
 
     # A FRESH session must see the committed baseline.
     async with AsyncSession(db_engine, expire_on_commit=False) as fresh:

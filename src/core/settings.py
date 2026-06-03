@@ -58,6 +58,11 @@ class Settings(BaseSettings):
     trading_order_cooldown_min: int = 60  # min minutes between orders
     trading_heartbeat_hours: int = 4
     trading_timezone: str = "Europe/Paris"  # DST-aware cron (decision #4)
+    # Capital base for sizing when IBKR NetLiquidation is unavailable (Phase 13:
+    # decision calculation is decoupled from the broker). Used as the sizing
+    # base whenever the paper Gateway is not connected; clamped by the sizing
+    # band (CAPITAL_FLOOR/CAP) like a live NetLiq read.
+    trading_capital_base: float = 100_000.0
     # V1 scope: DE only (BaFin publishes ISIN ⇒ reliable ticker resolution).
     # CSV env, e.g. TRADING_ALLOWED_JURISDICTIONS=DE,FR,IT (after Phase-9 ISIN extraction).
     trading_allowed_jurisdictions: list[str] = Field(default_factory=lambda: ["DE"])
