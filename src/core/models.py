@@ -115,6 +115,9 @@ class Deal(Base):
     # Phase 8: broker-qualified IBKR symbol + exchange (resolver cache, migration 0011).
     ibkr_ticker: Mapped[str | None] = mapped_column(Text, nullable=True)
     ibkr_exchange: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # Phase 13: Yahoo ticker (e.g. "COVH.PA") for the non-broker decision-time
+    # price provider (migration 0017). Distinct from ibkr_ticker ("COVH").
+    trading_ticker_yf: Mapped[str | None] = mapped_column(Text, nullable=True)
     target_name: Mapped[str] = mapped_column(String(255), nullable=False)
     acquirer_name: Mapped[str] = mapped_column(String(255), nullable=False)
 

@@ -49,6 +49,8 @@ artifacts/*
 !artifacts/phase-*/
 # Resolver disk cache lives under a tracked phase folder — re-ignore the blob.
 artifacts/phase-*/openfigi_cache.json
+# Phase 13: actionable decision surface — a readable trading log kept in-repo.
+!artifacts/decisions/
 
 # --- Notebooks intermediates ---
 *.ipynb_checkpoints/

@@ -36,40 +36,66 @@ from src.trading.scheduler import TradingScheduler, load_candidates, next_paris_
 log = structlog.get_logger()
 
 
+async def _connect_ibkr(settings: object) -> IbkrClient | None:
+    """Connect to the paper Gateway. Returns None on failure — decisions are
+    computed and notified regardless (Phase 13: execution is decoupled)."""
+    ibkr = IbkrClient(settings)  # type: ignore[arg-type]
+    try:
+        await ibkr.connect()
+    except Exception as exc:
+        log.warning("ibkr_unavailable_decisions_only", error=str(exc))
+        return None
+    return ibkr
+
+
 async def _run_once() -> None:
     settings = get_settings()
-    ibkr = IbkrClient(settings)
-    await ibkr.connect()
+    from src.trading.ticker_resolver import TickerResolver
+
+    ibkr = await _connect_ibkr(settings)
     try:
-        from src.trading.ticker_resolver import TickerResolver
+        # Capital base for sizing: live NetLiq when the broker is up, else the
+        # configured base (decision calculation must not require IBKR).
+        if ibkr is not None:
+            net_liq = await ibkr.get_net_liquidation()
+        else:
+            net_liq = settings.trading_capital_base
 
         scheduler = TradingScheduler(
             ibkr=ibkr,
-            executor=TradeExecutor(ibkr),
+            executor=TradeExecutor(ibkr) if ibkr is not None else None,
             engine=DecisionEngine.from_settings(settings),
             discord=DiscordAlerts.from_settings(settings),
             kill_switch=KillSwitch(),
             settings=settings,
         )
         resolver = TickerResolver.from_file()
-        net_liq = await ibkr.get_net_liquidation()
+        from src.pricing.openfigi_resolver import OpenFIGIResolver
+
+        openfigi = OpenFIGIResolver(settings.openfigi_api_key.get_secret_value())
         async with get_sessionmaker()() as session:
             candidates = await load_candidates(
                 session,
                 resolver,
                 settings.trading_min_score_stars,
                 allowed_jurisdictions=settings.trading_allowed_jurisdictions,
+                openfigi=openfigi,
+                home_venue_strict_jurisdictions=settings.trading_home_venue_strict_jurisdictions,
             )
             summary = await scheduler.run_daily_cycle(session, candidates, net_liq)
         log.info(
             "trading_cycle_done",
+            broker=("connected" if ibkr is not None else "unavailable"),
             halted=summary.halted,
+            decisions=len(summary.decisions),
             submitted=len(summary.submitted),
             pending=len(summary.pending_approval),
+            execution_skipped=summary.execution_skipped,
             skipped=summary.skipped,
         )
     finally:
-        await ibkr.disconnect()
+        if ibkr is not None:
+            await ibkr.disconnect()
 
 
 async def _run_forever() -> None:

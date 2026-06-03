@@ -81,3 +81,110 @@ async def test_alerts_never_raise_on_post_failure():
     # Default httpx path must swallow connection errors (alerting never breaks trading).
     alerts = DiscordAlerts(webhook_alerts="http://127.0.0.1:1/none")
     await alerts.trade_submitted("D", 1, 1.0)  # must not raise
+
+
+# --------------------------------------------------- decision embed (Phase 13)
+class CaptureRaw:
+    def __init__(self):
+        self.posts = []
+
+    async def __call__(self, url, payload):
+        self.posts.append((url, payload))
+
+
+def _req(**kw):
+    from src.trading.decision_engine import TradeRequest
+
+    base = {
+        "trade_id": "t1",
+        "deal_id": 7,
+        "deal_target": "Covivio Hotels",
+        "deal_acquirer": "Covivio SA",
+        "side": "BUY",
+        "quantity": 120,
+        "symbol": "COVH",
+        "exchange": "SBF",
+        "isin": "FR0000060303",
+        "currency": "EUR",
+        "limit_price": 50.05,
+        "stop_loss_price": 45.05,
+        "take_profit_price": 52.0,
+        "expected_p_completion": 0.92,
+        "expected_return_pct": 0.039,
+        "kelly_fractional_pct": 0.08,
+        "position_pct": 0.06,
+        "rationale": "r",
+        "requires_approval": False,
+        "score_stars": 4,
+    }
+    base.update(kw)
+    return TradeRequest(**base)
+
+
+def _deal(**kw):
+    from datetime import date
+    from decimal import Decimal
+    from types import SimpleNamespace
+
+    base = {
+        "target_name": "Covivio Hotels",
+        "juridiction": "FR",
+        "ticker_target": "FR0000060303",
+        "trading_ticker_yf": "COVH.PA",
+        "ibkr_ticker": "COVH",
+        "ibkr_exchange": "SBF",
+        "offer_price": Decimal("52.0"),
+        "reference_price_at_announcement": Decimal("50.0"),
+        "premium_pct": Decimal("0.0400"),
+        "deal_type": "opa",
+        "payment_cash_share": Decimal("1.0"),
+        "regulator_ref": "224C0763",
+        "source_url": "https://amf-france.org/224C0763",
+        "announcement_date": date(2026, 5, 20),
+    }
+    base.update(kw)
+    return SimpleNamespace(**base)
+
+
+def _embed(posts):
+    url, payload = posts[0]
+    return url, payload["embeds"][0]
+
+
+async def test_decision_alert_embed_has_critical_fields():
+    cap = CaptureRaw()
+    await _alerts(cap).decision_alert(_req(), _deal())
+    url, embed = _embed(cap.posts)
+    assert url == "http://a"
+    assert embed["title"] == "🟢 ACHAT — Covivio Hotels (FR)"
+    fields = {f["name"]: f["value"] for f in embed["fields"]}
+    assert fields["Ticker IBKR"] == "COVH @ SBF"
+    assert fields["Ticker yfinance"] == "COVH.PA"
+    assert fields["Entry / Stop / TP"] == "50.05 / 45.05 / 52.00 EUR"
+    assert fields["Score"] == "4/5 (p=92%)"
+    assert fields["Premium"] == "4.0%"
+    assert "Merger arb" in fields["Stratégie"]
+    assert "224C0763" in embed["footer"]["text"]
+
+
+async def test_decision_alert_premium_null_na():
+    cap = CaptureRaw()
+    await _alerts(cap).decision_alert(_req(), _deal(premium_pct=None))
+    _, embed = _embed(cap.posts)
+    fields = {f["name"]: f["value"] for f in embed["fields"]}
+    assert fields["Premium"] == "N/A"  # graceful, no crash
+
+
+async def test_decision_alert_no_ibkr_ticker_falls_back_to_isin():
+    cap = CaptureRaw()
+    await _alerts(cap).decision_alert(_req(), _deal(ibkr_ticker=None, ibkr_exchange=None))
+    _, embed = _embed(cap.posts)
+    fields = {f["name"]: f["value"] for f in embed["fields"]}
+    assert fields["Ticker IBKR"] == "via ISIN FR0000060303"
+
+
+async def test_decision_alert_no_op_when_disabled():
+    cap = CaptureRaw()
+    alerts = DiscordAlerts(webhook_alerts="", post_fn=cap)
+    await alerts.decision_alert(_req(), _deal())
+    assert cap.posts == []  # no webhook ⇒ no-op
