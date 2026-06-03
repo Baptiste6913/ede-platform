@@ -230,16 +230,24 @@ async def load_candidates(
     resolver: object,
     min_stars: int = 3,
     allowed_jurisdictions: list[str] | None = None,
+    openfigi: object | None = None,
 ) -> list[DealCandidate]:
-    """Load pending, sufficiently-scored deals and resolve their IBKR tickers.
+    """Load pending, sufficiently-scored deals and resolve their tickers.
 
     ``allowed_jurisdictions`` scopes the pipeline (V1 = ``["DE"]``); ``None``
     means no jurisdiction filter. Deals whose ``offer_price_quality_flag`` is in
     ``UNTRADEABLE_OFFER_PRICE_FLAGS`` are excluded (no reliable scalar price).
+
+    When ``openfigi`` is provided, a deal that has never been resolved
+    (``ticker_resolution_flag IS NULL``) is resolved once and its ticker
+    persisted (Phase 13 live wiring); the mutation is committed by the caller's
+    cycle. The candidate's ``yahoo_ticker`` is read from the persisted
+    ``trading_ticker_yf`` — the decision-time price provider keys on it.
     """
     from sqlalchemy import select
 
     from src.core.models import Deal, Score
+    from src.pricing.ticker_resolution import needs_resolution, resolve_and_persist
 
     stmt = (
         select(Deal, Score)
@@ -255,6 +263,8 @@ async def load_candidates(
     rows = (await session.execute(stmt)).all()  # type: ignore[attr-defined]
     out: list[DealCandidate] = []
     for deal, score in rows:
+        if openfigi is not None and needs_resolution(deal):
+            await resolve_and_persist(deal, openfigi)  # type: ignore[arg-type]
         resolved = resolver.resolve(  # type: ignore[attr-defined]
             deal.target_name,
             deal.juridiction,
@@ -276,6 +286,7 @@ async def load_candidates(
                 exchange=resolved.exchange if resolved else None,
                 isin=resolved.isin if resolved else None,
                 currency=resolved.currency if resolved else "EUR",
+                yahoo_ticker=deal.trading_ticker_yf,
             )
         )
     return out
