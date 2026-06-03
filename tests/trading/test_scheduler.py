@@ -119,6 +119,9 @@ class MockDiscord:
     async def trade_generated(self, *a):
         self.events.append("generated")
 
+    async def decision_alert(self, req, deal, **k):
+        self.events.append("decision")
+
 
 def _candidate():
     return DealCandidate(
@@ -295,6 +298,39 @@ async def test_decision_sink_emitted_per_decision(db_session, tmp_path):
     emitted_req, emitted_deal = sink.calls[0]
     assert emitted_req.deal_id == deal_id
     assert emitted_deal.id == deal_id  # the ORM deal was fetched and passed
+
+
+@pytest.mark.integration
+async def test_decision_surface_failure_does_not_break_cycle(db_session, tmp_path):
+    """A sink or Discord failure is best-effort: the decision is still produced
+    and the cycle completes."""
+    import dataclasses
+
+    from src.core.settings import get_settings
+
+    class RaisingSink:
+        async def emit(self, req, deal):
+            raise RuntimeError("disk full")
+
+    class RaisingDiscord(MockDiscord):
+        async def decision_alert(self, req, deal, **k):
+            raise RuntimeError("discord 500")
+
+    deal_id = await _seed_scored_deal(db_session, "FR", "FR-FAIL", resolution_flag="home_venue")
+    req = dataclasses.replace(_req(), deal_id=deal_id)
+    cand = dataclasses.replace(_candidate(), deal_id=deal_id, juridiction="FR")
+    sched = TradingScheduler(
+        ibkr=None,
+        executor=None,
+        engine=MockEngine(req),
+        discord=RaisingDiscord(),
+        kill_switch=KillSwitch(tmp_path / "k.flag"),
+        settings=get_settings(),
+        price_provider=MockPriceProvider(),
+        decision_sink=RaisingSink(),
+    )
+    summary = await sched.run_daily_cycle(db_session, [cand], 100_000)
+    assert summary.decisions == [req.trade_id]  # cycle survived both failures
 
 
 @pytest.mark.integration

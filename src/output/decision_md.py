@@ -85,56 +85,86 @@ def decision_filename(deal: Any, today: date) -> str:
     return f"{today.isoformat()}_{isin}_{_slug(_g(deal, 'target_name') or 'deal')}.md"
 
 
-def render_decision_md(req: TradeRequest, deal: Any, *, today: date) -> str:
-    """Render one decision as Markdown. Missing Deal fields render as N/A."""
+def decision_view(req: TradeRequest, deal: Any, *, today: date) -> dict[str, str]:
+    """Formatted decision fields — the single source of truth shared by the MD
+    renderer and the Discord embed (guarantees identical numbers across both)."""
     ibkr = _g(deal, "ibkr_ticker")
     ibkr_exch = _g(deal, "ibkr_exchange")
-    ibkr_line = f"{ibkr} @ {ibkr_exch}" if ibkr and ibkr_exch else f"via ISIN {_isin_of(deal)}"
-    notional = req.quantity * req.limit_price
+    ticker_ibkr = f"{ibkr} @ {ibkr_exch}" if ibkr and ibkr_exch else f"via ISIN {_isin_of(deal)}"
+    return {
+        "date": today.isoformat(),
+        "target": req.deal_target,
+        "acquirer": req.deal_acquirer,
+        "juridiction": _g(deal, "juridiction") or "N/A",
+        "isin": _isin_of(deal),
+        "ticker_yf": _g(deal, "trading_ticker_yf") or "N/A",
+        "ticker_ibkr": ticker_ibkr,
+        "currency": req.currency,
+        "entry": _money(req.limit_price),
+        "stop": _money(req.stop_loss_price),
+        "tp": _money(req.take_profit_price),
+        "qty": str(req.quantity),
+        "notional": _money(req.quantity * req.limit_price),
+        "pct_capital": f"{req.position_pct * 100:.1f}%",
+        "strategy": _strategy_label(deal),
+        "score": f"{req.score_stars}/5",
+        "proba": f"{req.expected_p_completion:.0%}",
+        "premium": _pct_from_fraction(_g(deal, "premium_pct")),
+        "offer": _money(_g(deal, "offer_price")),
+        "reference": _money(_g(deal, "reference_price_at_announcement")),
+        "deal_type": _g(deal, "deal_type") or "N/A",
+        "spread": _pct_from_fraction(req.expected_return_pct),
+        "kelly": f"{req.kelly_fractional_pct * 100:.1f}%",
+        "filing": _g(deal, "regulator_ref") or "N/A",
+        "link": _g(deal, "source_url") or "N/A",
+        "announce": str(_g(deal, "announcement_date") or "N/A"),
+        "status": "NOUVELLE DÉCISION"
+        + ("  (validation ramp-up requise)" if req.requires_approval else ""),
+        "md_name": decision_filename(deal, today),
+    }
 
+
+def render_decision_md(req: TradeRequest, deal: Any, *, today: date) -> str:
+    """Render one decision as Markdown. Missing Deal fields render as N/A."""
+    v = decision_view(req, deal, today=today)
+    cur = v["currency"]
     return "\n".join(
         [
-            f"# Décision — {req.deal_target}",
+            f"# Décision — {v['target']}",
             "",
-            f"**Date** : {today.isoformat()}",
-            f"**Juridiction** : {_g(deal, 'juridiction') or 'N/A'}",
-            "**Statut** : NOUVELLE DÉCISION"
-            + ("  (validation ramp-up requise)" if req.requires_approval else ""),
+            f"**Date** : {v['date']}",
+            f"**Juridiction** : {v['juridiction']}",
+            f"**Statut** : {v['status']}",
             "",
             "## Titre",
-            f"- Cible : {req.deal_target}",
-            f"- Acquéreur : {req.deal_acquirer}",
-            f"- ISIN : {_isin_of(deal)}",
-            f"- Ticker (yfinance) : {_g(deal, 'trading_ticker_yf') or 'N/A'}   "
-            "← pour pricing/lookup",
-            f"- Ticker (IBKR) : {ibkr_line}   ← pour passer l'ordre",
+            f"- Cible : {v['target']}",
+            f"- Acquéreur : {v['acquirer']}",
+            f"- ISIN : {v['isin']}",
+            f"- Ticker (yfinance) : {v['ticker_yf']}   ← pour pricing/lookup",
+            f"- Ticker (IBKR) : {v['ticker_ibkr']}   ← pour passer l'ordre",
             "",
             "## Ordre",
             "- Action : ACHAT",
-            f"- Entry : {_money(req.limit_price)} {req.currency} (limite)",
-            f"- Stop : {_money(req.stop_loss_price)} {req.currency}",
-            f"- Take-profit : {_money(req.take_profit_price)} {req.currency} (prix d'offre)",
-            f"- Sizing : {req.quantity} actions (~{_money(notional)} {req.currency}, "
-            f"{req.position_pct * 100:.1f}% du capital)",
+            f"- Entry : {v['entry']} {cur} (limite)",
+            f"- Stop : {v['stop']} {cur}",
+            f"- Take-profit : {v['tp']} {cur} (prix d'offre)",
+            f"- Sizing : {v['qty']} actions (~{v['notional']} {cur}, "
+            f"{v['pct_capital']} du capital)",
             "",
             "## Stratégie",
-            _strategy_label(deal),
+            v["strategy"],
             "",
             "## Rationale (pourquoi)",
-            f"- Score complétion : {req.score_stars}/5 étoiles "
-            f"(p = {req.expected_p_completion:.0%})",
-            f"- Premium offre : {_pct_from_fraction(_g(deal, 'premium_pct'))} "
-            f"(offre {_money(_g(deal, 'offer_price'))} vs réf "
-            f"{_money(_g(deal, 'reference_price_at_announcement'))})",
-            f"- Type de deal : {_g(deal, 'deal_type') or 'N/A'}",
-            f"- Spread actuel : {_pct_from_fraction(req.expected_return_pct)} "
-            "→ upside si complétion",
-            f"- Kelly fractionnel : {req.kelly_fractional_pct * 100:.1f}%",
+            f"- Score complétion : {v['score']} étoiles (p = {v['proba']})",
+            f"- Premium offre : {v['premium']} (offre {v['offer']} vs réf {v['reference']})",
+            f"- Type de deal : {v['deal_type']}",
+            f"- Spread actuel : {v['spread']} → upside si complétion",
+            f"- Kelly fractionnel : {v['kelly']}",
             "",
             "## Source",
-            f"- Filing : {_g(deal, 'regulator_ref') or 'N/A'}",
-            f"- Lien : {_g(deal, 'source_url') or 'N/A'}",
-            f"- Annonce : {_g(deal, 'announcement_date') or 'N/A'}",
+            f"- Filing : {v['filing']}",
+            f"- Lien : {v['link']}",
+            f"- Annonce : {v['announce']}",
             "",
             "---",
             "*Décision générée automatiquement. Exécution manuelle par l'opérateur.*",
@@ -144,11 +174,12 @@ def render_decision_md(req: TradeRequest, deal: Any, *, today: date) -> str:
 
 
 def _index_row(req: TradeRequest, deal: Any, md_name: str, today: date) -> str:
+    v = decision_view(req, deal, today=today)
     ibkr = _g(deal, "ibkr_ticker") or "—"
     return (
-        f"| {today.isoformat()} | {req.deal_target} | {_g(deal, 'juridiction') or '—'} "
-        f"| {ibkr} | {_money(req.limit_price)} | {_money(req.stop_loss_price)} "
-        f"| {req.score_stars}/5 | {_pct_from_fraction(_g(deal, 'premium_pct'))} "
+        f"| {v['date']} | {v['target']} | {_g(deal, 'juridiction') or '—'} "
+        f"| {ibkr} | {v['entry']} | {v['stop']} "
+        f"| {v['score']} | {v['premium']} "
         f"| [{md_name}]({md_name}) |"
     )
 

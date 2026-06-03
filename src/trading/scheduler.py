@@ -123,6 +123,10 @@ class TradingScheduler:
             await self.decision_sink.emit(req, deal)
         except Exception as exc:
             log.warning("decision_sink_failed", trade_id=req.trade_id, error=str(exc))
+        try:
+            await self.discord.decision_alert(req, deal)
+        except Exception as exc:
+            log.warning("discord_decision_failed", trade_id=req.trade_id, error=str(exc))
 
     async def run_daily_cycle(
         self,
