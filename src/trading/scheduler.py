@@ -18,7 +18,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
-from typing import Any, Final
+from typing import TYPE_CHECKING, Any, Final
 from zoneinfo import ZoneInfo
 
 import structlog
@@ -28,6 +28,9 @@ from src.trading.decision_engine import DealCandidate, DecisionEngine, TradeRequ
 from src.trading.discord_alerts import DiscordAlerts
 from src.trading.executor import TradeExecutor
 from src.trading.price_provider import PriceProvider, YFinancePriceProvider
+
+if TYPE_CHECKING:
+    from src.output.decision_md import DecisionSink
 from src.trading.safeguards import (
     KillSwitch,
     SystemStateStore,
@@ -77,6 +80,7 @@ class TradingScheduler:
         kill_switch: KillSwitch | None = None,
         settings: Settings | None = None,
         price_provider: PriceProvider | None = None,
+        decision_sink: DecisionSink | None = None,
     ) -> None:
         self.ibkr: Any = ibkr
         self.executor = executor
@@ -87,6 +91,13 @@ class TradingScheduler:
         # Decision-time price source — non-broker by default (Phase 13). The
         # decision calculation never touches IBKR; pricing comes from here.
         self.price_provider: PriceProvider = price_provider or YFinancePriceProvider()
+        # Decision surface — writes the actionable MD + index per decision,
+        # independent of paper execution (Phase 13).
+        if decision_sink is None:
+            from src.output.decision_md import MarkdownDecisionSink
+
+            decision_sink = MarkdownDecisionSink()
+        self.decision_sink: DecisionSink = decision_sink
 
     def _broker_available(self) -> bool:
         """True when a paper-execution path exists (executor + connected IBKR)."""
@@ -97,6 +108,21 @@ class TradingScheduler:
     async def _snapshot(self, cand: DealCandidate) -> Any | None:
         """Decision-time reference price — from the price provider, not IBKR."""
         return await self.price_provider.get_snapshot(cand)
+
+    async def _emit_decision(self, session: object, req: TradeRequest) -> None:
+        """Surface a produced decision (MD + index). Best-effort: a sink/IO
+        failure must not abort the cycle nor block paper execution."""
+        if session is None:
+            return
+        from src.core.models import Deal
+
+        deal = await session.get(Deal, req.deal_id)  # type: ignore[attr-defined]
+        if deal is None:
+            return
+        try:
+            await self.decision_sink.emit(req, deal)
+        except Exception as exc:
+            log.warning("decision_sink_failed", trade_id=req.trade_id, error=str(exc))
 
     async def run_daily_cycle(
         self,
@@ -135,8 +161,10 @@ class TradingScheduler:
                 if req is None:
                     summary.skipped += 1
                     continue
-                # Decision is produced regardless of execution (Phase 13).
+                # Decision is produced regardless of execution (Phase 13):
+                # surface it (MD + index) before any broker interaction.
                 summary.decisions.append(req.trade_id)
+                await self._emit_decision(session, req)
 
                 # Downstream, optional paper execution — skip gracefully when the
                 # broker is unavailable; the decision still stands.
