@@ -27,6 +27,7 @@ from src.core.settings import Settings, get_settings
 from src.trading.decision_engine import DealCandidate, DecisionEngine, TradeRequest
 from src.trading.discord_alerts import DiscordAlerts
 from src.trading.executor import TradeExecutor
+from src.trading.price_provider import PriceProvider, YFinancePriceProvider
 from src.trading.safeguards import (
     KillSwitch,
     SystemStateStore,
@@ -49,12 +50,19 @@ def next_paris_time(now_utc: datetime, hour: int, tz: str = "Europe/Paris") -> d
 
 @dataclass(slots=True)
 class CycleSummary:
-    """Outcome of one daily cycle."""
+    """Outcome of one daily cycle.
+
+    ``decisions`` lists every TradeRequest produced this cycle, **independent of
+    execution** (Phase 13: decisions are computed without IBKR). ``submitted`` /
+    ``pending_approval`` track the downstream, optional paper-execution step.
+    """
 
     halted: str | None = None
+    decisions: list[str] = field(default_factory=list)
     submitted: list[str] = field(default_factory=list)
     pending_approval: list[str] = field(default_factory=list)
     skipped: int = 0
+    execution_skipped: int = 0
 
 
 class TradingScheduler:
@@ -63,11 +71,12 @@ class TradingScheduler:
     def __init__(
         self,
         ibkr: Any,
-        executor: TradeExecutor,
+        executor: TradeExecutor | None,
         engine: DecisionEngine,
         discord: DiscordAlerts,
         kill_switch: KillSwitch | None = None,
         settings: Settings | None = None,
+        price_provider: PriceProvider | None = None,
     ) -> None:
         self.ibkr: Any = ibkr
         self.executor = executor
@@ -75,18 +84,19 @@ class TradingScheduler:
         self.discord = discord
         self.kill_switch = kill_switch or KillSwitch()
         self.settings = settings or get_settings()
+        # Decision-time price source — non-broker by default (Phase 13). The
+        # decision calculation never touches IBKR; pricing comes from here.
+        self.price_provider: PriceProvider = price_provider or YFinancePriceProvider()
+
+    def _broker_available(self) -> bool:
+        """True when a paper-execution path exists (executor + connected IBKR)."""
+        if self.executor is None or self.ibkr is None:
+            return False
+        return bool(getattr(self.ibkr, "is_connected", True))
 
     async def _snapshot(self, cand: DealCandidate) -> Any | None:
-        """Resolve+qualify the candidate's contract and fetch a price snapshot."""
-        if cand.symbol and cand.exchange:
-            contract = await self.ibkr.qualify_contract(cand.symbol, cand.exchange, cand.currency)
-        elif cand.isin:
-            contract = await self.ibkr.qualify_by_isin(cand.isin, cand.exchange or "SMART")
-        else:
-            return None
-        if contract is None:
-            return None
-        return await self.ibkr.get_current_price(contract)
+        """Decision-time reference price — from the price provider, not IBKR."""
+        return await self.price_provider.get_snapshot(cand)
 
     async def run_daily_cycle(
         self,
@@ -117,11 +127,6 @@ class TradingScheduler:
             rampup = await store.rampup_validated()
 
             for cand in candidates:
-                if cooldown_active(
-                    await store.last_order_ts(), now, self.settings.trading_order_cooldown_min
-                ):
-                    summary.skipped += 1
-                    continue
                 snapshot = await self._snapshot(cand)
                 if snapshot is None:
                     summary.skipped += 1
@@ -130,9 +135,28 @@ class TradingScheduler:
                 if req is None:
                     summary.skipped += 1
                     continue
-                trade = await self.executor.submit(session, req)  # type: ignore[arg-type]
+                # Decision is produced regardless of execution (Phase 13).
+                summary.decisions.append(req.trade_id)
+
+                # Downstream, optional paper execution — skip gracefully when the
+                # broker is unavailable; the decision still stands.
+                if not self._broker_available():
+                    summary.execution_skipped += 1
+                    log.info(
+                        "paper_execution_skipped",
+                        reason="ibkr_unavailable",
+                        trade_id=req.trade_id,
+                        deal_id=req.deal_id,
+                    )
+                    continue
+                if cooldown_active(
+                    await store.last_order_ts(), now, self.settings.trading_order_cooldown_min
+                ):
+                    summary.execution_skipped += 1
+                    continue
+                trade = await self.executor.submit(session, req)  # type: ignore[union-attr,arg-type]
                 if trade is None:
-                    summary.skipped += 1
+                    summary.execution_skipped += 1
                     continue
                 open_positions = await self._handle_trade(
                     trade, req, store, summary, open_positions, rampup, now
