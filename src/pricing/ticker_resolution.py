@@ -50,6 +50,10 @@ BBG_TO_IBKR_EXCHANGE: dict[str, str] = {
     "LN": "LSE",  # London Stock Exchange
 }
 
+# The only resolution flag trusted for auto-trading in a gated jurisdiction
+# (high confidence: main-market match on the expected home exchCode).
+HOME_VENUE_FLAG: str = "home_venue"
+
 # Flags that record a *processing outcome*, not a resolution provenance. A
 # backfill must NOT overwrite these with the resolution source: e.g. a
 # premium_out_of_bounds deal (corrupt offer — COVIVIO/VOGO/EEM) resolves cleanly

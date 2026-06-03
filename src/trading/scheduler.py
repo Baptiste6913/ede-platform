@@ -231,24 +231,37 @@ async def load_candidates(
     min_stars: int = 3,
     allowed_jurisdictions: list[str] | None = None,
     openfigi: object | None = None,
+    home_venue_strict_jurisdictions: list[str] | None = None,
 ) -> list[DealCandidate]:
     """Load pending, sufficiently-scored deals and resolve their tickers.
 
-    ``allowed_jurisdictions`` scopes the pipeline (V1 = ``["DE"]``); ``None``
-    means no jurisdiction filter. Deals whose ``offer_price_quality_flag`` is in
-    ``UNTRADEABLE_OFFER_PRICE_FLAGS`` are excluded (no reliable scalar price).
+    ``allowed_jurisdictions`` scopes the pipeline (Phase 13 = ``["DE", "FR"]``);
+    ``None`` means no jurisdiction filter. Deals whose ``offer_price_quality_flag``
+    is in ``UNTRADEABLE_OFFER_PRICE_FLAGS`` are excluded (no reliable scalar price).
 
     When ``openfigi`` is provided, a deal that has never been resolved
     (``ticker_resolution_flag IS NULL``) is resolved once and its ticker
     persisted (Phase 13 live wiring); the mutation is committed by the caller's
     cycle. The candidate's ``yahoo_ticker`` is read from the persisted
     ``trading_ticker_yf`` — the decision-time price provider keys on it.
+
+    Confidence gate (Phase 13): in a jurisdiction listed in
+    ``home_venue_strict_jurisdictions`` (FR), a deal is auto-tradable ONLY when
+    it resolved to ``home_venue``; growth / venue_fallback / no_match / corrupt
+    flags fall to manual_review (excluded here). The gate runs AFTER live
+    resolution so a fresh deal is resolved first, then gated on its outcome.
+    Non-gated jurisdictions (DE) keep their existing ISIN-path behaviour.
     """
     from sqlalchemy import select
 
     from src.core.models import Deal, Score
-    from src.pricing.ticker_resolution import needs_resolution, resolve_and_persist
+    from src.pricing.ticker_resolution import (
+        HOME_VENUE_FLAG,
+        needs_resolution,
+        resolve_and_persist,
+    )
 
+    strict = {j.upper() for j in (home_venue_strict_jurisdictions or [])}
     stmt = (
         select(Deal, Score)
         .join(Score, Score.deal_id == Deal.id)
@@ -265,6 +278,14 @@ async def load_candidates(
     for deal, score in rows:
         if openfigi is not None and needs_resolution(deal):
             await resolve_and_persist(deal, openfigi)  # type: ignore[arg-type]
+        if deal.juridiction in strict and deal.ticker_resolution_flag != HOME_VENUE_FLAG:
+            log.info(
+                "candidate_manual_review",
+                deal_id=deal.id,
+                juridiction=deal.juridiction,
+                flag=deal.ticker_resolution_flag,
+            )
+            continue
         resolved = resolver.resolve(  # type: ignore[attr-defined]
             deal.target_name,
             deal.juridiction,

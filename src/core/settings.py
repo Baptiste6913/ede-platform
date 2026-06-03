@@ -63,11 +63,21 @@ class Settings(BaseSettings):
     # base whenever the paper Gateway is not connected; clamped by the sizing
     # band (CAPITAL_FLOOR/CAP) like a live NetLiq read.
     trading_capital_base: float = 100_000.0
-    # V1 scope: DE only (BaFin publishes ISIN ⇒ reliable ticker resolution).
-    # CSV env, e.g. TRADING_ALLOWED_JURISDICTIONS=DE,FR,IT (after Phase-9 ISIN extraction).
-    trading_allowed_jurisdictions: list[str] = Field(default_factory=lambda: ["DE"])
+    # Phase 13: DE (BaFin ISIN reliable) + FR (Euronext, gated by confidence).
+    # CSV env, e.g. TRADING_ALLOWED_JURISDICTIONS=DE,FR,IT (IT after Consob ISIN).
+    trading_allowed_jurisdictions: list[str] = Field(default_factory=lambda: ["DE", "FR"])
+    # Jurisdictions where a deal is auto-tradable ONLY when resolved to
+    # ticker_resolution_flag == 'home_venue' (high confidence). FR is gated
+    # because Euronext Growth resolutions collide on currency-stripped tickers
+    # (ALCLA.PA = Claranova); growth / venue_fallback / no_match → manual_review.
+    # DE is intentionally NOT gated: its BaFin ISIN path is trustworthy (V1).
+    trading_home_venue_strict_jurisdictions: list[str] = Field(default_factory=lambda: ["FR"])
 
-    @field_validator("trading_allowed_jurisdictions", mode="before")
+    @field_validator(
+        "trading_allowed_jurisdictions",
+        "trading_home_venue_strict_jurisdictions",
+        mode="before",
+    )
     @classmethod
     def _parse_csv_jurisdictions(cls, v: object) -> object:
         if isinstance(v, str):
