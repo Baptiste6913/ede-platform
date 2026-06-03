@@ -70,12 +70,16 @@ async def _run_once() -> None:
             settings=settings,
         )
         resolver = TickerResolver.from_file()
+        from src.pricing.openfigi_resolver import OpenFIGIResolver
+
+        openfigi = OpenFIGIResolver(settings.openfigi_api_key.get_secret_value())
         async with get_sessionmaker()() as session:
             candidates = await load_candidates(
                 session,
                 resolver,
                 settings.trading_min_score_stars,
                 allowed_jurisdictions=settings.trading_allowed_jurisdictions,
+                openfigi=openfigi,
             )
             summary = await scheduler.run_daily_cycle(session, candidates, net_liq)
         log.info(

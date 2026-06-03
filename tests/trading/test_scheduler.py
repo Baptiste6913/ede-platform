@@ -353,6 +353,58 @@ async def test_load_candidates_returns_empty_when_no_matching_jurisdiction(db_se
     assert cands == []
 
 
+class _FakeOpenFIGI:
+    """Resolves any ISIN to a fixed home_venue result (no HTTP)."""
+
+    def __init__(self):
+        self.calls = []
+
+    def resolve_isin_to_yahoo_ticker(self, isin):
+        from src.pricing.openfigi_resolver import OpenFIGISource, YahooTickerResult
+
+        self.calls.append(isin)
+        return YahooTickerResult(
+            isin=isin,
+            yahoo_ticker="COVH.PA",
+            exch_code_bbg="FP",
+            figi="FIGI",
+            source=OpenFIGISource.HOME_VENUE,
+        )
+
+
+@pytest.mark.integration
+async def test_load_candidates_resolves_and_persists_ticker(db_session):
+    """A fresh deal with an ISIN is resolved via OpenFIGI, the ticker persisted,
+    and the candidate's yahoo_ticker is read back from the DB column."""
+    from src.core.models import Deal
+    from src.trading.scheduler import load_candidates
+    from src.trading.ticker_resolver import TickerResolver
+
+    deal_id = await _seed_scored_deal(db_session, "FR", "226C0900")
+    deal = await db_session.get(Deal, deal_id)
+    deal.ticker_target = "FR0000060303"  # ISIN
+    await db_session.flush()
+
+    figi = _FakeOpenFIGI()
+    cands = await load_candidates(
+        db_session, TickerResolver({}), min_stars=3, allowed_jurisdictions=["FR"], openfigi=figi
+    )
+    assert len(cands) == 1
+    assert cands[0].yahoo_ticker == "COVH.PA"  # from persisted trading_ticker_yf
+    assert figi.calls == ["FR0000060303"]
+
+    # Persisted on the row + cache hit (no re-resolution) on a second pass.
+    refreshed = await db_session.get(Deal, deal_id)
+    assert refreshed.trading_ticker_yf == "COVH.PA"
+    assert refreshed.ibkr_ticker == "COVH"
+    assert refreshed.ibkr_exchange == "SBF"
+    assert refreshed.ticker_resolution_flag == "home_venue"
+    await load_candidates(
+        db_session, TickerResolver({}), min_stars=3, allowed_jurisdictions=["FR"], openfigi=figi
+    )
+    assert figi.calls == ["FR0000060303"]  # still one call — already resolved
+
+
 @pytest.mark.integration
 async def test_load_candidates_excludes_untradeable_offer_price_flag(db_session):
     from src.trading.scheduler import load_candidates
