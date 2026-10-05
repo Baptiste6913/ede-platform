@@ -48,7 +48,7 @@ Render to first KPI (in-page `performance.now()` timer, assets cold via `ignoreC
 ![Deals List](img/02-deals-list.png)
 Sortable `st.dataframe` of all 118 filtered clusters, native CSV download + "Export filtered CSV", drill-down selector. `spread (Φ)` column is the Phase-9 placeholder (`—`).
 
-### 3 — Deal Detail (5★)
+### 3 — Deal Detail (5)
 ![Deal Detail](img/03-deal-detail.png)
 COMMERZBANK Aktiengesellschaft — ★★★★★, p_completion = 1.000, decision `enter`. Top-3 positive factors (payment_type_cash +0.933, acquirer_type_corporate +0.774, deal_type_opa_volontaire_totalitaria +0.501) / top-3 risk factors, identity table, events timeline (BaFin Angebotsunterlage), document link + local PDF path, manual-notes textarea.
 

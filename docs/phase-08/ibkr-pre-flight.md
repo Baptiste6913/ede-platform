@@ -16,16 +16,16 @@
 
 ## Live results
 
-### [1] Connection ✅
+### [1] Connection
 - Connect latency: **~120 ms** warm (626 ms on the first cold connect of the session).
 - `disconnectedEvent` wired; auto-reconnect pattern available (ported from Finance-V4 in Step 1).
 
-### [2] Account ✅ (paper confirmed)
+### [2] Account (paper confirmed)
 - Account: **`DU…`** paper account (prefix verified — redacted). A pseudo-account `All` (aggregate) also returned by `accountSummary` → filter to `DU…` accounts in code.
 - NetLiquidation: **≈ €1,002,755** · TotalCash ≈ €1,002,031.
 - ⚠️ **Balance is ~1M EUR, not the ~100k assumed in the brief.** → decision #1 below.
 
-### [3] Timezone ✅
+### [3] Timezone
 - IBKR server time returned in **UTC**; local machine **Europe/Paris CEST (UTC+2, DST active — "heure d'été")**; skew ≈ +1 s.
 - Implication: store/compare everything in **UTC**; the **9h Paris cron must use the `Europe/Paris` tz (DST-aware)** = 07:00 UTC in summer, 08:00 UTC in winter. Do **not** hardcode a fixed UTC offset.
 
@@ -54,11 +54,11 @@ Markets were closed (run at 18:13 CEST). Snapshot via **delayed feed (`reqMarket
 - `accountSummary` returns an extra `All` aggregate row → filter to `DU…`.
 - Windows console is cp1252 → script forces UTF-8 stdout (handled).
 
-## ▶️ Decisions to confirm before Steps 1-12
+## ▶Decisions to confirm before Steps 1-12
 
 1. **Capital base.** Paper account holds **~€1M**, brief sizing assumes **€100k**. Options:
    (a) Reset paper account to 100k (Settings → Reset Paper Account), or
-   (b) **[recommended]** size off **live `NetLiquidation`** dynamically (more robust; max-12%/Kelly scale to real equity) and drop the hardcoded 100k.
+   (b) **[recommended]** size off **live `NetLiquidation`** dynamically (more resilient; max-12%/Kelly scale to real equity) and drop the hardcoded 100k.
 2. **Market data tier.** Accept **delayed (free)** for V1 (fine for a daily cron), or subscribe **realtime** Euronext/Borsa/Xetra bundles (paid) for tighter entry pricing? Recommended: delayed for V1, revisit at scale.
 3. **IT bid/ask gap.** BVME delayed has **no bid/ask** → limit-order entry price for IT deals derived from **last/close + offset**. Confirm acceptable.
 

@@ -10,7 +10,7 @@ Each ingestion module documents here:
 
 ---
 
-## AMF — Autorité des Marchés Financiers (FR) — phase 2 (RSS) + phase 3 (BDIF) ✅
+## AMF — Autorité des Marchés Financiers (FR) — phase 2 (RSS) + phase 3 (BDIF)
 
 ### BDIF API (phase 3 — authoritative)
 
@@ -138,7 +138,7 @@ These items are explicitly **accepted** and scheduled — not blockers for paper
 
 ---
 
-## Consob (IT) — phase 4 ✅
+## Consob (IT) — phase 4
 
 ### Endpoints
 
@@ -220,7 +220,7 @@ Atomic write via `tempfile.mkstemp` + `os.replace`. Idempotent on rerun.
 
 | # | Item | Severity | Owner |
 |---|---|---|---|
-| 1 | **4/22 deals carry `[pending parse]`** in `target_name` or `acquirer_name`. Discovery extractor is robust when both `<strong>` markers are present (offerente + target). Rows with missing markers leave the field unfilled. Resolution: the PDF body parser already extracts `target_name_from_pdf` / `offerente_name_from_pdf` — wire it to back-fill placeholders during upsert. | medium | phase 6 |
+| 1 | **4/22 deals carry `[pending parse]`** in `target_name` or `acquirer_name`. Discovery extractor is reliable when both `<strong>` markers are present (offerente + target). Rows with missing markers leave the field unfilled. Resolution: the PDF body parser already extracts `target_name_from_pdf` / `offerente_name_from_pdf` — wire it to back-fill placeholders during upsert. | medium | phase 6 |
 | 2 | **Consob *Comunicati ex art. 102 TUF*** (pre-OPA announcements, often days/weeks before the formal *documento d'offerta*) are not ingested. These are the earliest possible signal for an event-driven strategy. Resolution: add a sibling `ConsobComunicatiClient` in Phase 6-7 multi-document-type expansion (one extra listing endpoint, same Radware/ScrapingBee path). | medium | phase 6-7 |
 | 3 | **Legacy archive PDFs (`/documents/11973/543xxxx/`)** require ScrapingBee fallback (~1 credit each) when ingested. Currently silently absorbed by the fallback path. Resolution: monitor the share of fallback hits via `vendor_api_usage.extra.fallback=true` and tune the budget if the historical-backfill scenario ever consumes >50 % of the monthly cap. | low | monitor |
 

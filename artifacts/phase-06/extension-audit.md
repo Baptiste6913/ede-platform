@@ -34,7 +34,7 @@
 | 5 | ScrapingBee credits ≤100 | ≤100 | 2 | ✅ |
 | 6 | Test coverage ≥80 % | ≥80 % | 27 bafin tests pass (full suite TBD pre-PR) | ⏳ |
 
-### ⚠️ Criterion #2 — failure detection: 0 Untersagung captured
+### Criterion #2 — failure detection: 0 Untersagung captured
 
 The brief expected Untersagung (BaFin §15 WpÜG prohibitions) to provide the label=0 backbone. Discovery code + migration 0008 are in place and ingest Untersagung correctly when they appear, **but the 9 Untersagung rows in the captured BaFin fixture all cluster in 2017–2018–2019** — too old for the `since=2024-05-20` cutoff. The 24-month window happens to cover an era where BaFin issued no prohibitions.
 

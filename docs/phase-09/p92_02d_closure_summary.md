@@ -41,7 +41,7 @@ Dry-run by default; `--apply` triggers UPDATEs.
   OUTLIER-before-MIXED ordering against regression
 - `test_outlier_threshold_exact_boundary` — fence-post on 107.19
 
-## 2. Decompte final (35 / 5 / 6 / 1 = 47 ✓)
+## 2. Decompte final (35 / 5 / 6 / 1 = 47 )
 
 | Category | Flag | Count | Composition |
 |---|---|---|---|

@@ -114,7 +114,7 @@ causes:
 
 ---
 
-## ⚠️ Security finding — ScrapingBee key was logged
+## Security finding — ScrapingBee key was logged
 
 During the first failed run, `httpx`'s INFO-level handler emitted the full
 request URL — including `?api_key=…` — to stdout. The leaked output landed in

@@ -53,7 +53,7 @@ distribution of the 42 non-NULL Consob prices:
 - Upper 10 000 € catches Banco BPM (controvalore complessivo
   mis-parsed as unit price) cleanly. 7-order-of-magnitude gap
   between max legitimate (300) and the outlier means the choice
-  is robust.
+  holds.
 - Health Italia (300 €/share) flagged as edge case but kept in
   PROMOTABLE — plausible for an illiquid Italian small-cap, no
   reason to reject without visual PDF inspection.

@@ -13,7 +13,7 @@ Date: 2026-06-02 | Probe: 3 sample ISINs from the Phase 10 sample (Step 0, no re
 - **Response**: array, 1 element per job. Match → `{"data": [ …rows… ]}`; miss → `{"warning": "No identifier found."}`; bad job → `{"error": "..."}`.
 - **Useful data fields**: `ticker`, `exchCode`, `securityType`, `marketSector`, `securityDescription`, `name`, `figi`, `compositeFIGI`, `shareClassFIGI`.
 
-### ⚠️ Major correction vs the brief — exchCode is Bloomberg, not MIC
+### Major correction vs the brief — exchCode is Bloomberg, not MIC
 
 The brief assumed MIC codes (XPAR/MTAA/GY). **OpenFIGI uses Bloomberg 2-letter exchange codes.** MIC hints return zero matches:
 

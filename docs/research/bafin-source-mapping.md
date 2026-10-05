@@ -17,7 +17,7 @@
 | **PDF URL pattern** | **Deterministic** from wrapper URL: `path/foo.html?nn=…` → `path/foo.pdf?__blob=publicationFile&v=1`. Wrapper fetch is optional. |
 | **Validated** | 3 / 3 sampled PDFs returned valid `%PDF-` bytes (1.5–3.3 MB each). |
 
-## ⚠️ Important URL correction vs Phase-5 brief
+## Important URL correction vs Phase-5 brief
 
 The brief lists `https://www.bafin.de/SharedDocs/Veroeffentlichungen/DE/Liste/WPUeG/li_angebotsunterlagen_wpueg_14.html` — this URL **returns 404** (BaFin retired the `SharedDocs/Veroeffentlichungen/...` legacy path).
 
@@ -112,7 +112,7 @@ The link text in column 3 is the **legal offer type**. Found 11 distinct values:
 | Pflichtangebot / Erwerbsangebot | 1 | <1 % | Hybrid edge case |
 | Erwerbsangebot Änderung | 1 | <1 % | Amendment to prior Erwerbsangebot |
 
-## ⚠️ Decision needed before coding — canonical `deal_type` enum extension
+## Decision needed before coding — canonical `deal_type` enum extension
 
 The existing `deal_type_enum` (migration 0004, set up for FR + IT) has **no value for delisting-style offers** — and **76 of 241** BaFin rows (32 %) are delisting variants.
 
@@ -151,7 +151,7 @@ BaFin does not expose a public `BaFin-NN-####` reference. Two viable approaches:
 | Key | Example | Notes |
 |---|---|---|
 | `BAFIN-{pdf_slug}` | `BAFIN-commerzbank` | Matches Consob pattern. Risk: slug collisions for multiple deals on same target (Klöckner has `-2` suffix already — BaFin handles this internally). |
-| `BAFIN-{ISIN-no-spaces}-{YYYYMMDD}` | `BAFIN-DE000CBK1001-20260505` | Robust against slug collisions, stable, parseable. **Recommended.** |
+| `BAFIN-{ISIN-no-spaces}-{YYYYMMDD}` | `BAFIN-DE000CBK1001-20260505` | Resistant to slug collisions, stable, parseable. **Recommended.** |
 
 ## Storage layout (proposed)
 

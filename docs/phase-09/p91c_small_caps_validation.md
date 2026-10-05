@@ -65,7 +65,7 @@ flags it as "parser-only, no external confirmation possible".
   (Boerse Frankfurt archives, financial press) but that's out of V1 scope.
 - The structurally-poor yfinance coverage on post-OPA delistings means the
   tradable DE universe is smaller than the headline count of 42 deals.
-  P9.2 (ISIN extraction for FR / IT, ~200 deals) is the higher-leverage path
+  P9.2 (ISIN extraction for FR / IT, ~200 deals) is the higher-impact path
   to a usable backtest, not deeper investigation of the German small-caps.
 - The threshold 30% behaved exactly as intended: 0 false-negative
   (no aberrant offer escaped flagging), 2 false-positive ticker maps caught

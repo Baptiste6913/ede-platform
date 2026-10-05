@@ -1,111 +1,70 @@
-# EDE — Event-Driven Europe
+# EDE (Event-Driven Europe)
 
-Proprietary platform for detection, scoring, and **paper trading** of European M&A operations (OPA/OPE) — FR (AMF), IT (Consob), DE (BaFin).
+EDE estimates the probability that a European takeover bid completes and turns that estimate into paper-trading decisions for merger arbitrage. It reads the filings published by the French, German, and Italian market regulators.
 
-Phase 1 scope: paper trading only, zero real capital, ~8–10h/week effort cap.
+## Run it
 
-> Status: **Phase 0 — Bootstrap repo & Oracle setup** (in_progress)
-
----
-
-## Quickstart
-
-### Local dev
-
-Requires Docker Desktop (or Docker Engine + compose plugin) and `git`.
+Requires Docker and Git. This starts PostgreSQL with TimescaleDB, Redis, and the API.
 
 ```bash
-git clone <repo-url> ede-platform
-cd ede-platform
 cp .env.example .env
 docker compose up -d --build
 curl http://localhost:8000/health
-# {"status":"ok","version":"0.1.0","uptime_seconds":1.23,"db":{"ok":true,"latency_ms":2.1}}
 ```
 
-Stop:
+Apply the schema, then start the Streamlit dashboard on `http://localhost:8501`:
 
 ```bash
-docker compose down
+alembic upgrade head
+streamlit run streamlit_app.py
 ```
 
-Logs (structured JSON):
+Without Docker for the app itself (Python 3.12):
 
 ```bash
-docker compose logs -f app
-```
-
-Native Python (no Docker):
-
-```bash
-python -m venv .venv
-source .venv/bin/activate   # Windows: .venv\Scripts\Activate.ps1
 pip install -e ".[dev]"
-pre-commit install
 uvicorn src.api.main:app --reload
 ```
 
-### Tests / lint
+Backfill filings, then train and score:
 
 ```bash
-pytest --cov=src --cov-report=term-missing
-ruff check .
-ruff format --check .
+python scripts/bdif_run_once.py          # AMF (FR)
+python scripts/bafin_run_once.py         # BaFin (DE)
+python scripts/consob_run_once.py        # Consob (IT), needs SCRAPINGBEE_API_KEY
+python scripts/score_deals_run.py
+```
+
+Run one daily trading cycle against an IBKR paper gateway:
+
+```bash
+python scripts/run_trading.py --once
+```
+
+Tests and checks:
+
+```bash
+pytest
+ruff check . && ruff format --check .
 mypy src
 ```
 
-### Oracle deploy (stub — full impl phase 13)
+## Architecture
 
-Phase 0 ships the bootstrap script only; production deploy is finalized in phase 13.
+- `src/ingestion/{amf,bafin,consob}`: one poller, fetcher, and parser per regulator. Each writes deals and filing events to PostgreSQL.
+- `src/core`: settings, structured logging, async SQLAlchemy models, typed exceptions. `alembic/` holds 17 migrations.
+- `src/pricing`: resolves ISINs to tickers through OpenFIGI and fetches reference prices from yfinance.
+- `src/scoring`: deal features (bid premium, relative size, acceptance threshold, payment type, jurisdiction, sector, and others in `features.py`) feed an elastic-net logistic regression with isotonic calibration. The output is a completion probability mapped to 1 to 5 stars.
+- `src/trading`: decision engine (spread, fractional Kelly sizing, stop and take-profit), bracket orders through `ib_async`, and safeguards (kill switch file, daily loss limit, position cap, order cooldown, manual approval for the first 5 trades).
+- `src/output`: writes one Markdown decision file per tradable deal. `src/dashboard` and `streamlit_app.py` serve a read-only 5-page view of the database.
+- `src/api`: FastAPI app with a `/health` route and correlation-ID middleware.
 
-```bash
-# On the Oracle Ampere ARM VM (Ubuntu 22.04 LTS):
-curl -fsSL https://raw.githubusercontent.com/<user>/ede-platform/main/scripts/oracle_bootstrap.sh | bash
-# Log out / back in (docker group), then:
-cd ~/ede-platform && cp .env.example .env && docker compose up -d
-```
+## Stack
 
-The bootstrap script installs Docker, configures ufw (allow 22/8000), fail2ban, unattended-upgrades, and the anti-reclaim keep-alive cron (`scripts/healthcheck_keep_alive.sh`).
+Python 3.12, FastAPI, SQLAlchemy 2.0 (asyncio), asyncpg, Alembic, PostgreSQL 16 with TimescaleDB, Redis, APScheduler, PyMuPDF, scikit-learn, Streamlit, Plotly, ib_async, yfinance, structlog, Docker. Quality gates are pytest, ruff, and mypy in strict mode, run by GitHub Actions.
 
----
+## Status
 
-## Repo layout
+Paper trading only. `IbkrClient` refuses to connect unless the paper flag is set and the port is 7497 or 4002.
 
-See `docs/ARCHITECTURE.md`. Top level:
-
-```
-src/         core / api / ingestion / enrichment / scoring / analyst / paper / dashboard / cli
-tests/       mirror of src/
-docs/        ARCHITECTURE, PHASES, DATA_SOURCES, SCORING_MODEL, JURIDICTIONS, whitepaper_ede
-scripts/     oracle_bootstrap, healthcheck_keep_alive, backup_nightly
-alembic/     migrations (populated phase 1)
-data/        gitignored — pdfs, snapshots, models
-```
-
----
-
-## Phase status
-
-See `docs/PHASES.md`.
-
-| Phase | Title | Status |
-|---|---|---|
-| 0 | Bootstrap repo & Oracle setup | 🟡 in_progress |
-| 1–13 | … | ⚪ pending |
-
----
-
-## Conventions
-
-- Python 3.12, FastAPI, async SQLAlchemy 2.0, PostgreSQL 16 + TimescaleDB, structlog JSON.
-- Conventional Commits (`feat:`, `fix:`, `test:`, `docs:`, `refactor:`, `chore:`).
-- pre-commit hooks: ruff (lint+format) + mypy --strict.
-- CI: GitHub Actions, lint + test jobs in parallel, pip cache.
-- `pytest --cov` ≥80% by default, ≥85% on ingestion/API/models.
-- No real network in CI; HTTP fixtures live in `tests/fixtures/{module}/`.
-
----
-
-## License
-
-Proprietary. © Baptiste Bouault, 2026.
+The latest merged work (`docs/phase-14/closure_summary.md`) ran the full pipeline on fresh French and German offers and produced one tradable decision. The scoring model was trained on 128 labeled clusters, so it separates deal types more than individual deals. `docs/PHASES.md` lags the code and still lists later phases as pending.

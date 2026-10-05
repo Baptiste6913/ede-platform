@@ -101,7 +101,7 @@ PDF URLs are direct `https://www.consob.it/documents/...` links. They include a 
 
 Each row carries **multiple PDFs** (1 "Documento d'offerta" + N "Comunicati" follow-ups: proroga, risultati definitivi, sovra-soglia 90/95%, supplemento, modifica condizione, etc.). Phase 4 brief covers only the main `Documento d'offerta`. Comunicati are explicitly out-of-scope (bundled into phase 6-7 expansion per phase-3 tech debt #2).
 
-## 5. ⚠️ Bot detection: Radware Bot Manager
+## 5. Bot detection: Radware Bot Manager
 
 This is the central finding of Step 0, and it invalidates the brief's "httpx + headers" implementation plan.
 
